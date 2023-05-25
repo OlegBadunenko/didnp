@@ -1,0 +1,23 @@
+Package: didnp
+Type: Package
+Title: Model-Free Difference-in-Differences Estimation
+Version: 0.1.0
+Authors@R: c(
+    person("Oleg", "Badunenko", , "Oleg.Badunenko@brunel.ac.uk", role = c("aut", "cre"),
+      comment = c(ORCID = "0000-0001-7216-0861")
+    ),
+    person("Daniel J.", "Henderson", , "djhender@cba.ua.edu", role = "aut",
+      comment = c(ORCID = "0000-0002-4940-9689")
+    ),
+    person("Stefan", "Sperlich", , "stefan.sperlich@unige.ch", role = "aut",
+      comment = c(ORCID = "0000-0001-5366-2612")
+    )
+  )
+URL: https://OlegBadunenko.github.io/didnp/
+Maintainer: The package maintainer <Oleg.Badunenko@brunel.ac.uk>
+Description: A package for computing both heterogenous and average treatment effects
+    for the treated in a model-free differences-in-differences framework.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
