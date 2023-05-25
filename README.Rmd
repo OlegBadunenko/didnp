@@ -26,10 +26,10 @@ cat(
   badger::badge_cran_download("npsf", "grand-total", "blue"),
   badger::badge_cran_download("npsf", "last-month", "blue"),
   badger::badge_cran_release("npsf", "blue"),
-  badger::badge_devel("bcallaway11/did", "blue"),
+  badger::badge_devel("OlegBadunenko/didnp", "blue"),
   badger::badge_cran_checks("npsf"),
   #badger::badge_codecov("bcallaway11/did"),
-  badger::badge_last_commit("bcallaway11/did")
+  badger::badge_last_commit("OlegBadunenko/didnp")
 )
 ```
 
@@ -85,7 +85,7 @@ The dataset contains 500 observations
 
 To estimate group-time average treatment effects, use the **didnpreg** function
 
-```{r}
+```{r eval=FALSE}
 tym1 <- didnpreg(
   form1,
   data = dat2,
@@ -99,7 +99,7 @@ tym1 <- didnpreg(
 
 **didnpreg** returns a class **didnp** object.  This object contains estimates of the average treatment effects and their standard errors.  To see these, we can call the **summary** function
 
-```{r}
+```{r eval=FALSE}
 summary(tym1)
 ```
 
@@ -111,7 +111,7 @@ It is often also convenient to plot the group-time average treatment effects.  T
 library(ggplot2)
 ```
 
-```{R, fig.width=8, fig.height=10, fig.align='center', out.width="90%", dpi = 200}
+```{R eval=FALSE}
 didnpplot(tym1, ylim = c(-.25,.1))
 ```
 
