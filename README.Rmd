@@ -49,7 +49,7 @@ Group-time average treatment effects are
 
 The **didnp** package implements the framework put forward in
 
-* [Callaway, Brantly and Pedro H.C. Sant'Anna.  \"Difference-in-Differences with Multiple Time Periods.\" Journal of Econometrics, Vol. 225, No. 2, pp. 200-230, 2021.](https://doi.org/10.1016/j.jeconom.2020.12.001) or [arXiv](https://arxiv.org/abs/1803.09015)
+* 
 
 
 ## Installation
@@ -69,9 +69,7 @@ devtools::install_github("OlegBadunenko/didnp")
 
 ## A short example
 
-The following is a simplified example of the effect of states increasing their minimum wages on county-level teen employment rates which comes from [Callaway and Sant'Anna (2021)](https://authors.elsevier.com/a/1cFzc15Dji4pnC).
-
-* [More detailed examples are also available](https://bcallaway11.github.io/did/articles/did-basics.html)
+The following is a simplified example of the effect of states increasing their minimum wages on county-level teen employment rates which comes from [that](https://elsevier.com/).
 
 A subset of the data is available in the package and can be loaded by
 ```{r eval=FALSE}
@@ -105,7 +103,7 @@ tym1 <- didnpreg(
 summary(tym1)
 ```
 
-This provides estimates of group-time average treatment effects for all groups in all time periods.  Group-time average treatment effects are identified when ` t >= g` (these are post-treatment time periods for each group), but **summary** reports them even in periods when `t < g` -- these can be used to pre-test for the parallel trends assumption.  The `P-value for pre-test of parallel trends assumption` is for a Wald pre-test of the parallel trends assumption.  Here the parallel trends assumption would not be rejected at conventional significance levels.
+This provides estimates of 
 
 It is often also convenient to plot the group-time average treatment effects.  This can be done using the **didnpplot** command:
 
@@ -113,7 +111,7 @@ It is often also convenient to plot the group-time average treatment effects.  T
 library(ggplot2)
 ```
 
-```{r, fig.width=8, fig.height=10, fig.align='center', out.width="90%", dpi = 200}
+```{R, fig.width=8, fig.height=10, fig.align='center', out.width="90%", dpi = 200}
 didnpplot(tym1, ylim = c(-.25,.1))
 ```
 
