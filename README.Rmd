@@ -1,0 +1,128 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#R> ",
+  fig.path = "man/figures/README-"
+)
+```
+
+```{r, echo=FALSE, results="hide", warning=FALSE, message=FALSE}
+library(didnp)
+# library(ggpubr)
+# data(mpdta)
+# devtools::load_all("~/Dropbox/did")
+# library(BMisc)
+```
+# Difference-in-Differences <img src="man/figures/logo.png" align="right" alt="" width="155" />
+
+```{r echo=FALSE, results='asis', message=FALSE}
+cat(
+  badger::badge_cran_download("npsf", "grand-total", "blue"),
+  badger::badge_cran_download("npsf", "last-month", "blue"),
+  badger::badge_cran_release("npsf", "blue"),
+  badger::badge_devel("bcallaway11/did", "blue"),
+  badger::badge_cran_checks("npsf"),
+  #badger::badge_codecov("bcallaway11/did"),
+  badger::badge_last_commit("bcallaway11/did")
+)
+```
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+The **didnp** package contains tools for computing average treatment effect parameters in a Difference-in-Differences setup allowing for
+
+* More than two time periods
+
+
+The main parameters are **group-time average treatment effects**.  These are 
+
+Group-time average treatment effects are 
+
+
+## Getting Started
+
+The **didnp** package implements the framework put forward in
+
+* [Callaway, Brantly and Pedro H.C. Sant'Anna.  \"Difference-in-Differences with Multiple Time Periods.\" Journal of Econometrics, Vol. 225, No. 2, pp. 200-230, 2021.](https://doi.org/10.1016/j.jeconom.2020.12.001) or [arXiv](https://arxiv.org/abs/1803.09015)
+
+
+## Installation
+
+You can install **didnp** from CRAN with:
+
+```{r eval=FALSE}
+install.packages("didnp")
+```
+
+or get the latest version from github with:
+
+```{r gh-installation, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("OlegBadunenko/didnp")
+```
+
+## A short example
+
+The following is a simplified example of the effect of states increasing their minimum wages on county-level teen employment rates which comes from [Callaway and Sant'Anna (2021)](https://authors.elsevier.com/a/1cFzc15Dji4pnC).
+
+* [More detailed examples are also available](https://bcallaway11.github.io/did/articles/did-basics.html)
+
+A subset of the data is available in the package and can be loaded by
+```{r eval=FALSE}
+  library(didnp)
+  data(qqqqqqqq)
+```
+
+The dataset contains 500 observations
+
+* **lemp** This is the log of county-level teen employment.  It is the outcome variable
+
+* **first.treat** 
+
+To estimate group-time average treatment effects, use the **didnpreg** function
+
+```{r}
+tym1 <- didnpreg(
+  form1,
+  data = dat2,
+  subset = mysmpl,
+  bwmethod = "opt",
+  boot.num = 399,
+  TTb = TRUE,
+  print.level = 2,
+  cores = 32)
+```
+
+**didnpreg** returns a class **didnp** object.  This object contains estimates of the average treatment effects and their standard errors.  To see these, we can call the **summary** function
+
+```{r}
+summary(tym1)
+```
+
+This provides estimates of group-time average treatment effects for all groups in all time periods.  Group-time average treatment effects are identified when ` t >= g` (these are post-treatment time periods for each group), but **summary** reports them even in periods when `t < g` -- these can be used to pre-test for the parallel trends assumption.  The `P-value for pre-test of parallel trends assumption` is for a Wald pre-test of the parallel trends assumption.  Here the parallel trends assumption would not be rejected at conventional significance levels.
+
+It is often also convenient to plot the group-time average treatment effects.  This can be done using the **didnpplot** command:
+
+```{r echo=FALSE}
+library(ggplot2)
+```
+
+```{r, fig.width=8, fig.height=10, fig.align='center', out.width="90%", dpi = 200}
+didnpplot(tym1, ylim = c(-.25,.1))
+```
+
+The red dots in the plot are 
+
+**Event Studies**
+
+Although 
+
+## Additional Resources
+
+We have provided 
