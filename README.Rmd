@@ -79,7 +79,7 @@ A subset of the data is available in the package and can be loaded by
   data(qqqqqqqq)
 ```
 
-The dataset contains 500 observations
+The dataset contains XXX observations
 
 * **LHS**  lhs variable
 

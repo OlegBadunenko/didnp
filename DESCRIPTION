@@ -13,8 +13,7 @@ Authors@R: c(
       comment = c(ORCID = "0000-0001-5366-2612")
     )
   )
-URL: https://OlegBadunenko.github.io/didnp/,
-    https://olegbadunenko.github.io/didnp/
+URL: https://olegbadunenko.github.io/didnp/
 Maintainer: The package maintainer <Oleg.Badunenko@brunel.ac.uk>
 Description: A package for computing both heterogenous and average treatment effects
     for the treated in a model-free differences-in-differences framework.
