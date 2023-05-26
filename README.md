@@ -6,12 +6,11 @@
 <!-- badges: start -->
 
 [![](http://cranlogs.r-pkg.org/badges/grand-total/npsf?color=blue)](https://cran.r-project.org/package=npsf)
-[![](http://cranlogs.r-pkg.org/badges/last-month/npsf?color=blue)](https://cran.r-project.org/package=npsf)
-[![](https://www.r-pkg.org/badges/version/npsf?color=blue)](https://cran.r-project.org/package=npsf)
-[![](https://img.shields.io/badge/devel%20version-0.1.0-blue.svg)](https://github.com/OlegBadunenko/didnp)
+[![](http://cranlogs.r-pkg.org/badges/last-month/npsf?color=yellow)](https://cran.r-project.org/package=npsf)
+[![](https://www.r-pkg.org/badges/version/npsf?color=green)](https://cran.r-project.org/package=npsf)
+[![](https://img.shields.io/badge/devel%20version-0.1.0-red.svg)](https://github.com/OlegBadunenko/didnp)
 [![CRAN
 checks](https://badges.cranchecks.info/summary/npsf.svg)](https://cran.r-project.org/web/checks/check_results_npsf.html)
-[![](https://codecov.io/gh/OlegBadunenko/did/branch/main/graph/badge.svg)](https://codecov.io/gh/OlegBadunenko/did)
 [![](https://img.shields.io/github/last-commit/OlegBadunenko/didnp.svg)](https://github.com/OlegBadunenko/didnp/commits/main)
 
 <!-- badges: end -->
@@ -42,7 +41,7 @@ install.packages("didnp")
 or get the latest version from github with:
 
 ``` r
-# install.packages("devtools")
+if ( !require("devtools") ) install.packages("devtools"); library(devtools)
 devtools::install_github("OlegBadunenko/didnp")
 ```
 
@@ -58,7 +57,7 @@ A subset of the data is available in the package and can be loaded by
   data(qqqqqqqq)
 ```
 
-The dataset contains 500 observations
+The dataset contains XXX observations
 
 - **LHS** lhs variable
 

@@ -26,11 +26,11 @@ library(didnp)
 ```{r echo=FALSE, results='asis', message=FALSE}
 cat(
   badger::badge_cran_download("npsf", "grand-total", "blue"),
-  badger::badge_cran_download("npsf", "last-month", "blue"),
-  badger::badge_cran_release("npsf", "blue"),
-  badger::badge_devel("OlegBadunenko/didnp", "blue"),
+  badger::badge_cran_download("npsf", "last-month", "yellow"),
+  badger::badge_cran_release("npsf", "green"),
+  badger::badge_devel("OlegBadunenko/didnp", "red"),
   badger::badge_cran_checks("npsf"),
-  badger::badge_codecov("OlegBadunenko/did"),
+  # badger::badge_codecov("OlegBadunenko/did"),
   badger::badge_last_commit("OlegBadunenko/didnp")
 )
 ```
@@ -65,7 +65,7 @@ install.packages("didnp")
 or get the latest version from github with:
 
 ```{r gh-installation, eval = FALSE}
-# install.packages("devtools")
+if ( !require("devtools") ) install.packages("devtools"); library(devtools)
 devtools::install_github("OlegBadunenko/didnp")
 ```
 
