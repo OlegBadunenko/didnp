@@ -17,7 +17,7 @@ navbar:
   left:
     - text: "All functions"
       href: reference/index.html
-    - text: "News"
+    - text: "News/Changelog"
       href: news/index.html
 
 home:
