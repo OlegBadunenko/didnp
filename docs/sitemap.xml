@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://olegbadunenko.github.io/didnp/404.html</loc>
+    <loc>/404.html</loc>
   </url>
   <url>
-    <loc>https://olegbadunenko.github.io/didnp/authors.html</loc>
+    <loc>/authors.html</loc>
   </url>
   <url>
-    <loc>https://olegbadunenko.github.io/didnp/index.html</loc>
+    <loc>/index.html</loc>
   </url>
   <url>
-    <loc>https://olegbadunenko.github.io/didnp/reference/didnp-package.html</loc>
+    <loc>/reference/didnp-package.html</loc>
   </url>
   <url>
-    <loc>https://olegbadunenko.github.io/didnp/reference/didnpreg.html</loc>
+    <loc>/reference/didnpreg.html</loc>
   </url>
   <url>
-    <loc>https://olegbadunenko.github.io/didnp/reference/index.html</loc>
+    <loc>/reference/index.html</loc>
   </url>
 </urlset>
