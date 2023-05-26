@@ -3,6 +3,8 @@
 
 # A model-free differences-in-differences framework
 
+<!-- badges: start -->
+
 [![](http://cranlogs.r-pkg.org/badges/grand-total/npsf?color=blue)](https://cran.r-project.org/package=npsf)
 [![](http://cranlogs.r-pkg.org/badges/last-month/npsf?color=blue)](https://cran.r-project.org/package=npsf)
 [![](https://www.r-pkg.org/badges/version/npsf?color=blue)](https://cran.r-project.org/package=npsf)
@@ -12,21 +14,20 @@ checks](https://badges.cranchecks.info/summary/npsf.svg)](https://cran.r-project
 [![](https://codecov.io/gh/OlegBadunenko/did/branch/main/graph/badge.svg)](https://codecov.io/gh/OlegBadunenko/did)
 [![](https://img.shields.io/github/last-commit/OlegBadunenko/didnp.svg)](https://github.com/OlegBadunenko/didnp/commits/main)
 
+<!-- badges: end -->
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 The **didnp** package contains tools for computing average treatment
 effect parameters in a Difference-in-Differences setup allowing for
 
-- More than two time periods
+- this
+- that
 
-The main parameters are **group-time average treatment effects**. These
-are
-
-Group-time average treatment effects are
+The main parameters are **that**. These are
 
 ## Getting Started
 
-The **didnp** package implements the framework put forward in
+The **didnp** package implements the framework developed in
 
 - 
 
@@ -45,11 +46,10 @@ or get the latest version from github with:
 devtools::install_github("OlegBadunenko/didnp")
 ```
 
-## A short example
+## An example
 
-The following is a simplified example of the effect of states increasing
-their minimum wages on county-level teen employment rates which comes
-from [that](https://elsevier.com/).
+The following is a simplified example …, which comes from
+[that](https://elsevier.com/).
 
 A subset of the data is available in the package and can be loaded by
 
@@ -60,13 +60,9 @@ A subset of the data is available in the package and can be loaded by
 
 The dataset contains 500 observations
 
-- **lemp** This is the log of county-level teen employment. It is the
-  outcome variable
+- **LHS** lhs variable
 
-- **first.treat**
-
-To estimate group-time average treatment effects, use the **didnpreg**
-function
+To estimate verage treatment effects, use the **didnpreg** function
 
 ``` r
 tym1 <- didnpreg(
@@ -97,12 +93,8 @@ effects. This can be done using the **didnpplot** command:
 didnpplot(tym1, ylim = c(-.25,.1))
 ```
 
-The red dots in the plot are
-
-**Event Studies**
-
-Although
+The … in the plot are
 
 ## Additional Resources
 
-We have provided
+That

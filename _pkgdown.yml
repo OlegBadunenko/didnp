@@ -21,9 +21,12 @@ navbar:
       href: news/index.html
 
 home:
+  sidebar:
+    structure: [links, license, community, citation, authors, dev]
   links:
     - text: Source Code
       href: https://github.com/OlegBadunenko/didnp
 
 development:
   mode: devel
+

@@ -17,7 +17,7 @@
 #' The \code{didnpreg} command contains tools for computing both heterogenous and average treatment effects for the treated in a model-free differences-in-differences framework.
 #'
 #' @param formula an object of class formula (or one that can be coerced to that class): a symbolic description of the model. The details of model specification are given under `Details'
-#' @param data, # name of the data frame; must be specified if the 'formula' method is used
+#' @param data name of the data frame; must be specified if the 'formula' method is used
 #' @param subset NULL, optional subsample of 'data'
 #' @param outcome a vector, matrix, or data frame of length \eqn{NT}. The outcome can be continuous or dummy.
 #' @param regressors a data frame with \eqn{NT} rows that contains regressors.

@@ -43,7 +43,7 @@ didnpreg(...)
 \arguments{
 \item{formula}{an object of class formula (or one that can be coerced to that class): a symbolic description of the model. The details of model specification are given under `Details'}
 
-\item{data, }{# name of the data frame; must be specified if the 'formula' method is used}
+\item{data}{name of the data frame; must be specified if the 'formula' method is used}
 
 \item{subset}{NULL, optional subsample of 'data'}
 
@@ -77,39 +77,39 @@ A data frame is required to identify the type/class of each regressor.}
 \value{
 \code{didnpreg} returns a list containing:
 \tabular{ll}{
-   \code{esample}
-   \tab A vector of TRUE/FALSE values identifying observations used in estimation. Relevant for the 'formula' method but complete cases will also be checked in the matrix method
-   \cr \tab \cr
-   \code{esample_treated}
-   \tab A vector of TRUE/FALSE values identifying observations used in estimation and is treated (intersection of \code{esample} and \code{treatment})
-   \cr \tab \cr
-   \code{esample_TTa}
-   \tab A vector of TRUE/FALSE values identifying observations used in estimation of TTa)
-   \cr \tab \cr
-   \code{esample_TTb}
-   \tab A vector of TRUE/FALSE values identifying observations used in estimation of TTb. Returned only if \code{TTb = TRUE})
-   \cr \tab \cr
-   \code{N}
-   \tab number of units of obs, defined by the \code{id}
-   \cr \tab \cr
-   \code{N_dt}
-   \tab the number of observations used as training data for each conditional expectation
-   \cr \tab \cr
-   \code{T_i}
-   \tab number of observations in each \code{id}
-   \cr \tab \cr
-   \code{bws}
-   \tab bandwidth(s) for the data
-   \cr \tab \cr
-   \code{TTx}
-   \tab the DiD estimators of the conditional TT (also known as CATET) (equation 2.12)
-   \cr \tab \cr
-   \code{TTa}
-   \tab
-   \cr \tab \cr
-   \code{TTb}
-   \tab NULL is option TTaOnly is used
-   \cr
+\code{esample}
+\tab A vector of TRUE/FALSE values identifying observations used in estimation. Relevant for the 'formula' method but complete cases will also be checked in the matrix method
+\cr \tab \cr
+\code{esample_treated}
+\tab A vector of TRUE/FALSE values identifying observations used in estimation and is treated (intersection of \code{esample} and \code{treatment})
+\cr \tab \cr
+\code{esample_TTa}
+\tab A vector of TRUE/FALSE values identifying observations used in estimation of TTa)
+\cr \tab \cr
+\code{esample_TTb}
+\tab A vector of TRUE/FALSE values identifying observations used in estimation of TTb. Returned only if \code{TTb = TRUE})
+\cr \tab \cr
+\code{N}
+\tab number of units of obs, defined by the \code{id}
+\cr \tab \cr
+\code{N_dt}
+\tab the number of observations used as training data for each conditional expectation
+\cr \tab \cr
+\code{T_i}
+\tab number of observations in each \code{id}
+\cr \tab \cr
+\code{bws}
+\tab bandwidth(s) for the data
+\cr \tab \cr
+\code{TTx}
+\tab the DiD estimators of the conditional TT (also known as CATET) (equation 2.12)
+\cr \tab \cr
+\code{TTa}
+\tab
+\cr \tab \cr
+\code{TTb}
+\tab NULL is option TTaOnly is used
+\cr
 }
 }
 \description{
