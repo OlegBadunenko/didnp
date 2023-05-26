@@ -1,4 +1,14 @@
-url: ~
 template:
   bootstrap: 5
+  params:
+    bootswatch: flatly
 
+authors:
+  Oleg Badunenko:
+    href: https://OlegBadunenko.github.io/
+
+  Daniel J. Henderson:
+    href: https://dhenderson.people.ua.edu/
+
+  Stefan Sperlich:
+    href: https://www.unige.ch/gsem/en/research/faculty/all/stefan-sperlich/
