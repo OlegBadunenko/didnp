@@ -19,7 +19,7 @@ library(didnp)
 # devtools::load_all("~/Dropbox/did")
 # library(BMisc)
 ```
-# Difference-in-Differences <img src="man/figures/logo.png" align="right" alt="" width="155" />
+# A model-free differences-in-differences framework
 
 ```{r echo=FALSE, results='asis', message=FALSE}
 cat(
@@ -28,7 +28,7 @@ cat(
   badger::badge_cran_release("npsf", "blue"),
   badger::badge_devel("OlegBadunenko/didnp", "blue"),
   badger::badge_cran_checks("npsf"),
-  #badger::badge_codecov("bcallaway11/did"),
+  badger::badge_codecov("OlegBadunenko/did"),
   badger::badge_last_commit("OlegBadunenko/didnp")
 )
 ```

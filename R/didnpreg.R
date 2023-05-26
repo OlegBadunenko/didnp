@@ -8,6 +8,9 @@
 # usethis::use_pkgdown_github_pages()
 # pkgdown::build_site()
 
+# Theme: https://pkgdown.r-lib.org/articles/customise.html
+# bootswatch: https://bootswatch.com/
+
 
 #' Treatment Effect Estimators
 #'

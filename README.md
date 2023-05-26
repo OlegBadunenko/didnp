@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Difference-in-Differences <img src="man/figures/logo.png" align="right" alt="" width="155" />
+# A model-free differences-in-differences framework
 
 [![](http://cranlogs.r-pkg.org/badges/grand-total/npsf?color=blue)](https://cran.r-project.org/package=npsf)
 [![](http://cranlogs.r-pkg.org/badges/last-month/npsf?color=blue)](https://cran.r-project.org/package=npsf)
@@ -9,6 +9,7 @@
 [![](https://img.shields.io/badge/devel%20version-0.1.0-blue.svg)](https://github.com/OlegBadunenko/didnp)
 [![CRAN
 checks](https://badges.cranchecks.info/summary/npsf.svg)](https://cran.r-project.org/web/checks/check_results_npsf.html)
+[![](https://codecov.io/gh/OlegBadunenko/did/branch/main/graph/badge.svg)](https://codecov.io/gh/OlegBadunenko/did)
 [![](https://img.shields.io/github/last-commit/OlegBadunenko/didnp.svg)](https://github.com/OlegBadunenko/didnp/commits/main)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->

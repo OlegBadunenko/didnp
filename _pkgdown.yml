@@ -1,7 +1,6 @@
 template:
-  bootstrap: 5
   params:
-    bootswatch: flatly
+    bootswatch: spacelab
 
 authors:
   Oleg Badunenko:
@@ -12,3 +11,19 @@ authors:
 
   Stefan Sperlich:
     href: https://www.unige.ch/gsem/en/research/faculty/all/stefan-sperlich/
+
+navbar:
+  title: "didnp"
+  left:
+    - text: "All functions"
+      href: reference/index.html
+    - text: "News"
+      href: news/index.html
+
+home:
+  links:
+    - text: Source Code
+      href: https://github.com/OlegBadunenko/didnp
+
+development:
+  mode: devel
