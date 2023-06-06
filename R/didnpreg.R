@@ -134,13 +134,13 @@
 #' @examples
 #' \dontrun{
 #'   data(DACAsub, package = "didnp")
-#'   # will get a data frame 'dat1' with 330106 rows and 18 columns
+#'   # will get a data frame 'DACAsub' with 330106 rows and 18 columns
 #'
 #'   # get the subsample
-#'   dat1$mysmpl <- mysmpl <- dat1$a1922==1 & !is.na(dat1$a1922) & dat1$htus==1 & !is.na(dat1$htus)
+#'   DACAsub$mysmpl <- mysmpl <- DACAsub$a1922==1 & !is.na(DACAsub$a1922) & DACAsub$htus==1 & !is.na(DACAsub$htus)
 #'
 #'   # generate 'treatment_period'
-#'   dat1$treatment_period <- ifelse(dat1[,"year"]>2011,1,0)
+#'   DACAsub$treatment_period <- ifelse(DACAsub[,"year"]>2011,1,0)
 #'
 #'   # define formula with the weight
 #'   form1 <- inschool ~ fem + race + var.bpl + state + age + yrimmig +
@@ -153,7 +153,7 @@
 #'   ## Syntax using formula
 #'   tym1a <- didnpreg(
 #'     form1,
-#'     data = dat1,
+#'     data = DACAsub,
 #'     subset = mysmpl,
 #'     bwmethod = "opt",
 #'     boot.num = 399,
@@ -167,7 +167,7 @@
 #'   ## Use CV bandwidths
 #'   tym1aCV <- didnpreg(
 #'     form1,
-#'     data = dat1,
+#'     data = DACAsub,
 #'     subset = mysmpl,
 #'     bwmethod = "CV",
 #'     boot.num = 399,
@@ -181,7 +181,7 @@
 #'   ## Calculate also TTb (will take longer)
 #'   tym1bCV <- didnpreg(
 #'     form1,
-#'     data = dat1,
+#'     data = DACAsub,
 #'     subset = mysmpl,
 #'     bwmethod = "CV",
 #'     boot.num = 399,
@@ -195,13 +195,13 @@
 #'   ## Syntax using matrices
 #'
 #'   tym1 <- didnpreg(
-#'     outcome = dat1[mysmpl,"inschool"],
-#'     regressors = dat1[mysmpl,c("fem", "race", "var.bpl", "state", "age", "yrimmig", "ageimmig")],
-#'     id = dat1[mysmpl,"inschool"],
-#'     time = dat1[mysmpl,"year"],
-#'     treatment = dat1[mysmpl,"elig"],
-#'     treatment_period = ifelse(dat1[mysmpl,"year"]>2011,1,0),
-#'     weights = dat1[mysmpl,"perwt"],
+#'     outcome = DACAsub[mysmpl,"inschool"],
+#'     regressors = DACAsub[mysmpl,c("fem", "race", "var.bpl", "state", "age", "yrimmig", "ageimmig")],
+#'     id = DACAsub[mysmpl,"inschool"],
+#'     time = DACAsub[mysmpl,"year"],
+#'     treatment = DACAsub[mysmpl,"elig"],
+#'     treatment_period = ifelse(DACAsub[mysmpl,"year"]>2011,1,0),
+#'     weights = DACAsub[mysmpl,"perwt"],
 #'     bwmethod = "opt",
 #'     boot.num = 399,
 #'     TTb = FALSE,
