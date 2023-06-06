@@ -118,7 +118,7 @@
 #'    \tab the standard error of the DiD estimator of the avarage unconditional TT
 #'    \cr \tab \cr
 #'    \code{TTx}
-#'    \tab the DiD estimators of the conditional TT (also known as CATET) (equation 2.12)
+#'    \tab the DiD estimators of the conditional TT (also known as CATET)
 #'    \cr \tab \cr
 #'    \code{TTa.i.boot}
 #'    \tab Matrix of the size \eqn{n_{11} \times boot.num}
