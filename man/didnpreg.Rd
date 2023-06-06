@@ -17,7 +17,7 @@ didnpreg(...)
   TTx = FALSE,
   TTb = TRUE,
   print.level = 1,
-  cores = 4,
+  cores = 1,
   seed = 17345168,
   ...
 )
@@ -35,7 +35,7 @@ didnpreg(...)
   TTx = FALSE,
   TTb = TRUE,
   print.level = 1,
-  cores = 4,
+  cores = 1,
   seed = 17345168,
   ...
 )
@@ -177,7 +177,9 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
   # will get a data frame 'DACAsub' with 330106 rows and 18 columns
 
   # get the subsample
-  DACAsub$mysmpl <- mysmpl <- DACAsub$a1922==1 & !is.na(DACAsub$a1922) & DACAsub$htus==1 & !is.na(DACAsub$htus)
+  DACAsub$mysmpl <- mysmpl <-
+    DACAsub$a1922==1 & !is.na(DACAsub$a1922) &
+    DACAsub$htus==1 & !is.na(DACAsub$htus)
 
   # generate 'treatment_period'
   DACAsub$treatment_period <- ifelse(DACAsub[,"year"]>2011,1,0)
@@ -191,6 +193,7 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
     ageimmig | inschool | year | elig | treatment_period
 
   ## Syntax using formula
+  # suppress output
   tym1a <- didnpreg(
     form1,
     data = DACAsub,
@@ -198,7 +201,7 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
     bwmethod = "opt",
     boot.num = 399,
     TTb = FALSE,
-    print.level = 2,
+    print.level = 0,
     cores = 4)
 
   # Print the summary
@@ -212,7 +215,7 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
     bwmethod = "CV",
     boot.num = 399,
     TTb = FALSE,
-    print.level = 2,
+    print.level = 1,
     cores = 4)
 
   # Print the summary
@@ -226,7 +229,7 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
     bwmethod = "CV",
     boot.num = 399,
     TTb = TRUE,
-    print.level = 2,
+    print.level = 1,
     cores = 4)
 
   # Print the summary
@@ -234,7 +237,7 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
 
   ## Syntax using matrices
 
-  tym1 <- didnpreg(
+  tym1aM <- didnpreg(
     outcome = DACAsub[mysmpl,"inschool"],
     regressors = DACAsub[mysmpl,c("fem", "race", "var.bpl", "state", "age", "yrimmig", "ageimmig")],
     id = DACAsub[mysmpl,"inschool"],
@@ -245,8 +248,11 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
     bwmethod = "opt",
     boot.num = 399,
     TTb = FALSE,
-    print.level = 2,
+    print.level = 1,
     cores = 4)
+
+  # Print the summary
+  summary(tym1aM)
 
 }
 
