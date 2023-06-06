@@ -1,6 +1,6 @@
-#' Summary of the Treatment Effect Estimators
+#' Summary of objects of class "didnp"
 #'
-#' The \code{summary} prints the summary from obejects of class "didnp"
+#' The \code{summary} prints the summary from objects of class "didnp"
 #'
 #' @rdname summary
 #' @export

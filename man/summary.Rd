@@ -2,10 +2,10 @@
 % Please edit documentation in R/summary.didnp.R
 \name{summary.didnp}
 \alias{summary.didnp}
-\title{Summary of the Treatment Effect Estimators}
+\title{Summary of objects of class "didnp"}
 \usage{
 \method{summary}{didnp}(obj, ...)
 }
 \description{
-The \code{summary} prints the summary from obejects of class "didnp"
+The \code{summary} prints the summary from objects of class "didnp"
 }

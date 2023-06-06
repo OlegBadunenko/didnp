@@ -12,7 +12,7 @@
 # bootswatch: https://bootswatch.com/
 
 
-#' Treatment Effect Estimators
+#' Model-free Treatment Effect Estimators
 #'
 #' The \code{didnpreg} command contains tools for computing both heterogenous and average treatment effects for the treated in a model-free differences-in-differences framework.
 #'

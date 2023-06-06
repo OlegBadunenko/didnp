@@ -4,7 +4,7 @@
 \alias{didnpreg}
 \alias{didnpreg.formula}
 \alias{didnpreg.default}
-\title{Treatment Effect Estimators}
+\title{Model-free Treatment Effect Estimators}
 \usage{
 didnpreg(...)
 
