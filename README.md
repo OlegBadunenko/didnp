@@ -54,7 +54,7 @@ A subset of the data is available in the package and can be loaded by
 
 ``` r
   library(didnp)
-  data(qqqqqqqq)
+  data(DACAsub, package = "didnp")
 ```
 
 The dataset contains XXX observations
