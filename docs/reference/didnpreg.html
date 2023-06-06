@@ -183,14 +183,14 @@ A data frame class is required to identify the type/class of each regressor.</p>
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">DACAsub1</span>, package <span class="op">=</span> <span class="st">"didnp"</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="co"># will get a data frame 'dat1' with 330106 rows and 18 columns</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">DACAsub</span>, package <span class="op">=</span> <span class="st">"didnp"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="co"># will get a data frame 'DACAsub' with 330106 rows and 18 columns</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># get the subsample</span></span></span>
-<span class="r-in"><span>  <span class="va">dat1</span><span class="op">$</span><span class="va">mysmpl</span> <span class="op">&lt;-</span> <span class="va">mysmpl</span> <span class="op">&lt;-</span> <span class="va">dat1</span><span class="op">$</span><span class="va">a1922</span><span class="op">==</span><span class="fl">1</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">a1922</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">dat1</span><span class="op">$</span><span class="va">htus</span><span class="op">==</span><span class="fl">1</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">htus</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">DACAsub</span><span class="op">$</span><span class="va">mysmpl</span> <span class="op">&lt;-</span> <span class="va">mysmpl</span> <span class="op">&lt;-</span> <span class="va">DACAsub</span><span class="op">$</span><span class="va">a1922</span><span class="op">==</span><span class="fl">1</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">DACAsub</span><span class="op">$</span><span class="va">a1922</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">DACAsub</span><span class="op">$</span><span class="va">htus</span><span class="op">==</span><span class="fl">1</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">DACAsub</span><span class="op">$</span><span class="va">htus</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># generate 'treatment_period'</span></span></span>
-<span class="r-in"><span>  <span class="va">dat1</span><span class="op">$</span><span class="va">treatment_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">[</span>,<span class="st">"year"</span><span class="op">]</span><span class="op">&gt;</span><span class="fl">2011</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">DACAsub</span><span class="op">$</span><span class="va">treatment_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">DACAsub</span><span class="op">[</span>,<span class="st">"year"</span><span class="op">]</span><span class="op">&gt;</span><span class="fl">2011</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># define formula with the weight</span></span></span>
 <span class="r-in"><span>  <span class="va">form1</span> <span class="op">&lt;-</span> <span class="va">inschool</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">var.bpl</span> <span class="op">+</span> <span class="va">state</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">yrimmig</span> <span class="op">+</span></span></span>
@@ -203,7 +203,7 @@ A data frame class is required to identify the type/class of each regressor.</p>
 <span class="r-in"><span>  <span class="co">## Syntax using formula</span></span></span>
 <span class="r-in"><span>  <span class="va">tym1a</span> <span class="op">&lt;-</span> <span class="fu">didnpreg</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">form1</span>,</span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">dat1</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">DACAsub</span>,</span></span>
 <span class="r-in"><span>    subset <span class="op">=</span> <span class="va">mysmpl</span>,</span></span>
 <span class="r-in"><span>    bwmethod <span class="op">=</span> <span class="st">"opt"</span>,</span></span>
 <span class="r-in"><span>    boot.num <span class="op">=</span> <span class="fl">399</span>,</span></span>
@@ -217,7 +217,7 @@ A data frame class is required to identify the type/class of each regressor.</p>
 <span class="r-in"><span>  <span class="co">## Use CV bandwidths</span></span></span>
 <span class="r-in"><span>  <span class="va">tym1aCV</span> <span class="op">&lt;-</span> <span class="fu">didnpreg</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">form1</span>,</span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">dat1</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">DACAsub</span>,</span></span>
 <span class="r-in"><span>    subset <span class="op">=</span> <span class="va">mysmpl</span>,</span></span>
 <span class="r-in"><span>    bwmethod <span class="op">=</span> <span class="st">"CV"</span>,</span></span>
 <span class="r-in"><span>    boot.num <span class="op">=</span> <span class="fl">399</span>,</span></span>
@@ -231,7 +231,7 @@ A data frame class is required to identify the type/class of each regressor.</p>
 <span class="r-in"><span>  <span class="co">## Calculate also TTb (will take longer)</span></span></span>
 <span class="r-in"><span>  <span class="va">tym1bCV</span> <span class="op">&lt;-</span> <span class="fu">didnpreg</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">form1</span>,</span></span>
-<span class="r-in"><span>    data <span class="op">=</span> <span class="va">dat1</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">DACAsub</span>,</span></span>
 <span class="r-in"><span>    subset <span class="op">=</span> <span class="va">mysmpl</span>,</span></span>
 <span class="r-in"><span>    bwmethod <span class="op">=</span> <span class="st">"CV"</span>,</span></span>
 <span class="r-in"><span>    boot.num <span class="op">=</span> <span class="fl">399</span>,</span></span>
@@ -245,13 +245,13 @@ A data frame class is required to identify the type/class of each regressor.</p>
 <span class="r-in"><span>  <span class="co">## Syntax using matrices</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">tym1</span> <span class="op">&lt;-</span> <span class="fu">didnpreg</span><span class="op">(</span></span></span>
-<span class="r-in"><span>    outcome <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"inschool"</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>    regressors <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fem"</span>, <span class="st">"race"</span>, <span class="st">"var.bpl"</span>, <span class="st">"state"</span>, <span class="st">"age"</span>, <span class="st">"yrimmig"</span>, <span class="st">"ageimmig"</span><span class="op">)</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>    id <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"inschool"</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>    time <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"year"</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>    treatment <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"elig"</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>    treatment_period <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"year"</span><span class="op">]</span><span class="op">&gt;</span><span class="fl">2011</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    weights <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"perwt"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    outcome <span class="op">=</span> <span class="va">DACAsub</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"inschool"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    regressors <span class="op">=</span> <span class="va">DACAsub</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fem"</span>, <span class="st">"race"</span>, <span class="st">"var.bpl"</span>, <span class="st">"state"</span>, <span class="st">"age"</span>, <span class="st">"yrimmig"</span>, <span class="st">"ageimmig"</span><span class="op">)</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    id <span class="op">=</span> <span class="va">DACAsub</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"inschool"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    time <span class="op">=</span> <span class="va">DACAsub</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"year"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    treatment <span class="op">=</span> <span class="va">DACAsub</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"elig"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    treatment_period <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">DACAsub</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"year"</span><span class="op">]</span><span class="op">&gt;</span><span class="fl">2011</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    weights <span class="op">=</span> <span class="va">DACAsub</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"perwt"</span><span class="op">]</span>,</span></span>
 <span class="r-in"><span>    bwmethod <span class="op">=</span> <span class="st">"opt"</span>,</span></span>
 <span class="r-in"><span>    boot.num <span class="op">=</span> <span class="fl">399</span>,</span></span>
 <span class="r-in"><span>    TTb <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
