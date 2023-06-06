@@ -47,8 +47,8 @@ devtools::install_github("OlegBadunenko/didnp")
 
 ## An example
 
-The following is a simplified example …, which comes from
-[that](https://elsevier.com/).
+> The following is a simplified example …, which comes from
+> [that](https://elsevier.com/).
 
 A subset of the data is available in the package and can be loaded by
 
