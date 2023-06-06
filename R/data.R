@@ -1,4 +1,4 @@
-#' @title Subset of the DACA dataset
+#' @title Subset of the dataset aboutthe Deferred Action for Childhood Arrivals (DACA) program
 #'
 #' @description A dataset about Deferred Action for Childhood Arrivals (DACA) program containing 330106 observations
 #'

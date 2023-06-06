@@ -3,7 +3,7 @@
 \docType{data}
 \name{DACAsub}
 \alias{DACAsub}
-\title{Subset of the DACA dataset}
+\title{Subset of the dataset aboutthe Deferred Action for Childhood Arrivals (DACA) program}
 \format{
 A data frame with 330106 rows and 18 columns:
 \describe{
