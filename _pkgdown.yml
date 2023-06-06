@@ -24,3 +24,6 @@ home:
   links:
     - text: Source Code
       href: https://github.com/OlegBadunenko/didnp
+
+development:
+  mode: unreleased

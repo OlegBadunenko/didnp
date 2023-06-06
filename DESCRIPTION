@@ -1,7 +1,7 @@
 Package: didnp
 Type: Package
 Title: Model-Free Difference-in-Differences Estimation
-Version: 0.1.0
+Version: 1.0.0
 Authors@R: c(
     person("Oleg", "Badunenko", , "Oleg.Badunenko@brunel.ac.uk", role = c("aut", "cre"),
       comment = c(ORCID = "0000-0001-7216-0861")

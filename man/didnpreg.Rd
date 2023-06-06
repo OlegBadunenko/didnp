@@ -47,22 +47,24 @@ didnpreg(...)
 
 \item{subset}{NULL, optional subsample of 'data'}
 
-\item{bwmethod}{"opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation}
+\item{bwmethod}{bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will trigger calculating cross-validated bandwidths.}
 
 \item{boot.num}{399,}
 
-\item{TTx}{FALSE}
+\item{TTx}{Conditional Treatment Effect on the Treated. Default is FALSE.}
 
-\item{TTb}{FALSE}
+\item{TTb}{Unconditional Treatment Effect on the Treated. TTb estimates by averaging over \emph{all} treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.}
 
 \item{print.level}{the level of printing; larger number implies more output is printed. Default is 1. 0 suppresses all printing.}
 
 \item{cores}{Integer specifies the number of cores to be used for parallel computation.}
 
-\item{outcome}{a vector, matrix, or data frame of length \eqn{NT}. The outcome can be continuous or dummy.}
+\item{seed}{integer used for the random number generation for the replication purposes. Default is 17345168.}
+
+\item{outcome}{a vector, matrix, or data frame of length \eqn{NT}. The outcome can be a continuous or dummy variable.}
 
 \item{regressors}{a data frame with \eqn{NT} rows that contains regressors.
-A data frame is required to identify the type/class of each regressor.}
+A data frame class is required to identify the type/class of each regressor.}
 
 \item{id}{a vector, matrix, or data frame of length \eqn{NT} that identifies the unit of observation.}
 
@@ -77,38 +79,83 @@ A data frame is required to identify the type/class of each regressor.}
 \value{
 \code{didnpreg} returns a list containing:
 \tabular{ll}{
+\code{NT}
+\tab Total number of observations
+\cr \tab \cr
 \code{esample}
 \tab A vector of TRUE/FALSE values identifying observations used in estimation. Relevant for the 'formula' method but complete cases will also be checked in the matrix method
 \cr \tab \cr
-\code{esample_treated}
-\tab A vector of TRUE/FALSE values identifying observations used in estimation and is treated (intersection of \code{esample} and \code{treatment})
+\code{sample1}
+\tab A vector of TRUE/FALSE values identifying treated observations.
 \cr \tab \cr
-\code{esample_TTa}
-\tab A vector of TRUE/FALSE values identifying observations used in estimation of TTa)
+\code{sample11}
+\tab A vector of TRUE/FALSE values identifying treated observations right after the treatement
 \cr \tab \cr
-\code{esample_TTb}
-\tab A vector of TRUE/FALSE values identifying observations used in estimation of TTb. Returned only if \code{TTb = TRUE})
+\code{sample10}
+\tab A vector of TRUE/FALSE values identifying treated observations just before the treatment
 \cr \tab \cr
-\code{N}
-\tab number of units of obs, defined by the \code{id}
+\code{sample01}
+\tab A vector of TRUE/FALSE values identifying observations in control group right after the treatement
 \cr \tab \cr
-\code{N_dt}
-\tab the number of observations used as training data for each conditional expectation
+\code{sample00}
+\tab A vector of TRUE/FALSE values identifying observations in control group just before the treatement
 \cr \tab \cr
-\code{T_i}
-\tab number of observations in each \code{id}
+\code{regressor.type}
+\tab A vector of length 3 with number of continuous, unordered categorical, and ordered categorical regressors.
+\cr \tab \cr
+\code{bwmethod}
+\tab bandwidth type
+\cr \tab \cr
+\code{bw.time}
+\tab Time in seconds it took to calculate bandwidths. For bandwidth type "opt" is 0.
 \cr \tab \cr
 \code{bws}
-\tab bandwidth(s) for the data
+\tab Data frame with variable names, type of the regressor and bandwidths.
+\cr \tab \cr
+\code{boot.time}
+\tab Time in seconds it took to bootstrap the standard errors.
+\cr \tab \cr
+\code{boot.num}
+\tab Number of bootstrap replications.
+\cr \tab \cr
+\code{bw11}
+\tab Bandwidths calculated for the sample of treated right after the treatment.
+\cr \tab \cr
+\code{bw10}
+\tab Bandwidths calculated for the sample of treated just before the treatment.
+\cr \tab \cr
+\code{bw01}
+\tab Bandwidths calculated for the sample of of observations in control group right after the treatment.
+\cr \tab \cr
+\code{bw00}
+\tab Bandwidths calculated for the sample of observations in control group just before the treatement
+\cr \tab \cr
+\code{TTa}
+\tab the DiD estimator of the avarage unconditional TT
+\cr \tab \cr
+\code{TTa.i}
+\tab the DiD estimators of the unconditional TT
+\cr \tab \cr
+\code{TTb}
+\tab the DiD estimator of the avarage unconditional TT
+\cr \tab \cr
+\code{TTb.i}
+\tab the DiD estimators of the unconditional TT
+\cr \tab \cr
+\code{TTa.sd}
+\tab the standard error of the DiD estimator of the avarage unconditional TT
+\cr \tab \cr
+\code{TTb.sd}
+\tab the standard error of the DiD estimator of the avarage unconditional TT
 \cr \tab \cr
 \code{TTx}
 \tab the DiD estimators of the conditional TT (also known as CATET) (equation 2.12)
 \cr \tab \cr
-\code{TTa}
-\tab
+\code{TTa.i.boot}
+\tab Matrix of the size \eqn{n_{11} \times boot.num}
 \cr \tab \cr
-\code{TTb}
-\tab NULL is option TTaOnly is used
+\code{TTb.i.boot}
+\tab Matrix of the size \eqn{n_{1} \times boot.num}
 \cr
 }
 }
@@ -116,11 +163,85 @@ A data frame is required to identify the type/class of each regressor.}
 The \code{didnpreg} command contains tools for computing both heterogenous and average treatment effects for the treated in a model-free differences-in-differences framework.
 }
 \details{
-All estimations are based. y ~ x1 + x2 | id | time | treatment | treatment_period | weights
+The formula shell contain multiple parts separated by '|'. An example is
+
+form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period | weights
+
+weights can be omitted if not available
+
+form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
 }
 \examples{
 \dontrun{
-  didnpreg(jhklangkjhakgkjh)
+  data(DACAsub1, package = "didnp")
+  # will get a data frame 'dat1' with 330106 rows and 20 columns
+
+  # define formula with the weight
+  form1 <- inschool ~ fem + race + var.bpl + state + age + yrimmig +
+    ageimmig | inschool | year | elig | treatment_period | perwt
+
+  # or without the weight
+  form11 <- inschool ~ fem + race + var.bpl + state + age + yrimmig +
+    ageimmig | inschool | year | elig | treatment_period
+
+  ## Syntax using formula
+  tym1a <- didnpreg(
+    form1,
+    data = dat1,
+    subset = mysmpl,
+    bwmethod = "opt",
+    boot.num = 399,
+    TTb = FALSE,
+    print.level = 2,
+    cores = 4)
+
+  # Print the summary
+  summary(tym1a)
+
+  ## Use CV bandwidths
+  tym1aCV <- didnpreg(
+    form1,
+    data = dat1,
+    subset = mysmpl,
+    bwmethod = "CV",
+    boot.num = 399,
+    TTb = FALSE,
+    print.level = 2,
+    cores = 4)
+
+  # Print the summary
+  summary(tym1aCV)
+
+  ## Calculate also TTb (will take longer)
+  tym1bCV <- didnpreg(
+    form1,
+    data = dat1,
+    subset = mysmpl,
+    bwmethod = "CV",
+    boot.num = 399,
+    TTb = TRUE,
+    print.level = 2,
+    cores = 4)
+
+  # Print the summary
+  summary(tym1bCV)
+
+  ## Syntax using matrices
+
+  tym1 <- didnpreg(
+    outcome = dat1[mysmpl,"inschool"],
+    regressors = dat1[mysmpl,c("fem", "race", "var.bpl", "state", "age", "yrimmig", "ageimmig")],
+    id = dat1[mysmpl,"inschool"],
+    time = dat1[mysmpl,"year"],
+    treatment = dat1[mysmpl,"elig"],
+    treatment_period = ifelse(dat1[mysmpl,"year"]>2011,1,0),
+    weights = dat1[mysmpl,"perwt"],
+    bwmethod = "opt",
+    boot.num = 399,
+    TTb = FALSE,
+    print.level = 2,
+    cores = 4)
+
 }
 
 }
@@ -131,7 +252,9 @@ All estimations are based. y ~ x1 + x2 | id | time | treatment | treatment_perio
 }
 \author{
 Oleg Badunenko \email{oleg.badunenko@brunel.ac.uk},
+
 Daniel J. Henderson \email{djhender@cba.ua.edu},
+
 Stefan Sperlich \email{stefan.sperlich@unige.ch}
 }
 \keyword{did}
