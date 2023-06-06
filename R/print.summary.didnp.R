@@ -1,4 +1,3 @@
-#' @rdname summary.didnp
 #' @export
 print.summary.didnp <- function( x, digits = NULL, print.level = NULL, ... ) {
    # digits
