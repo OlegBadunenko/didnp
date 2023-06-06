@@ -173,7 +173,7 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
 }
 \examples{
 \dontrun{
-  data(DACAsub1, package = "didnp")
+  data(DACAsub, package = "didnp")
   # will get a data frame 'dat1' with 330106 rows and 18 columns
 
   # get the subsample
