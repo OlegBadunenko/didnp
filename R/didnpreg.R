@@ -134,7 +134,13 @@
 #' @examples
 #' \dontrun{
 #'   data(DACAsub1, package = "didnp")
-#'   # will get a data frame 'dat1' with 330106 rows and 20 columns
+#'   # will get a data frame 'dat1' with 330106 rows and 18 columns
+#'
+#'   # get the subsample
+#'   dat1$mysmpl <- mysmpl <- dat1$a1922==1 & !is.na(dat1$a1922) & dat1$htus==1 & !is.na(dat1$htus)
+#'
+#'   # generate 'treatment_period'
+#'   dat1$treatment_period <- ifelse(dat1[,"year"]>2011,1,0)
 #'
 #'   # define formula with the weight
 #'   form1 <- inschool ~ fem + race + var.bpl + state + age + yrimmig +
