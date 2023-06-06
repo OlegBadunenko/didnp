@@ -99,7 +99,7 @@
 
 
 <dt>bwmethod</dt>
-<dd><p>"opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation</p></dd>
+<dd><p>bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will trigger calculating cross-validated bandwidths.</p></dd>
 
 
 <dt>boot.num</dt>
@@ -107,11 +107,11 @@
 
 
 <dt>TTx</dt>
-<dd><p>FALSE</p></dd>
+<dd><p>Conditional Treatment Effect on the Treated. Default is FALSE.</p></dd>
 
 
 <dt>TTb</dt>
-<dd><p>FALSE</p></dd>
+<dd><p>Unconditional Treatment Effect on the Treated. TTb estimates by averaging over <em>all</em> treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.</p></dd>
 
 
 <dt>print.level</dt>
@@ -122,13 +122,17 @@
 <dd><p>Integer specifies the number of cores to be used for parallel computation.</p></dd>
 
 
+<dt>seed</dt>
+<dd><p>integer used for the random number generation for the replication purposes. Default is 17345168.</p></dd>
+
+
 <dt>outcome</dt>
-<dd><p>a vector, matrix, or data frame of length \(NT\). The outcome can be continuous or dummy.</p></dd>
+<dd><p>a vector, matrix, or data frame of length \(NT\). The outcome can be a continuous or dummy variable.</p></dd>
 
 
 <dt>regressors</dt>
 <dd><p>a data frame with \(NT\) rows that contains regressors.
-A data frame is required to identify the type/class of each regressor.</p></dd>
+A data frame class is required to identify the type/class of each regressor.</p></dd>
 
 
 <dt>id</dt>
@@ -155,10 +159,13 @@ A data frame is required to identify the type/class of each regressor.</p></dd>
     <h2>Value</h2>
     
 
-<p><code>didnpreg</code> returns a list containing:</p><table class="table table"><tr><td><code>esample</code></td><td>A vector of TRUE/FALSE values identifying observations used in estimation. Relevant for the 'formula' method but complete cases will also be checked in the matrix method</td></tr><tr><td></td><td></td></tr><tr><td><code>esample_treated</code></td><td>A vector of TRUE/FALSE values identifying observations used in estimation and is treated (intersection of <code>esample</code> and <code>treatment</code>)</td></tr><tr><td></td><td></td></tr><tr><td><code>esample_TTa</code></td><td>A vector of TRUE/FALSE values identifying observations used in estimation of TTa)</td></tr><tr><td></td><td></td></tr><tr><td><code>esample_TTb</code></td><td>A vector of TRUE/FALSE values identifying observations used in estimation of TTb. Returned only if <code>TTb = TRUE</code>)</td></tr><tr><td></td><td></td></tr><tr><td><code>N</code></td><td>number of units of obs, defined by the <code>id</code></td></tr><tr><td></td><td></td></tr><tr><td><code>N_dt</code></td><td>the number of observations used as training data for each conditional expectation</td></tr><tr><td></td><td></td></tr><tr><td><code>T_i</code></td><td>number of observations in each <code>id</code></td></tr><tr><td></td><td></td></tr><tr><td><code>bws</code></td><td>bandwidth(s) for the data</td></tr><tr><td></td><td></td></tr><tr><td><code>TTx</code></td><td>the DiD estimators of the conditional TT (also known as CATET) (equation 2.12)</td></tr><tr><td></td><td></td></tr><tr><td><code>TTa</code></td><td></td></tr><tr><td></td><td></td></tr><tr><td><code>TTb</code></td><td>NULL is option TTaOnly is used</td></tr></table></div>
+<p><code>didnpreg</code> returns a list containing:</p><table class="table table"><tr><td><code>NT</code></td><td>Total number of observations</td></tr><tr><td></td><td></td></tr><tr><td><code>esample</code></td><td>A vector of TRUE/FALSE values identifying observations used in estimation. Relevant for the 'formula' method but complete cases will also be checked in the matrix method</td></tr><tr><td></td><td></td></tr><tr><td><code>sample1</code></td><td>A vector of TRUE/FALSE values identifying treated observations.</td></tr><tr><td></td><td></td></tr><tr><td><code>sample11</code></td><td>A vector of TRUE/FALSE values identifying treated observations right after the treatement</td></tr><tr><td></td><td></td></tr><tr><td><code>sample10</code></td><td>A vector of TRUE/FALSE values identifying treated observations just before the treatment</td></tr><tr><td></td><td></td></tr><tr><td><code>sample01</code></td><td>A vector of TRUE/FALSE values identifying observations in control group right after the treatement</td></tr><tr><td></td><td></td></tr><tr><td><code>sample00</code></td><td>A vector of TRUE/FALSE values identifying observations in control group just before the treatement</td></tr><tr><td></td><td></td></tr><tr><td><code>regressor.type</code></td><td>A vector of length 3 with number of continuous, unordered categorical, and ordered categorical regressors.</td></tr><tr><td></td><td></td></tr><tr><td><code>bwmethod</code></td><td>bandwidth type</td></tr><tr><td></td><td></td></tr><tr><td><code>bw.time</code></td><td>Time in seconds it took to calculate bandwidths. For bandwidth type "opt" is 0.</td></tr><tr><td></td><td></td></tr><tr><td><code>bws</code></td><td>Data frame with variable names, type of the regressor and bandwidths.</td></tr><tr><td></td><td></td></tr><tr><td><code>boot.time</code></td><td>Time in seconds it took to bootstrap the standard errors.</td></tr><tr><td></td><td></td></tr><tr><td><code>boot.num</code></td><td>Number of bootstrap replications.</td></tr><tr><td></td><td></td></tr><tr><td><code>bw11</code></td><td>Bandwidths calculated for the sample of treated right after the treatment.</td></tr><tr><td></td><td></td></tr><tr><td><code>bw10</code></td><td>Bandwidths calculated for the sample of treated just before the treatment.</td></tr><tr><td></td><td></td></tr><tr><td><code>bw01</code></td><td>Bandwidths calculated for the sample of of observations in control group right after the treatment.</td></tr><tr><td></td><td></td></tr><tr><td><code>bw00</code></td><td>Bandwidths calculated for the sample of observations in control group just before the treatement</td></tr><tr><td></td><td></td></tr><tr><td><code>TTa</code></td><td>the DiD estimator of the avarage unconditional TT</td></tr><tr><td></td><td></td></tr><tr><td><code>TTa.i</code></td><td>the DiD estimators of the unconditional TT</td></tr><tr><td></td><td></td></tr><tr><td><code>TTb</code></td><td>the DiD estimator of the avarage unconditional TT</td></tr><tr><td></td><td></td></tr><tr><td><code>TTb.i</code></td><td>the DiD estimators of the unconditional TT</td></tr><tr><td></td><td></td></tr><tr><td><code>TTa.sd</code></td><td>the standard error of the DiD estimator of the avarage unconditional TT</td></tr><tr><td></td><td></td></tr><tr><td><code>TTb.sd</code></td><td>the standard error of the DiD estimator of the avarage unconditional TT</td></tr><tr><td></td><td></td></tr><tr><td><code>TTx</code></td><td>the DiD estimators of the conditional TT (also known as CATET) (equation 2.12)</td></tr><tr><td></td><td></td></tr><tr><td><code>TTa.i.boot</code></td><td>Matrix of the size \(n_{11} \times boot.num\)</td></tr><tr><td></td><td></td></tr><tr><td><code>TTb.i.boot</code></td><td>Matrix of the size \(n_{1} \times boot.num\)</td></tr></table></div>
     <div id="details">
     <h2>Details</h2>
-    <p>All estimations are based. y ~ x1 + x2 | id | time | treatment | treatment_period | weights</p>
+    <p>The formula shell contain multiple parts separated by '|'. An example is</p>
+<p>form1 &lt;- y ~ x1 + x2 | id | time | treatment | treatment_period | weights</p>
+<p>weights can be omitted if not available</p>
+<p>form1 &lt;- y ~ x1 + x2 | id | time | treatment | treatment_period</p>
     </div>
     <div id="references">
     <h2>References</h2>
@@ -168,15 +175,83 @@ A data frame is required to identify the type/class of each regressor.</p></dd>
     </div>
     <div id="author">
     <h2>Author</h2>
-    <p>Oleg Badunenko <a href="mailto:oleg.badunenko@brunel.ac.uk">oleg.badunenko@brunel.ac.uk</a>,
-Daniel J. Henderson <a href="mailto:djhender@cba.ua.edu">djhender@cba.ua.edu</a>,
-Stefan Sperlich <a href="mailto:stefan.sperlich@unige.ch">stefan.sperlich@unige.ch</a></p>
+    <p>Oleg Badunenko <a href="mailto:oleg.badunenko@brunel.ac.uk">oleg.badunenko@brunel.ac.uk</a>,</p>
+<p>Daniel J. Henderson <a href="mailto:djhender@cba.ua.edu">djhender@cba.ua.edu</a>,</p>
+<p>Stefan Sperlich <a href="mailto:stefan.sperlich@unige.ch">stefan.sperlich@unige.ch</a></p>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="fu">didnpreg</span><span class="op">(</span><span class="va">jhklangkjhakgkjh</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">DACAsub1</span>, package <span class="op">=</span> <span class="st">"didnp"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="co"># will get a data frame 'dat1' with 330106 rows and 20 columns</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># define formula with the weight</span></span></span>
+<span class="r-in"><span>  <span class="va">form1</span> <span class="op">&lt;-</span> <span class="va">inschool</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">var.bpl</span> <span class="op">+</span> <span class="va">state</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">yrimmig</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>    <span class="va">ageimmig</span> <span class="op">|</span> <span class="va">inschool</span> <span class="op">|</span> <span class="va">year</span> <span class="op">|</span> <span class="va">elig</span> <span class="op">|</span> <span class="va">treatment_period</span> <span class="op">|</span> <span class="va">perwt</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># or without the weight</span></span></span>
+<span class="r-in"><span>  <span class="va">form11</span> <span class="op">&lt;-</span> <span class="va">inschool</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">var.bpl</span> <span class="op">+</span> <span class="va">state</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">yrimmig</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>    <span class="va">ageimmig</span> <span class="op">|</span> <span class="va">inschool</span> <span class="op">|</span> <span class="va">year</span> <span class="op">|</span> <span class="va">elig</span> <span class="op">|</span> <span class="va">treatment_period</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co">## Syntax using formula</span></span></span>
+<span class="r-in"><span>  <span class="va">tym1a</span> <span class="op">&lt;-</span> <span class="fu">didnpreg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">form1</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">dat1</span>,</span></span>
+<span class="r-in"><span>    subset <span class="op">=</span> <span class="va">mysmpl</span>,</span></span>
+<span class="r-in"><span>    bwmethod <span class="op">=</span> <span class="st">"opt"</span>,</span></span>
+<span class="r-in"><span>    boot.num <span class="op">=</span> <span class="fl">399</span>,</span></span>
+<span class="r-in"><span>    TTb <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>    print.level <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>    cores <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Print the summary</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tym1a</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co">## Use CV bandwidths</span></span></span>
+<span class="r-in"><span>  <span class="va">tym1aCV</span> <span class="op">&lt;-</span> <span class="fu">didnpreg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">form1</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">dat1</span>,</span></span>
+<span class="r-in"><span>    subset <span class="op">=</span> <span class="va">mysmpl</span>,</span></span>
+<span class="r-in"><span>    bwmethod <span class="op">=</span> <span class="st">"CV"</span>,</span></span>
+<span class="r-in"><span>    boot.num <span class="op">=</span> <span class="fl">399</span>,</span></span>
+<span class="r-in"><span>    TTb <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>    print.level <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>    cores <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Print the summary</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tym1aCV</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co">## Calculate also TTb (will take longer)</span></span></span>
+<span class="r-in"><span>  <span class="va">tym1bCV</span> <span class="op">&lt;-</span> <span class="fu">didnpreg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">form1</span>,</span></span>
+<span class="r-in"><span>    data <span class="op">=</span> <span class="va">dat1</span>,</span></span>
+<span class="r-in"><span>    subset <span class="op">=</span> <span class="va">mysmpl</span>,</span></span>
+<span class="r-in"><span>    bwmethod <span class="op">=</span> <span class="st">"CV"</span>,</span></span>
+<span class="r-in"><span>    boot.num <span class="op">=</span> <span class="fl">399</span>,</span></span>
+<span class="r-in"><span>    TTb <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>    print.level <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>    cores <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Print the summary</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tym1bCV</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co">## Syntax using matrices</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">tym1</span> <span class="op">&lt;-</span> <span class="fu">didnpreg</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    outcome <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"inschool"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    regressors <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fem"</span>, <span class="st">"race"</span>, <span class="st">"var.bpl"</span>, <span class="st">"state"</span>, <span class="st">"age"</span>, <span class="st">"yrimmig"</span>, <span class="st">"ageimmig"</span><span class="op">)</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    id <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"inschool"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    time <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"year"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    treatment <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"elig"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    treatment_period <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"year"</span><span class="op">]</span><span class="op">&gt;</span><span class="fl">2011</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    weights <span class="op">=</span> <span class="va">dat1</span><span class="op">[</span><span class="va">mysmpl</span>,<span class="st">"perwt"</span><span class="op">]</span>,</span></span>
+<span class="r-in"><span>    bwmethod <span class="op">=</span> <span class="st">"opt"</span>,</span></span>
+<span class="r-in"><span>    boot.num <span class="op">=</span> <span class="fl">399</span>,</span></span>
+<span class="r-in"><span>    TTb <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>    print.level <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>    cores <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
