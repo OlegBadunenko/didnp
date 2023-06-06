@@ -36,31 +36,38 @@ is.binary <- function(v) {
 {
   if(x < 60){
     # cat("\n")
-    cat("",wording,"",x," seconds\n", sep = "")
+    my.sec <- ifelse(x %% 10 == 1 | x == 1, "second", "seconds")
+    cat("",wording,"",x," ",my.sec,"\n", sep = "")
     # cat("\n")
   } else {
     if(x >= 60 & x < 60*60){
       minutes <- floor(x/60)
+      my.min <- ifelse(minutes %% 10 == 1 | minutes == 1, "minute", "minutes")
       seconds <- round(x - minutes * 60,1)
+      my.sec <- ifelse(seconds %% 10 == 1 | seconds == 1, "second", "seconds")
       # cat("\n")
-      cat("",wording,"",minutes," minute(s) and ",seconds," second(s)\n", sep = "")
+      cat("",wording,"",minutes," ",my.min," and ",seconds," ",my.sec,"\n", sep = "")
       # cat("\n")
     } else {
       if(x >= 60*60 & x < 60*60*24){
         hours   <- floor(x / 60 / 60)
+        my.hour <- ifelse(hours %% 10 == 1 | hours == 1, "hour", "hours")
         minutes <- round( (x - hours * 60 *60) / 60, 1)
+        my.min <- ifelse(minutes %% 10 == 1 | minutes == 1, "minute", "minutes")
         seconds <- floor(x - hours * 60 *60 - minutes * 60)
         # cat("\n")
-        cat("",wording,"",hours," hour(s) and ",minutes," minute(s) \n", sep = "")
+        cat("",wording,"",hours," ",my.hour," and ",minutes," ",my.min," \n", sep = "")
         # cat("\n")
       } else {
         if(x >= 60*60*24){
           days    <- floor(x / 60 / 60 / 24)
+          my.days <- ifelse(days %% 10 == 1 | days == 1, "day", "days")
           hours   <- round( (x - days * 60 * 60 * 24) / 60 /60 ,1)
+          my.hour <- ifelse(hours %% 10 == 1 | hours == 1, "hour", "hours")
           minutes <- floor( (x - days * 60 * 60 * 24 - hours * 60 *60) / 60)
           seconds <- floor(x - days * 60 * 60 * 24 - hours * 60 *60 - minutes * 60)
           # cat("\n")
-          cat("",wording,"",days," day(s) and ",hours," hour(s)\n", sep = "")
+          cat("",wording,"",days," ",my.days," and ",hours," ",my.hour,"\n", sep = "")
           # cat("\n")
         }
       }
