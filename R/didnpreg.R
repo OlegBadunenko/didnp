@@ -152,7 +152,7 @@ didnpreg.formula <- function(
     seed = 17345168,
     ...)
 {
-  cat("'formula': this is to get the matrices from formula and feed to 'didnpreg.default'\n")
+  # cat("'formula': this is to get the matrices from formula and feed to 'didnpreg.default'\n")
 
   # cat.print(bwmethod)
 
@@ -213,8 +213,8 @@ didnpreg.formula <- function(
   # cat.print(head(Y))
   # cat.print(Y[1:10])
   Formula::model.part(form1, lhs = 0, rhs = 1, data = mf) -> X
-  cat.print(dim(X))
-  cat.print(head(X))
+  # cat.print(dim(X))
+  # cat.print(head(X))
   # cat.print(class(X))
   model.matrix(form1, lhs = 0, rhs = 2, data = mf)[,-1] -> id
   if (length(id) != nt) stop("specificaion 'id' is inappropriate")
@@ -304,8 +304,9 @@ didnpreg.default <- function(
     seed = 17345168,
     ...)
 {
-  cat("'default': this is the workhorse\n")
+  # cat("'default': this is the workhorse\n")
   # c(class(outcome), class(regressors), class(id), class(time), class(treatment), class(treatment_period))
+  ## check specifications ----
   if (missing(outcome)) stop("vector 'outcome' is missing")
   if ( !(class(outcome) %in% c("numeric")) ) stop("wrong class of 'outcome': must be 'numeric'")
 
@@ -330,7 +331,7 @@ didnpreg.default <- function(
   if ( !(bwmethod %in% c("opt", "CV")) ) stop("'bwmethod' can be either 'opt' or 'CV'")
 
 
-  # check dimensions
+  ## check dimensions ----
 
   nt.o <- length(outcome)
   nt.x <- nrow(regressors)
@@ -350,7 +351,7 @@ didnpreg.default <- function(
   if(nt.o != nt.tr.p) stop("vector 'outcome' and vector 'treatment_period' have different number of observations")
   if(nt.o != nt.w) stop("vector 'outcome' and vector 'weights' have different number of observations")
 
-  # handle missing values
+  ## handle missing values ----
 
   d0 <-
     data.frame(
@@ -365,6 +366,8 @@ didnpreg.default <- function(
 
   data.order <- as.numeric(rownames(d0))
 
+  ## esample ----
+
   d0 <- na.omit(d0)
   esample.nu <- as.numeric(rownames(d0))
   esample <- data.order %in% esample.nu
@@ -378,8 +381,7 @@ didnpreg.default <- function(
   d0[ , -c(1:6), drop = FALSE] -> x # regressors
   k.x <- ncol(x)
 
-
-  # handle treatment
+  ## handle treatment ----
 
   time.treatment <- min( it.time[treatment_period == 1] )
   time.min <- min( it.time )
@@ -392,7 +394,7 @@ didnpreg.default <- function(
   )
   t <- it.time - time.treatment
 
-
+  ## variable type ----
 
   q.type <- matrix(0,nrow=3,ncol=1)
   q.typeY <- character(k.x)
@@ -423,12 +425,39 @@ didnpreg.default <- function(
 
   } ## i
 
-  cat.print(q.typeY)
+  ## print info about the data ----
 
-  if (q.type[1]<= 3){
-    cat("there are three or less cont regressors\n")
+  if (print.level > 0) {
+    cat("Number of Observations is ", nt.o, "\n")
   }
-  if (q.type[1]>3){cat("there are more than three cont regressors\n")}
+
+  ## print info about regressors ----
+
+  if (print.level > 0) {
+
+    if (q.type[1] > 0) {
+      cat("Number of Continuous Regressors is             ", q.type[1], "\n")
+    }
+
+    if (q.type[1] > 0 & q.type[1] <= 3){
+      cat("There are 3 or fewer continuous regressors\n")
+    }
+    if (q.type[1] > 3) {
+      cat("There are more than 3 continuous regressors\n")
+    }
+
+
+    if (q.type[2] > 0) {
+      cat("Number of Unordered Categorical Regressors is  ", q.type[2], "\n")
+    }
+
+    if (q.type[3] > 0) {
+      cat("Number of Ordered Categorical Regressors is    ", q.type[3], "\n")
+    }
+
+    cat("\n")
+
+  }
 
   ## separating the data by time and treatment status
 
@@ -516,11 +545,25 @@ didnpreg.default <- function(
 
   } ## i
 
+  ## CV bandwidths ----
 
   if (bwmethod == "CV") {
     if (print.level > 0) {
       cat(paste0("Calculating cross-validated bandwidths\n"))
+
+      ## print info about bw ----
+
+      if (q.type[1] > 0) {
+        cat("Kernel Type for Continuous Regressors is               Gaussian\n")
+      }
+      if (q.type[2] > 0) {
+        cat("Kernel Type for Unordered Categorical Regressors is    Aitchison and Aitken\n")
+      }
+      if (q.type[3] > 0) {
+        cat("Kernel Type for Ordered Categorical is                 Li and Racine\n")
+      }
     }
+
     ## setting upper and lower bounds for bandwidths
     ## need them to be 5 for the continuous variables and 1 for the discrete variables
     lower <- rep(0,ncol(x))
@@ -532,18 +575,38 @@ didnpreg.default <- function(
     bw.start <- rot.bw00
 
     # do it only on the treated in the treatment period: "11"
+
+    time.05 <- proc.time()
+
     bw.optim <- minqa::bobyqa(bw.start,lcls.lscv,lower,upper,y=y11,x=xx11,w=w11)
+
+    time.06 <- proc.time()
+    CV.time.sec <- round( (time.06-time.05)[3], 0)
+    names(CV.time.sec) <- "sec"
+
+    if (print.level > 0){
+      .timing(CV.time.sec, "Calculating cross-validated bandwidths completed in ")
+      # cat("___________________________________________________\n")
+    }
+
     bw.optim$par
     bw.optim$fval
     bw.optim$feval
     bw.optim$ierr
 
     bw11 <- bw.optim$par
-    if (print.level > 1) {
-      cat(paste0("Calculating cross-validated bandwidths completed\n"))
-    }
+    # if (print.level > 1) {
+    #   cat(paste0("Calculating cross-validated bandwidths completed\n"))
+    # }
   } else {
+    cat("Bandwidths are chosen via the plug-in method\n")
     bw11 <- rot.bw00
+  }
+
+  if (print.level > 0) {
+    cat("\n")
+    my.bw <- data.frame(Regressor = colnames(x), Type = q.typeY, Bandwidth = bw11)
+    print(my.bw)
   }
 
   ## take these cross-validated bandwidths and calculate the scale factors, then get the remaining bandwidths
@@ -579,8 +642,15 @@ didnpreg.default <- function(
       )
   }
 
+  ## Calculating ATET ----
+
   if (print.level > 0) {
-    cat(paste0("Calculating ATET\n"))
+    if (TTb) {
+      my.atet <- paste0("TTa and TTb (may take some time)")
+    } else {
+      my.atet <- paste0("TTa only")
+    }
+    cat(paste0("\nCalculating ATET: ",my.atet,"\n"))
   }
 
   if (TTb) {
@@ -621,26 +691,33 @@ didnpreg.default <- function(
   } else {
     TTa.i <- as.vector(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
     TTa <- mean(TTa.i)
-    cat.print(TTa)
-    cat.print(length(TTa.i))
+
+    if (print.level > 0) {
+      cat(paste0("TTa = ",formatC(TTa, digits = 4),", N(TTa) = ",n11,"\n"))
+    }
+
+    # cat.print(TTa)
+    # cat.print(length(TTa.i))
   }
 
-  if (print.level > 1) {
-    cat(paste0("Calculating ATET completed\n"))
-  }
+  # if (print.level > 1) {
+  #   cat(paste0("Calculating ATET completed\n"))
+  # }
+
+  ## Bootstraping ATET ----
+
 
   ## begin the bootstrap for atet
   if (print.level > 0) {
-    cat(paste0("Bootstrapping standard errors (",boot.num," replications)\n"))
+    cat(paste0("\nBootstrapping standard errors (",boot.num," replications)\n"))
   }
   set.seed(seed = seed)#, kind = "L'Ecuyer-CMRG")
   seeds <- sample.int(n = .Machine$integer.max, size = boot.num)
 
-
   ## need to evaluate the data at the observations to get the residuals
-  if (print.level > 0) {
-    cat(paste0("Calculating residuals\n"))
-  }
+  # if (print.level > 1) {
+  #   cat(paste0("Calculating residuals\n"))
+  # }
   nnum11 <- np::npksum(txdat=xx11,tydat=wy11,exdat=xx11,bws=bw11)$ksum
   nnum10 <- np::npksum(txdat=xx10,tydat=wy10,exdat=xx10,bws=bw10)$ksum
   nnum01 <- np::npksum(txdat=xx01,tydat=wy01,exdat=xx01,bws=bw01)$ksum
@@ -777,16 +854,16 @@ didnpreg.default <- function(
       }
 
 
-      if (print.level > 0 & j == 1)
+      if (print.level > 0 & cores == 1 & j == 1)
       {
         time.06 <- proc.time()
-        boot.time.sec <- boot.num*(time.06-time.05)[3]
+        boot.time.sec <- round( boot.num*(time.06-time.05)[3], 0)
         .timing(boot.time.sec, "\nBootstrapping will take approximately: ")
         # cat("\n")
         # pb <- utils::txtProgressBar(min = 1, max = boot.num, style = 3)
       }
 
-      if (print.level > 0 & j > 1) utils::setTxtProgressBar(pb, j)
+      if (print.level > 0 & cores == 1 & j > 1) utils::setTxtProgressBar(pb, j)
 
       # it does not matter if 'TTa' or 'TTb', since denominators are
       # not bootstrapped and are already calculated
@@ -794,41 +871,62 @@ didnpreg.default <- function(
     }
 
   # do parallel completed
-  if (print.level > 0) cat("\n")
+  if (print.level > 0 & cores == 1) cat("\n")
+
+  time.06 <- proc.time()
+  boot.time.sec <- round( (time.06-time.05)[3], 0)
+  names(boot.time.sec) <- "sec"
+
+  if (print.level >= 1){
+    .timing(boot.time.sec, "Bootstrapping standard errors completed in ")
+    # cat("___________________________________________________\n")
+  }
 
   atet.boot <- rowMeans(atet.boot.hetero)
 
   if (TTb) {
     TTa.sd <- sd(atet.boot[TTa.positions.in.TTb])
     TTb.sd <- sd(atet.boot)
-    cat.print(TTa.sd)
-    cat.print(TTb.sd)
+    # cat.print(TTa.sd)
+    # cat.print(TTb.sd)
+    if (print.level > 0) {
+      cat("TTa sd =",formatC(TTa.sd, digits = 4),"\n")
+      cat("TTb sd =",formatC(TTb.sd, digits = 4),"\n")
+    }
   } else {
     TTa.sd <- sd(atet.boot)
-    cat.print(TTa.sd)
-  }
-
-  time.06 <- proc.time()
-  boot.time.sec <- (time.06-time.05)[3]
-  names(boot.time.sec) <- "sec"
-
-  if (print.level >= 2){
-    .timing(boot.time.sec, "Bootstrapping standard errors completed in\n")
-    # cat("___________________________________________________\n")
+    # cat.print(TTa.sd)
+    if (print.level > 0) {
+      cat("TTa sd =",formatC(TTa.sd, digits = 4),"\n")
+    }
   }
 
   # if (print.level > 0) cat("\n")
 
   # cat("11\n")
 
-  sd.atet <- sd(atet.boot)
+  # sd.atet <- sd(atet.boot)
 
   # cat("12\n")
+
+  ## Return ----
 
   ## let's return the objects npdid,npdid.se,rot.bw,lscv.bw
 
   if (TTb) {
     tymch <- list(
+      NT = nt.o,
+      esample = esample,
+      sample1 = smpl1,
+      sample11 = smpl11,
+      sample10 = smpl10,
+      sample01 = smpl01,
+      sample00 = smpl00,
+      regressor.type = q.type,
+      bw.time = ifelse(bwmethod == "CV", CV.time.sec, 0),
+      bws = my.bw,
+      boot.time = boot.time.sec,
+      boot.num = boot.num,
       bw11 = as.vector(bw11),
       bw10 = bw10,
       bw01 = bw01,
@@ -844,6 +942,18 @@ didnpreg.default <- function(
     )
   } else {
     tymch <- list(
+      NT = nt.o,
+      esample = esample,
+      sample1 = smpl1,
+      sample11 = smpl11,
+      sample10 = smpl10,
+      sample01 = smpl01,
+      sample00 = smpl00,
+      regressor.type = q.type,
+      bw.time = ifelse(bwmethod == "CV", CV.time.sec, 0),
+      bws = my.bw,
+      boot.time = boot.time.sec,
+      boot.num = boot.num,
       bw11 = as.vector(bw11),
       bw10 = bw10,
       bw01 = bw01,
