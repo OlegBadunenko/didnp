@@ -1,6 +1,6 @@
-#' @title DACA
+#' DACA
 #'
-#' @description A dataset containing 330106. observations
+#' A dataset containing 330106 observations
 #'
 #' @format A data frame with 330106 rows and 18 columns:
 #' \describe{
@@ -24,4 +24,9 @@
 #'   \item{perwt}{perwt}
 #' }
 #' @source Henderson and Sperlich (2023)
-"DACAsub1"
+#' @docType data
+#' @keywords datasets
+#' @rdname DACAsub
+#' @export
+#' @usage data(DACAsub)
+DACAsub
