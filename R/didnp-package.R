@@ -31,10 +31,6 @@
 #' Daniel J. Henderson \email{djhender@@cba.ua.edu},
 #' Stefan Sperlich \email{stefan.sperlich@@unige.ch}
 #'
-#' @importFrom progressr progressor with_progress
-#' @importFrom parallelly availableCores
-#' @importFrom future plan multisession sequential
-#' @importFrom dplyr as_tibble
 #' @importFrom minqa bobyqa
 #' @importFrom np npksum
 #' @importFrom Formula Formula
@@ -42,6 +38,4 @@
 #' @import doParallel
 #' @import parallel
 #' @import foreach
-# @importFrom colMaxs colMins colsums
-# @importFrom katex math_to_rd
 NULL

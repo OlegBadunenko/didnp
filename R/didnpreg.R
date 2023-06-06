@@ -19,61 +19,112 @@
 #' @param formula an object of class formula (or one that can be coerced to that class): a symbolic description of the model. The details of model specification are given under `Details'
 #' @param data name of the data frame; must be specified if the 'formula' method is used
 #' @param subset NULL, optional subsample of 'data'
-#' @param outcome a vector, matrix, or data frame of length \eqn{NT}. The outcome can be continuous or dummy.
+#' @param outcome a vector, matrix, or data frame of length \eqn{NT}. The outcome can be a continuous or dummy variable.
 #' @param regressors a data frame with \eqn{NT} rows that contains regressors.
-#' A data frame is required to identify the type/class of each regressor.
+#' A data frame class is required to identify the type/class of each regressor.
 #' @param id a vector, matrix, or data frame of length \eqn{NT} that identifies the unit of observation.
 #' @param time a vector, matrix, or data frame of length \eqn{NT} that specifies in which period \code{id} is observed.
 #' @param treatment a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.
 #' @param treatment_period a vector, matrix, or data frame of length \eqn{NT} with zeros for the period before treatment and ones for the period of treatment and after.
 #' @param weights NULL,
+#' @param bwmethod bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will trigger calculating cross-validated bandwidths.
 #' @param boot.num 399,
-#' @param bwmethod "opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation
-#' @param TTx FALSE
-#' @param TTb FALSE
+#' @param TTx Conditional Treatment Effect on the Treated. Default is FALSE.
+#' @param TTb Unconditional Treatment Effect on the Treated. TTb estimates by averaging over *all* treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.
 #' @param print.level the level of printing; larger number implies more output is printed. Default is 1. 0 suppresses all printing.
 #' @param cores Integer specifies the number of cores to be used for parallel computation.
+#' @param seed integer used for the random number generation for the replication purposes. Default is 17345168.
 #'
 #'
 #' @details
-#' All estimations are based. y ~ x1 + x2 | id | time | treatment | treatment_period | weights
+#' The formula shell contain multiple parts separated by '|'. An example is
 #'
+#' form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period | weights
+#'
+#' weights can be omitted if not available
+#'
+#' form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
 #'
 #'
 #' @return \code{didnpreg} returns a list containing:
 #' \tabular{ll}{
+#'    \code{NT}
+#'    \tab Total number of observations
+#'    \cr \tab \cr
 #'    \code{esample}
 #'    \tab A vector of TRUE/FALSE values identifying observations used in estimation. Relevant for the 'formula' method but complete cases will also be checked in the matrix method
 #'    \cr \tab \cr
-#'    \code{esample_treated}
-#'    \tab A vector of TRUE/FALSE values identifying observations used in estimation and is treated (intersection of \code{esample} and \code{treatment})
+#'    \code{sample1}
+#'    \tab A vector of TRUE/FALSE values identifying treated observations.
 #'    \cr \tab \cr
-#'    \code{esample_TTa}
-#'    \tab A vector of TRUE/FALSE values identifying observations used in estimation of TTa)
+#'    \code{sample11}
+#'    \tab A vector of TRUE/FALSE values identifying treated observations right after the treatement
 #'    \cr \tab \cr
-#'    \code{esample_TTb}
-#'    \tab A vector of TRUE/FALSE values identifying observations used in estimation of TTb. Returned only if \code{TTb = TRUE})
+#'    \code{sample10}
+#'    \tab A vector of TRUE/FALSE values identifying treated observations just before the treatment
 #'    \cr \tab \cr
-#'    \code{N}
-#'    \tab number of units of obs, defined by the \code{id}
+#'    \code{sample01}
+#'    \tab A vector of TRUE/FALSE values identifying observations in control group right after the treatement
 #'    \cr \tab \cr
-#'    \code{N_dt}
-#'    \tab the number of observations used as training data for each conditional expectation
+#'    \code{sample00}
+#'    \tab A vector of TRUE/FALSE values identifying observations in control group just before the treatement
 #'    \cr \tab \cr
-#'    \code{T_i}
-#'    \tab number of observations in each \code{id}
+#'    \code{regressor.type}
+#'    \tab A vector of length 3 with number of continuous, unordered categorical, and ordered categorical regressors.
+#'    \cr \tab \cr
+#'    \code{bwmethod}
+#'    \tab bandwidth type
+#'    \cr \tab \cr
+#'    \code{bw.time}
+#'    \tab Time in seconds it took to calculate bandwidths. For bandwidth type "opt" is 0.
 #'    \cr \tab \cr
 #'    \code{bws}
-#'    \tab bandwidth(s) for the data
+#'    \tab Data frame with variable names, type of the regressor and bandwidths.
+#'    \cr \tab \cr
+#'    \code{boot.time}
+#'    \tab Time in seconds it took to bootstrap the standard errors.
+#'    \cr \tab \cr
+#'    \code{boot.num}
+#'    \tab Number of bootstrap replications.
+#'    \cr \tab \cr
+#'    \code{bw11}
+#'    \tab Bandwidths calculated for the sample of treated right after the treatment.
+#'    \cr \tab \cr
+#'    \code{bw10}
+#'    \tab Bandwidths calculated for the sample of treated just before the treatment.
+#'    \cr \tab \cr
+#'    \code{bw01}
+#'    \tab Bandwidths calculated for the sample of of observations in control group right after the treatment.
+#'    \cr \tab \cr
+#'    \code{bw00}
+#'    \tab Bandwidths calculated for the sample of observations in control group just before the treatement
+#'    \cr \tab \cr
+#'    \code{TTa}
+#'    \tab the DiD estimator of the avarage unconditional TT
+#'    \cr \tab \cr
+#'    \code{TTa.i}
+#'    \tab the DiD estimators of the unconditional TT
+#'    \cr \tab \cr
+#'    \code{TTb}
+#'    \tab the DiD estimator of the avarage unconditional TT
+#'    \cr \tab \cr
+#'    \code{TTb.i}
+#'    \tab the DiD estimators of the unconditional TT
+#'    \cr \tab \cr
+#'    \code{TTa.sd}
+#'    \tab the standard error of the DiD estimator of the avarage unconditional TT
+#'    \cr \tab \cr
+#'    \code{TTb.sd}
+#'    \tab the standard error of the DiD estimator of the avarage unconditional TT
 #'    \cr \tab \cr
 #'    \code{TTx}
 #'    \tab the DiD estimators of the conditional TT (also known as CATET) (equation 2.12)
 #'    \cr \tab \cr
-#'    \code{TTa}
-#'    \tab
+#'    \code{TTa.i.boot}
+#'    \tab Matrix of the size \eqn{n_{11} \times boot.num}
 #'    \cr \tab \cr
-#'    \code{TTb}
-#'    \tab NULL is option TTaOnly is used
+#'    \code{TTb.i.boot}
+#'    \tab Matrix of the size \eqn{n_{1} \times boot.num}
 #'    \cr
 #' }
 #'
@@ -82,7 +133,75 @@
 #'
 #' @examples
 #' \dontrun{
-#'   didnpreg(jhklangkjhakgkjh)
+#'   data(DACAsub1, package = "didnp")
+#'   # will get a data frame 'dat1' with 330106 rows and 20 columns
+#'
+#'   # define formula with the weight
+#'   form1 <- inschool ~ fem + race + var.bpl + state + age + yrimmig +
+#'     ageimmig | inschool | year | elig | treatment_period | perwt
+#'
+#'   # or without the weight
+#'   form11 <- inschool ~ fem + race + var.bpl + state + age + yrimmig +
+#'     ageimmig | inschool | year | elig | treatment_period
+#'
+#'   ## Syntax using formula
+#'   tym1a <- didnpreg(
+#'     form1,
+#'     data = dat1,
+#'     subset = mysmpl,
+#'     bwmethod = "opt",
+#'     boot.num = 399,
+#'     TTb = FALSE,
+#'     print.level = 2,
+#'     cores = 4)
+#'
+#'   # Print the summary
+#'   summary(tym1a)
+#'
+#'   ## Use CV bandwidths
+#'   tym1aCV <- didnpreg(
+#'     form1,
+#'     data = dat1,
+#'     subset = mysmpl,
+#'     bwmethod = "CV",
+#'     boot.num = 399,
+#'     TTb = FALSE,
+#'     print.level = 2,
+#'     cores = 4)
+#'
+#'   # Print the summary
+#'   summary(tym1aCV)
+#'
+#'   ## Calculate also TTb (will take longer)
+#'   tym1bCV <- didnpreg(
+#'     form1,
+#'     data = dat1,
+#'     subset = mysmpl,
+#'     bwmethod = "CV",
+#'     boot.num = 399,
+#'     TTb = TRUE,
+#'     print.level = 2,
+#'     cores = 4)
+#'
+#'   # Print the summary
+#'   summary(tym1bCV)
+#'
+#'   ## Syntax using matrices
+#'
+#'   tym1 <- didnpreg(
+#'     outcome = dat1[mysmpl,"inschool"],
+#'     regressors = dat1[mysmpl,c("fem", "race", "var.bpl", "state", "age", "yrimmig", "ageimmig")],
+#'     id = dat1[mysmpl,"inschool"],
+#'     time = dat1[mysmpl,"year"],
+#'     treatment = dat1[mysmpl,"elig"],
+#'     treatment_period = ifelse(dat1[mysmpl,"year"]>2011,1,0),
+#'     weights = dat1[mysmpl,"perwt"],
+#'     bwmethod = "opt",
+#'     boot.num = 399,
+#'     TTb = FALSE,
+#'     print.level = 2,
+#'     cores = 4)
+#'
 #' }
 #'
 #' @references
@@ -92,38 +211,13 @@
 #'
 #' @author
 #' Oleg Badunenko \email{oleg.badunenko@@brunel.ac.uk},
+#'
 #' Daniel J. Henderson \email{djhender@@cba.ua.edu},
+#'
 #' Stefan Sperlich \email{stefan.sperlich@@unige.ch}
 #'
 #'
 #'
-# didnpreg <- function(
-    #     formula, # {y ~ x1 + x2 | id | time | treatment | treatment_period | weights}; y can be either cont or binary
-#     outcome = NULL,
-#     regressors = NULL,
-#     id = NULL, #ID
-#     time = NULL,
-#     treatment = NULL, #0 - control, 1 treatment (like the Eligible variable)
-#     treatment_period = NULL, # 0 - pre-treatment period, 1 - treatment period (like the Post variable)
-#     weights = NULL,
-#     data,
-#     subset = NULL) {
-#     1
-# }
-#
-# didnpreg <- function(...){
-#     args = list(...)
-#     cat.print(args)
-#     cat.print(names(args))
-#     if (is(args[[1]],"formula")){
-#         cat.print("a")
-#         UseMethod("didnpreg",args[[1]])
-#     }
-#     else{
-#         cat.print("b")
-#         UseMethod("didnpreg",args$formula)
-#     }
-# }
 # https://stackoverflow.com/questions/7198758/roxygen2-how-to-properly-document-s3-methods
 #' @rdname didnpreg
 #' @export
@@ -276,6 +370,7 @@ didnpreg.formula <- function(
     seed = seed,
     ...)
 
+  tymch$esample <- esample
   # cat("15\n")
 
 
@@ -603,6 +698,8 @@ didnpreg.default <- function(
     bw11 <- rot.bw00
   }
 
+  ## print bws ----
+
   if (print.level > 0) {
     cat("\n")
     my.bw <- data.frame(Regressor = colnames(x), Type = q.typeY, Bandwidth = bw11)
@@ -684,10 +781,16 @@ didnpreg.default <- function(
     TTa.i <- TTb.i[TTa.positions.in.TTb]
     TTa <- mean(TTa.i)
     TTb <- mean(TTb.i)
-    cat.print(TTa)
-    cat.print(length(TTa.i))
-    cat.print(TTb)
-    cat.print(length(TTb.i))
+    # cat.print(TTa)
+    # cat.print(length(TTa.i))
+    # cat.print(TTb)
+    # cat.print(length(TTb.i))
+    if (print.level > 0) {
+      cat(paste0("TTa = ",formatC(TTa, digits = 4),", N(TTa) = ",n11,"\n"))
+    }
+    if (print.level > 0) {
+      cat(paste0("TTb = ",formatC(TTb, digits = 4),", N(TTb) = ",n1,"\n"))
+    }
   } else {
     TTa.i <- as.vector(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
     TTa <- mean(TTa.i)
@@ -890,14 +993,14 @@ didnpreg.default <- function(
     # cat.print(TTa.sd)
     # cat.print(TTb.sd)
     if (print.level > 0) {
-      cat("TTa sd =",formatC(TTa.sd, digits = 4),"\n")
+      cat("\nTTa sd =",formatC(TTa.sd, digits = 4),"\n")
       cat("TTb sd =",formatC(TTb.sd, digits = 4),"\n")
     }
   } else {
     TTa.sd <- sd(atet.boot)
     # cat.print(TTa.sd)
     if (print.level > 0) {
-      cat("TTa sd =",formatC(TTa.sd, digits = 4),"\n")
+      cat("\nTTa sd =",formatC(TTa.sd, digits = 4),"\n")
     }
   }
 
@@ -923,6 +1026,7 @@ didnpreg.default <- function(
       sample01 = smpl01,
       sample00 = smpl00,
       regressor.type = q.type,
+      bwmethod = bwmethod,
       bw.time = ifelse(bwmethod == "CV", CV.time.sec, 0),
       bws = my.bw,
       boot.time = boot.time.sec,
@@ -931,6 +1035,7 @@ didnpreg.default <- function(
       bw10 = bw10,
       bw01 = bw01,
       bw00 = bw00,
+      TTb = TTb,
       TTa.i = TTa.i,
       TTa = TTa,
       TTb.i = TTb.i,
@@ -950,6 +1055,7 @@ didnpreg.default <- function(
       sample01 = smpl01,
       sample00 = smpl00,
       regressor.type = q.type,
+      bwmethod = bwmethod,
       bw.time = ifelse(bwmethod == "CV", CV.time.sec, 0),
       bws = my.bw,
       boot.time = boot.time.sec,
@@ -958,6 +1064,7 @@ didnpreg.default <- function(
       bw10 = bw10,
       bw01 = bw01,
       bw00 = bw00,
+      TTb = TTb,
       TTa.i = TTa.i,
       TTa = TTa,
       TTa.sd = TTa.sd,
