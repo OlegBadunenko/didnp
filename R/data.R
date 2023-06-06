@@ -1,27 +1,27 @@
-#' @title DACA
+#' @title Subset of the DACA dataset
 #'
-#' @description A dataset containing 330106 observations
+#' @description A dataset about Deferred Action for Childhood Arrivals (DACA) program containing 330106 observations
 #'
 #' @format A data frame with 330106 rows and 18 columns:
 #' \describe{
-#'   \item{inschool}{inschool}
-#'   \item{hs}{hs}
-#'   \item{scol}{scol}
-#'   \item{post}{post}
-#'   \item{elig}{elig}
-#'   \item{fem}{fem}
-#'   \item{race}{race}
-#'   \item{var.bpl}{var.bpl}
-#'   \item{state}{state}
-#'   \item{year}{year}
-#'   \item{age}{age}
-#'   \item{yrimmig}{yrimmig}
-#'   \item{ageimmig}{ageimmig}
-#'   \item{a1418}{a1418}
-#'   \item{a1922}{a1922}
-#'   \item{a2330}{a2330}
-#'   \item{htus}{htus}
-#'   \item{perwt}{perwt}
+#'   \item{inschool}{High school attendance (In School)}
+#'   \item{hs}{High school graduation (HS Degree)}
+#'   \item{scol}{Some College}
+#'   \item{post}{Post treatment period: a dummy variable that equals 1 on or after 2012}
+#'   \item{elig}{Eligible for treatment: is equal to one for individuals in the sample who arrived in the US by age 10 and by year 2007, and who are currently not citizens.}
+#'   \item{fem}{Female}
+#'   \item{race}{Race}
+#'   \item{var.bpl}{Birth region (Birthplace)}
+#'   \item{state}{State}
+#'   \item{year}{Year}
+#'   \item{age}{Age}
+#'   \item{yrimmig}{Year of immigration}
+#'   \item{ageimmig}{Age of immigration}
+#'   \item{a1418}{Equals 1 if age between 14 and 18}
+#'   \item{a1922}{Equals 1 if age between 19 and 22}
+#'   \item{a2330}{Equals 1 if age between 23 and 30}
+#'   \item{htus}{Available}
+#'   \item{perwt}{Person weight}
 #' }
-#' @source Henderson and Sperlich (2023)
+#' @source \url{https://doi.org/10.1257/pol.20180352}.
 "DACAsub"
