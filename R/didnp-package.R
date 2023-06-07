@@ -19,7 +19,7 @@
 #'
 #' @name didnp-package
 #'
-#' @aliases didnp-package didnp
+#' @aliases didnp-package
 #'
 #' @docType package
 #'
@@ -35,6 +35,7 @@
 #' @importFrom np npksum
 #' @importFrom Formula Formula
 #' @importFrom Formula model.part
+#' @importFrom ggplot2 ggplot
 #' @import doParallel
 #' @import parallel
 #' @import foreach

@@ -35,7 +35,6 @@
 #' @param cores Integer specifies the number of cores to be used for parallel computation.
 #' @param seed integer used for the random number generation for the replication purposes. Default is 17345168.
 #'
-#'
 #' @details
 #' The formula shell contain multiple parts separated by '|'. An example is
 #'
@@ -98,6 +97,12 @@
 #'    \cr \tab \cr
 #'    \code{bw00}
 #'    \tab Bandwidths calculated for the sample of observations in control group just before the treatement
+#'    \cr \tab \cr
+#'    \code{do.TTb}
+#'    \tab TRUE/FALSE whether to perform TTb
+#'    \cr \tab \cr
+#'    \code{TTa.positions.in.TTb}
+#'    \tab Positions of TTa observations in TTb. Only if \code{do.TTb}
 #'    \cr \tab \cr
 #'    \code{TTa}
 #'    \tab the DiD estimator of the avarage unconditional TT
@@ -386,7 +391,7 @@ didnpreg.formula <- function(
   # cat("15\n")
 
 
-  class(tymch) <- "didnp"
+  class(tymch) <- c("didnpreg", "didnp")
   return(tymch)
 
 }
@@ -617,6 +622,7 @@ didnpreg.default <- function(
     tym1[smpl1] <- 1:n1
     tym1[smpl11] -> TTa.positions.in.TTb
   }
+  do.TTb <- TTb
 
   wy11 <- y11*w11
   wy01 <- y01*w01
@@ -754,7 +760,7 @@ didnpreg.default <- function(
   ## Calculating ATET ----
 
   if (print.level > 0) {
-    if (TTb) {
+    if (do.TTb) {
       my.atet <- paste0("TTa and TTb (may take some time)")
     } else {
       my.atet <- paste0("TTa only")
@@ -762,7 +768,7 @@ didnpreg.default <- function(
     cat(paste0("\nCalculating ATET: ",my.atet,"\n"))
   }
 
-  if (TTb) {
+  if (do.TTb) {
     num11 <- np::npksum(txdat=xx11,tydat=wy11,exdat=xx1,bws=bw11)$ksum
     num10 <- np::npksum(txdat=xx10,tydat=wy10,exdat=xx1,bws=bw10)$ksum
     num01 <- np::npksum(txdat=xx01,tydat=wy01,exdat=xx1,bws=bw01)$ksum
@@ -788,7 +794,7 @@ didnpreg.default <- function(
   # cat("101\n")
   # atet.hetero <- as.matrix(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
 
-  if (TTb) {
+  if (do.TTb) {
     TTb.i <- as.vector(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
     TTa.i <- TTb.i[TTa.positions.in.TTb]
     TTa <- mean(TTa.i)
@@ -956,7 +962,7 @@ didnpreg.default <- function(
       wy01.new <- as.vector(w01*y01.new)
       wy00.new <- as.vector(w00*y00.new)
 
-      if (TTb) {
+      if (do.TTb) {
         num11.new <- np::npksum(txdat=xx11,tydat=wy11.new,exdat=xx1,bws=bw11)$ksum
         num10.new <- np::npksum(txdat=xx10,tydat=wy10.new,exdat=xx1,bws=bw10)$ksum
         num01.new <- np::npksum(txdat=xx01,tydat=wy01.new,exdat=xx1,bws=bw01)$ksum
@@ -999,7 +1005,7 @@ didnpreg.default <- function(
 
   atet.boot <- rowMeans(atet.boot.hetero)
 
-  if (TTb) {
+  if (do.TTb) {
     TTa.sd <- sd(atet.boot[TTa.positions.in.TTb])
     TTb.sd <- sd(atet.boot)
     # cat.print(TTa.sd)
@@ -1028,7 +1034,7 @@ didnpreg.default <- function(
 
   ## let's return the objects npdid,npdid.se,rot.bw,lscv.bw
 
-  if (TTb) {
+  if (do.TTb) {
     tymch <- list(
       NT = nt.o,
       esample = esample,
@@ -1047,7 +1053,8 @@ didnpreg.default <- function(
       bw10 = bw10,
       bw01 = bw01,
       bw00 = bw00,
-      TTb = TTb,
+      do.TTb = do.TTb,
+      TTa.positions.in.TTb = TTa.positions.in.TTb,
       TTa.i = TTa.i,
       TTa = TTa,
       TTb.i = TTb.i,
@@ -1076,6 +1083,7 @@ didnpreg.default <- function(
       bw10 = bw10,
       bw01 = bw01,
       bw00 = bw00,
+      do.TTb = do.TTb,
       TTb = TTb,
       TTa.i = TTa.i,
       TTa = TTa,
@@ -1086,7 +1094,7 @@ didnpreg.default <- function(
 
   # cat("13\n")
 
-  class(tymch) <- "didnp"
+  class(tymch) <- c("didnpreg", "didnp")
   return(tymch)
 
 }
