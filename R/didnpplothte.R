@@ -164,7 +164,7 @@ didnpplothte <- function(
 
         over.levels <- sort( levels(over) )
 
-        n.over.levels <- length(by.levels)
+        n.over.levels <- length(over.levels)
 
         if (is.null(over.labels.values)) {
 
@@ -172,10 +172,13 @@ didnpplothte <- function(
             over2.levels <- over.levels
 
         } else {
+            # cat.print(nrow(over.labels.values))
+            # cat.print(n.over.levels)
+            # cat.print(over)
 
             if (nrow(over.labels.values) != n.over.levels) stop("Inappropriate number of rows in 'over.labels.values'", call. = FALSE)
             if (ncol(over.labels.values) != 2) stop("Inappropriate number of cols in 'over.labels.values'", call. = FALSE)
-            if (!all(over.levels == over.labels.values[,1]) ) stop("Column 1 of 'over.labels.values' contains some inappropriate values", call. = FALSE)
+            if (!all(sort(over.levels) == sort(over.labels.values[,1]) )) stop("Column 1 of 'over.labels.values' contains some inappropriate values", call. = FALSE)
             colnames(over.labels.values) <- c("old", "new")
             over2 <- merge.data.frame(
                 data.frame(order = 1:length(over), old = over),
@@ -339,7 +342,7 @@ didnpplothte <- function(
                         name = xlab
                     ) +
                     theme_bw() +
-                    theme(legend.position = "none", text = element_text(size = text_size))
+                    theme(text = element_text(size = text_size))
 
                 # cat(" factor double 'by': end\n")
 
@@ -395,7 +398,7 @@ didnpplothte <- function(
                         name = xlab
                     ) +
                     theme_bw() +
-                    theme(legend.position = "none", text = element_text(size = text_size))
+                    theme(text = element_text(size = text_size))
 
             }
 
@@ -490,7 +493,7 @@ didnpplothte <- function(
                         name = xlab
                     ) +
                     theme_bw() +
-                    theme(legend.position = "none", text = element_text(size = text_size))
+                    theme(text = element_text(size = text_size))
 
                 # cat(" factor double 'by': end\n")
 
@@ -512,13 +515,13 @@ didnpplothte <- function(
 
             ## TTb ----
 
-            cat("TTb begin\n")
+            # cat("TTb begin\n")
 
             my.by <- by
 
             by <- base::cut(my.by, n.intervals)
 
-            by.levels <- sort( unique(by) )
+            by.levels <- sort( levels(by) )
 
             n.levels <-  length(by.levels)
 
@@ -537,6 +540,7 @@ didnpplothte <- function(
                         atet.sd = atet.sd,
                         by = by.levels
                     )
+                d1b <- d1b[complete.cases(d1b),]
 
                 plot.b <- ggplot(d1b, aes(x = by, y = atet, group = 1)) +
                     geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
@@ -598,12 +602,12 @@ didnpplothte <- function(
 
             }
 
-            cat("TTb end\n")
+            # cat("TTb end\n")
 
 
             ## TTa ----
 
-            cat("TTa begin\n")
+            # cat("TTa begin\n")
 
 
             by <- my.by[obj$TTa.positions.in.TTb]
@@ -631,6 +635,7 @@ didnpplothte <- function(
                         atet.sd = atet.sd,
                         by = by.levels
                     )
+                d1a <- d1a[complete.cases(d1a),]
 
                 plot.a <- ggplot(d1a, aes(x = by, y = atet, group = 1)) +
                     geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
@@ -696,7 +701,7 @@ didnpplothte <- function(
 
 
 
-            cat("TTa end\n")
+            # cat("TTa end\n")
 
             tymch <- list(plot.a = plot.a, plot.b = plot.b, data.a = d1a, data.b = d1b)
             class(tymch) <- c("didnpplot", "didnp")

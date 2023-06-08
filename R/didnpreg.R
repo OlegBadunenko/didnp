@@ -716,10 +716,9 @@ didnpreg.default <- function(
   }
 
   ## print bws ----
-
+  my.bw <- data.frame(Regressor = colnames(x), Type = q.typeY, Bandwidth = bw11)
   if (print.level > 0) {
     cat("\n")
-    my.bw <- data.frame(Regressor = colnames(x), Type = q.typeY, Bandwidth = bw11)
     print(my.bw)
   }
 
