@@ -2,6 +2,10 @@
 #'
 #' The \code{didnpplothte} take output created by \link{didnpreg} and produces plots of Heterogeneous Treatment Effects with their corresponding confidence bounds. Average effects per group are produced for discrete covariates and a continuum of effects are produced for continuous covariates.
 #'
+# see examples here
+# https://friendly.github.io/nestedLogit/articles/plotting-ggplot.html
+# http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/
+#'
 #' @param obj an object of class "didnp".
 #' @param by categorical or continuous.
 #' @param n.intervals number of intervals for the numeric "by" to be split into. Default is 10.

@@ -711,7 +711,9 @@ didnpreg.default <- function(
     #   cat(paste0("Calculating cross-validated bandwidths completed\n"))
     # }
   } else {
-    cat("Bandwidths are chosen via the plug-in method\n")
+    if (print.level > 0){
+      cat("Bandwidths are chosen via the plug-in method\n")
+    }
     bw11 <- rot.bw00
   }
 
