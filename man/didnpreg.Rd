@@ -130,6 +130,12 @@ A data frame class is required to identify the type/class of each regressor.}
 \code{bw00}
 \tab Bandwidths calculated for the sample of observations in control group just before the treatement
 \cr \tab \cr
+\code{do.TTb}
+\tab TRUE/FALSE whether to perform TTb
+\cr \tab \cr
+\code{TTa.positions.in.TTb}
+\tab Positions of TTa observations in TTb. Only if \code{do.TTb}
+\cr \tab \cr
 \code{TTa}
 \tab the DiD estimator of the avarage unconditional TT
 \cr \tab \cr

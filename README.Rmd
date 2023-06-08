@@ -39,12 +39,7 @@ cat(
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-The **didnp** package contains tools for computing average treatment effect parameters in a Difference-in-Differences setup allowing for
-
-* this
-* that
-
-The main parameters are **that**.  These are 
+The **didnp** package contains tools for computing average treatment effect parameters in a Difference-in-Differences setup without specifying a model.  
 
 
 ## Getting Started
@@ -59,7 +54,7 @@ The **didnp** package implements the framework developed in
 You can install **didnp** from CRAN with:
 
 ```{r eval=FALSE}
-install.packages("didnp")
+install.packages("didnp", dependencies = TRUE)
 ```
 
 or get the latest version from github with:
@@ -73,49 +68,256 @@ devtools::install_github("OlegBadunenko/didnp")
 
 > The following is a simplified example ...,  which comes from [that](https://elsevier.com/).
 
-A subset of the data is available in the package and can be loaded by
-```{r eval=FALSE}
+Data set is shared by [Kuka et al, 2020](https://doi.org/10.1257/pol.20180352). Here we showcase the functionality of the package by using a subset, which is available in the package and can be loaded by
+```{r data, eval = TRUE}
   library(didnp)
+  library(ggplot2)
   data(DACAsub, package = "didnp")
+  head(DACAsub)
 ```
 
-The dataset contains XXX observations
+The description of the dataset can be found by typing
 
-* **LHS**  lhs variable
+```{r datahelp, eval = FALSE}
+  ?DACAsub
+```
 
-To estimate verage treatment effects, use the **didnpreg** function
+Although this can be done on the fly, the subsample can be prepared beforehand:
 
-```{r eval=FALSE}
-tym1 <- didnpreg(
+```{r sub, eval=TRUE}
+# get the subsample
+DACAsub$mysmpl <- mysmpl <-
+  DACAsub$a1922==1 & !is.na(DACAsub$a1922) &
+  DACAsub$htus==1 & !is.na(DACAsub$htus)
+
+# generate 'treatment_period'
+DACAsub$treatment_period <- ifelse( DACAsub[,"year"] > 2011, 1, 0)
+```
+
+To estimate the average treatment effects, we use the **didnpreg** function. Define the formula that we will use:
+
+```{r formula, eval = TRUE}
+form1 <- inschool ~ fem + race + var.bpl + state + age + yrimmig + 
+  ageimmig | inschool | year | elig | treatment_period | perwt
+```
+
+The **didnpreg** function allows using matrices. The manual explains how to use matrix syntax (type `?didnpreg`). To obtain standard errors,
+
+> we will use a few number of bootstrap replicaitons here, but we advise to set `boot.num = 399` or more. 
+
+To speed up the estimation
+
+> on computers with multiple cores, use multiplrocessing by setting option `cores`. 
+
+Suppress output by setting `print.level = 0`. The default value is 1.
+
+```{r model1a, eval=TRUE}
+# suppress output
+tym1a <- didnpreg(
   form1,
-  data = dat2,
+  data = DACAsub,
   subset = mysmpl,
   bwmethod = "opt",
-  boot.num = 399,
+  boot.num = 7,
+  TTb = FALSE,
+  print.level = 0,
+  cores = 8)
+```
+
+**didnpreg** returns a class **didnp** object.  This object contains estimates of the average treatment effects and their standard errors.  To see these, we can call the **summary** function.
+
+```{r model1asumm, eval=TRUE}
+# Print the summary of estimation
+summary(tym1a)
+```
+
+Estimating $TT_b$ will take longer:
+
+
+```{r model1b, eval=TRUE}
+# suppress output
+tym1b <- didnpreg(
+  form1,
+  data = DACAsub,
+  subset = mysmpl,
+  bwmethod = "opt",
+  boot.num = 7,
   TTb = TRUE,
-  print.level = 2,
-  cores = 32)
+  print.level = 1,
+  cores = 8)
 ```
 
-**didnpreg** returns a class **didnp** object.  This object contains estimates of the average treatment effects and their standard errors.  To see these, we can call the **summary** function
+To plot the heterogenous treatment effects, use the **didnpplothte** command. Define three variables by and over which the treatment effects will be plotted:
 
-```{r eval=FALSE}
-summary(tym1)
+```{r by_over, eval=TRUE}
+DACAsub[tym1b$esample, "race"] -> race
+DACAsub[tym1b$esample, "fem"]  -> sex
+as.numeric(DACAsub[tym1b$esample, "age"]) -> age
 ```
 
-This provides estimates of 
+Here `age` is quasi-continuous. It will have only 4 values (in fact fewer than the Race variable), but we use it to showcase the functionality.
 
-It is often also convenient to plot the group-time average treatment effects.  This can be done using the **didnpplot** command:
+First, use one categorical `by` variable:
 
-```{r echo=FALSE}
-library(ggplot2)
+```{r gr_race, eval=TRUE}
+tym1b_gr_race <- didnpplothte(
+  obj = tym1b,
+  level = 95,
+  by = race[tym1b$sample1],
+  xlab = "Race",
+  ylab = "ATET",
+  by.labels.values = data.frame(
+    old = c(1,2,3,4,5),
+    new = c("Hispanic", "White", "Black", "Asian", "Other")
+  ))
+
+tym1b_gr_race$data.a
+tym1b_gr_race$data.b
+
+tym1b_gr_race$plot.a
+tym1b_gr_race$plot.b
 ```
 
-```{R eval=FALSE}
-didnpplot(tym1, ylim = c(-.25,.1))
+Here objects `data.a` and `data.b` contain data that is used to produce `plot.a` and `plot.b`. The graphs are `ggplot` objects and can be amended further.
+
+Another example is the graph with treatment effects by sex. Note the sample object `tym1b` is used:
+
+```{r gr_sex, eval=TRUE}
+tym1b_gr_sex <- didnpplothte(
+  obj = tym1b,
+  level = 95,
+  by = sex[tym1b$sample1],
+  xlab = "Sex",
+  ylab = "ATET",
+  by.labels.values = data.frame(c(1,0), c("Female", "Male"))
+)
+
+tym1b_gr_sex$data.a
+tym1b_gr_sex$data.b
+
+tym1b_gr_sex$plot.a
+tym1b_gr_sex$plot.b
 ```
 
-The ... in the plot are 
+The **didnpplothte** command will recognize if `by` is continuous variable, split it into given number of intervals `n.intervals` and plot the treatment effects by the split variable.
+
+```{r gr_age, eval=TRUE}
+tym1b_gr_age <- didnpplothte(
+  obj = tym1b,
+  level = 95,
+  by = age[tym1b$sample1],
+  n.intervals = 10,
+  xlab = "Age"
+)
+
+tym1b_gr_age$data.a
+tym1b_gr_age$data.b
+
+tym1b_gr_age$plot.a
+tym1b_gr_age$plot.b
+```
+
+Ameding ggplot object is easy. For example adding a 0 horizontal line is
+
+```{r gr_age2, eval=TRUE}
+tym1b_gr_age$plot.a +
+  geom_hline(yintercept = 0)
+```
+
+> Anternatively, one can use the `data.a` and `data.b` objects to plot from scratch.
+
+The treatment effects can be visualized by and over. Variable `by` can be both categorical and continuous, while `over` must be categorical. For example, to plot treatment effects by age over race, specify the `over` option:
+
+```{r gr_age_race, eval=TRUE}
+tym1b_gr_age_race <- didnpplothte(
+  obj = tym1b,
+  level = 90,
+  by = age[tym1b$sample1],
+  n.intervals = 7,
+  over = race[tym1b$sample1],
+  xlab = "Age",
+  ylab = "ATET",
+  point_size = 2,
+  over.labels.values = data.frame(
+    old = c(1,2,3,4,5),
+    new = c("Hispanic", "White", "Black", "Asian", "Other")
+  ),
+  text_size = 15)
+
+tym1b_gr_age_race$data.a
+tym1b_gr_age_race$plot.a
+
+tym1b_gr_age_race$data.b
+tym1b_gr_age_race$plot.b
+```
+
+Note that the graph shows the **90%** confidence interval. 
+
+> Alternatively use the data from the object `tym1b_gr_age_race`
+
+to produce another type of graph:
+
+```{r gr_age_race2, eval=TRUE}
+crit.value <- 2
+pd <- position_dodge(0.1) # move them .05 to the left and right
+d1 <- tym1b_gr_age_race$data.b
+d1$Race <- d1$over
+ggplot(d1, aes(x = by, y = atet, color = Race, group = Race)) +
+  geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), color = "black", width = .1, position = pd) +
+  geom_line(position = pd) +
+  geom_point(position = pd, size = 3, shape = 21, fill = "white") +
+  xlab("Age") +
+  ylab("ATET") +
+  theme_bw() +
+  theme(legend.position = "right", text = element_text(size = 17))
+```
+
+The next plot shows treatment effects by age over sex:
+
+```{r gr_age_sex, eval=TRUE}
+tym1b_gr_age_sex <- didnpplothte(
+  obj = tym1b,
+  level = 90,
+  by = age[tym1b$sample1],
+  n.intervals = 7,
+  over = sex[tym1b$sample1],
+  xlab = "Age",
+  ylab = "ATET",
+  point_size = 2,
+  over.labels.values = data.frame(c(1,0), c("Female", "Male")),
+  text_size = 15)
+
+tym1b_gr_age_sex$data.a
+tym1b_gr_age_sex$plot.a
+
+tym1b_gr_age_sex$data.b
+tym1b_gr_age_sex$plot.b
+```
+
+Finally, both `by` and `over` are both categorical:
+
+```{r gr_sex_race, eval=TRUE}
+tym1b_gr_sex_race <- didnpplothte(
+  obj = tym1b,
+  level = 95,
+  by = sex[tym1b$sample1],
+  over = race[tym1b$sample1],
+  xlab = "Sex",
+  ylab = "ATET",
+  point_size = 3,
+  by.labels.values = data.frame(c(1,0), c("Female", "Male")),
+  over.labels.values = data.frame(
+    old = c(1,2,3,4,5),
+    new = c("Hispanic", "White", "Black", "Asian", "Other")
+  ),
+  text_size = 17)
+
+tym1b_gr_sex_race$data.a
+tym1b_gr_sex_race$plot.a
+
+tym1b_gr_sex_race$data.b
+tym1b_gr_sex_race$plot.b
+```
 
 ## Additional Resources
 

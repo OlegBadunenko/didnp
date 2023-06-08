@@ -3,7 +3,6 @@
 \docType{package}
 \name{didnp-package}
 \alias{didnp-package}
-\alias{didnp}
 \title{didnp: A package for computing both heterogenous and average treatment effects for the treated in a model-free differences-in-differences framework.}
 \description{
 The \pkg{didnp} package provides simple ways
