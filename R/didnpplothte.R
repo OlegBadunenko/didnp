@@ -339,7 +339,7 @@ didnpplothte <- function(
                     labs(x = xlab, y = ylab) +
                     geom_point(size = point_size, position = position_dodge(0.8)) +
                     scale_fill_discrete(
-                        name = xlab
+                        name = over.lab
                     ) +
                     theme_bw() +
                     theme(text = element_text(size = text_size))
@@ -395,7 +395,7 @@ didnpplothte <- function(
                     labs(x = xlab, y = ylab) +
                     geom_point(size = point_size, position = position_dodge(0.8)) +
                     scale_fill_discrete(
-                        name = xlab
+                        name = over.lab
                     ) +
                     theme_bw() +
                     theme(text = element_text(size = text_size))
@@ -587,7 +587,7 @@ didnpplothte <- function(
                 # cat.print(d1b)
                 d1b <- d1b[complete.cases(d1b),]
 
-                cat.print(d1b)
+                # cat.print(d1b)
 
                 plot.b <- ggplot(d1b,aes(x = by, y = atet, color = over, group = over)) +
                     geom_line(linewidth = line_width) +
