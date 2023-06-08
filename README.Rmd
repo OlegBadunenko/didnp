@@ -131,17 +131,17 @@ tym1a <- didnpreg(
 summary(tym1a)
 ```
 
-Estimating $TT_b$ will take longer:
+Estimating $TT_b$ will take longer. The bandwidths is cross-validated.
 
 
 ```{r model1b, eval=TRUE}
-# suppress output
+# Show output as the estimation goes
 tym1b <- didnpreg(
   form1,
   data = DACAsub,
   subset = mysmpl,
-  bwmethod = "opt",
-  boot.num = 7,
+  bwmethod = "CV",
+  boot.num = 99,
   TTb = TRUE,
   print.level = 1,
   cores = 8)

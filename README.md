@@ -157,16 +157,16 @@ summary(tym1a)
 #R>  N(TTa) = 2337
 ```
 
-Estimating $TT_b$ will take longer:
+Estimating $TT_b$ will take longer. The bandwidths is cross-validated.
 
 ``` r
-# suppress output
+# Show output as the estimation goes
 tym1b <- didnpreg(
   form1,
   data = DACAsub,
   subset = mysmpl,
-  bwmethod = "opt",
-  boot.num = 7,
+  bwmethod = "CV",
+  boot.num = 99,
   TTb = TRUE,
   print.level = 1,
   cores = 8)
@@ -174,26 +174,29 @@ tym1b <- didnpreg(
 #R>  Number of Unordered Categorical Regressors is   4 
 #R>  Number of Ordered Categorical Regressors is     3 
 #R>  
-#R>  Bandwidths are chosen via the plug-in method
+#R>  Calculating cross-validated bandwidths
+#R>  Kernel Type for Unordered Categorical Regressors is    Aitchison and Aitken
+#R>  Kernel Type for Ordered Categorical is                 Li and Racine
+#R>  Calculating cross-validated bandwidths completed in 21 second
 #R>  
 #R>    Regressor    Type    Bandwidth
-#R>  1       fem  factor 9.569206e-04
-#R>  2      race  factor 5.831931e-05
-#R>  3   var.bpl  factor 8.701817e-05
-#R>  4     state  factor 1.772228e-05
-#R>  5       age ordered 4.731888e-05
-#R>  6   yrimmig ordered 2.763923e-05
-#R>  7  ageimmig ordered 8.690101e-05
+#R>  1       fem  factor 0.0008408093
+#R>  2      race  factor 0.0001004406
+#R>  3   var.bpl  factor 0.0001518288
+#R>  4     state  factor 0.0009238220
+#R>  5       age ordered 0.0001532112
+#R>  6   yrimmig ordered 0.0001297687
+#R>  7  ageimmig ordered 0.0001553703
 #R>  
 #R>  Calculating ATET: TTa and TTb (may take some time)
-#R>  TTa = 0.03684, N(TTa) = 2337
-#R>  TTb = 0.07442, N(TTb) = 24018
+#R>  TTa = 0.04365, N(TTa) = 2337
+#R>  TTb = 0.05493, N(TTb) = 24018
 #R>  
-#R>  Bootstrapping standard errors (7 replications)
-#R>  Bootstrapping standard errors completed in 12 seconds
+#R>  Bootstrapping standard errors (99 replications)
+#R>  Bootstrapping standard errors completed in 2 minutes and 47 seconds
 #R>  
-#R>  TTa sd = 0.6787 
-#R>  TTb sd = 0.6061
+#R>  TTa sd = 0.6344 
+#R>  TTb sd = 0.5254
 ```
 
 To plot the heterogenous treatment effects, use the **didnpplothte**
@@ -226,18 +229,18 @@ tym1b_gr_race <- didnpplothte(
 
 tym1b_gr_race$data.a
 #R>           atet    atet.sd by      by2
-#R>  1  0.03167370 0.02333338  1    Asian
-#R>  2  0.23713539 0.02089789  2    Black
-#R>  3  0.15831095 0.02347352  3 Hispanic
-#R>  4  0.70576875 0.14213935  4    Other
-#R>  5 -0.09128866 0.03170650  5    White
+#R>  1  0.03973812 0.02329393  1    Asian
+#R>  2  0.24731001 0.02776878  2    Black
+#R>  3  0.07469281 0.02504381  3 Hispanic
+#R>  4  0.70227835 0.12504263  4    Other
+#R>  5 -0.05053639 0.04701475  5    White
 tym1b_gr_race$data.b
-#R>            atet     atet.sd by      by2
-#R>  1  0.074070433 0.018905645  1    Asian
-#R>  2  0.217542238 0.009065189  2    Black
-#R>  3 -0.004192316 0.028846303  3 Hispanic
-#R>  4  0.095995143 0.040010388  4    Other
-#R>  5 -0.024492401 0.022590836  5    White
+#R>           atet    atet.sd by      by2
+#R>  1  0.05464285 0.02308424  1    Asian
+#R>  2  0.22616739 0.01240306  2    Black
+#R>  3 -0.05820048 0.02823952  3 Hispanic
+#R>  4  0.17977025 0.05264366  4    Other
+#R>  5 -0.04620788 0.02864418  5    White
 
 tym1b_gr_race$plot.a
 ```
@@ -268,13 +271,13 @@ tym1b_gr_sex <- didnpplothte(
 )
 
 tym1b_gr_sex$data.a
-#R>          atet   atet.sd by    by2
-#R>  1 0.02387601 0.0256126  0 Female
-#R>  2 0.05162081 0.0336748  1   Male
+#R>          atet    atet.sd by    by2
+#R>  1 0.03239246 0.02861926  0 Female
+#R>  2 0.05649511 0.03096917  1   Male
 tym1b_gr_sex$data.b
 #R>          atet    atet.sd by    by2
-#R>  1 0.09835338 0.02464229  0 Female
-#R>  2 0.04736845 0.03884442  1   Male
+#R>  1 0.07637724 0.03017518  0 Female
+#R>  2 0.03069940 0.03109617  1   Male
 
 tym1b_gr_sex$plot.a
 ```
@@ -302,16 +305,16 @@ tym1b_gr_age <- didnpplothte(
 
 tym1b_gr_age$data.a
 #R>            atet    atet.sd        by
-#R>  1   0.02098298 0.04544840   (6,6.3]
-#R>  4   0.12756955 0.05124467 (6.9,7.2]
-#R>  7  -0.05394528 0.02034926 (7.8,8.1]
-#R>  10  0.05066561 0.04138021   (8.7,9]
+#R>  1   0.02258246 0.04143805   (6,6.3]
+#R>  4   0.13175762 0.04606008 (6.9,7.2]
+#R>  7  -0.04004534 0.03782480 (7.8,8.1]
+#R>  10  0.05919285 0.03762810   (8.7,9]
 tym1b_gr_age$data.b
-#R>           atet    atet.sd        by
-#R>  1  0.02794484 0.02296994   (6,6.3]
-#R>  4  0.10182851 0.02721182 (6.9,7.2]
-#R>  7  0.03133934 0.01940082 (7.8,8.1]
-#R>  10 0.14553113 0.03190385   (8.7,9]
+#R>            atet    atet.sd        by
+#R>  1  0.023020901 0.02621411   (6,6.3]
+#R>  4  0.072791567 0.02778018 (6.9,7.2]
+#R>  7  0.005024515 0.03053302 (7.8,8.1]
+#R>  10 0.126771550 0.03814443   (8.7,9]
 
 tym1b_gr_age$plot.a
 ```
@@ -356,48 +359,26 @@ tym1b_gr_age_race <- didnpplothte(
     new = c("Hispanic", "White", "Black", "Asian", "Other")
   ),
   text_size = 15)
-#R>   d1b:
-#R>            atet    atet.sd          by     over
-#R>  1  -0.20964103 0.01319274    (6,6.43]    Asian
-#R>  2  -0.07605277 0.02439777    (6,6.43]    Black
-#R>  3   0.03082975 0.02378958    (6,6.43] Hispanic
-#R>  4   0.14379465 0.02734824    (6,6.43]    Other
-#R>  5  -0.10829371 0.01355530    (6,6.43]    White
-#R>  11 -0.15249069 0.07022176 (6.86,7.29]    Asian
-#R>  12 -0.21217141 0.03923253 (6.86,7.29]    Black
-#R>  13  0.10561193 0.02800887 (6.86,7.29] Hispanic
-#R>  14  0.09982536 0.06150928 (6.86,7.29]    Other
-#R>  15  0.20387595 0.01068616 (6.86,7.29]    White
-#R>  21  0.17657789 0.05142644 (7.71,8.14]    Asian
-#R>  22  0.08737654 0.05330049 (7.71,8.14]    Black
-#R>  23  0.02689318 0.01964664 (7.71,8.14] Hispanic
-#R>  24 -0.27806531 0.04296285 (7.71,8.14]    Other
-#R>  25  0.39222103 0.01691192 (7.71,8.14]    White
-#R>  31  0.33645553 0.09689606    (8.57,9]    Asian
-#R>  32  0.27223728 0.04334071    (8.57,9]    Black
-#R>  33  0.14068491 0.03302176    (8.57,9] Hispanic
-#R>  34 -0.18383198 0.04735856    (8.57,9]    Other
-#R>  35  0.46651652 0.01969188    (8.57,9]    White
 
 tym1b_gr_age_race$data.a
-#R>            atet     atet.sd          by     over
-#R>  2   0.22475431 0.003203582    (6,6.43]    Black
-#R>  3   0.01334237 0.047541039    (6,6.43] Hispanic
-#R>  4   0.09140577 0.071056124    (6,6.43]    Other
-#R>  5   0.13707317 0.027991451    (6,6.43]    White
-#R>  12 -0.17871291 0.083402708 (6.86,7.29]    Black
-#R>  13  0.13554305 0.052548695 (6.86,7.29] Hispanic
-#R>  14 -0.08310313 0.250658197 (6.86,7.29]    Other
-#R>  15 -0.09325703 0.070244277 (6.86,7.29]    White
-#R>  21  0.70576875 0.142139346 (7.71,8.14]    Asian
-#R>  22  0.32083881 0.020310142 (7.71,8.14]    Black
-#R>  23 -0.06414731 0.021142968 (7.71,8.14] Hispanic
-#R>  24 -0.82890907 0.046857866 (7.71,8.14]    Other
-#R>  25  0.36450799 0.024178552 (7.71,8.14]    White
-#R>  32  0.31886794 0.046907969    (8.57,9]    Black
-#R>  33  0.03884674 0.042900616    (8.57,9] Hispanic
-#R>  34  0.27960002 0.195326520    (8.57,9]    Other
-#R>  35  0.48706793 0.036976917    (8.57,9]    White
+#R>            atet    atet.sd          by     over
+#R>  2   0.15165527 0.01062371    (6,6.43]    Black
+#R>  3   0.01626993 0.04320838    (6,6.43] Hispanic
+#R>  4   0.10710845 0.06415061    (6,6.43]    Other
+#R>  5   0.15114738 0.04724728    (6,6.43]    White
+#R>  12 -0.34630912 0.08719329 (6.86,7.29]    Black
+#R>  13  0.14358612 0.04715322 (6.86,7.29] Hispanic
+#R>  14 -0.19282858 0.10943276 (6.86,7.29]    Other
+#R>  15 -0.16363451 0.05504180 (6.86,7.29]    White
+#R>  21  0.70227835 0.12504263 (7.71,8.14]    Asian
+#R>  22  0.26682557 0.03108044 (7.71,8.14]    Black
+#R>  23 -0.04913575 0.03900297 (7.71,8.14] Hispanic
+#R>  24 -0.73904259 0.03624854 (7.71,8.14]    Other
+#R>  25  0.34994316 0.02067305 (7.71,8.14]    White
+#R>  32  0.30958898 0.03716571    (8.57,9]    Black
+#R>  33  0.04583527 0.03863109    (8.57,9] Hispanic
+#R>  34  0.52289920 0.21845263    (8.57,9]    Other
+#R>  35  0.55774313 0.06758809    (8.57,9]    White
 tym1b_gr_age_race$plot.a
 ```
 
@@ -406,27 +387,27 @@ tym1b_gr_age_race$plot.a
 ``` r
 
 tym1b_gr_age_race$data.b
-#R>            atet    atet.sd          by     over
-#R>  1  -0.20964103 0.01319274    (6,6.43]    Asian
-#R>  2  -0.07605277 0.02439777    (6,6.43]    Black
-#R>  3   0.03082975 0.02378958    (6,6.43] Hispanic
-#R>  4   0.14379465 0.02734824    (6,6.43]    Other
-#R>  5  -0.10829371 0.01355530    (6,6.43]    White
-#R>  11 -0.15249069 0.07022176 (6.86,7.29]    Asian
-#R>  12 -0.21217141 0.03923253 (6.86,7.29]    Black
-#R>  13  0.10561193 0.02800887 (6.86,7.29] Hispanic
-#R>  14  0.09982536 0.06150928 (6.86,7.29]    Other
-#R>  15  0.20387595 0.01068616 (6.86,7.29]    White
-#R>  21  0.17657789 0.05142644 (7.71,8.14]    Asian
-#R>  22  0.08737654 0.05330049 (7.71,8.14]    Black
-#R>  23  0.02689318 0.01964664 (7.71,8.14] Hispanic
-#R>  24 -0.27806531 0.04296285 (7.71,8.14]    Other
-#R>  25  0.39222103 0.01691192 (7.71,8.14]    White
-#R>  31  0.33645553 0.09689606    (8.57,9]    Asian
-#R>  32  0.27223728 0.04334071    (8.57,9]    Black
-#R>  33  0.14068491 0.03302176    (8.57,9] Hispanic
-#R>  34 -0.18383198 0.04735856    (8.57,9]    Other
-#R>  35  0.46651652 0.01969188    (8.57,9]    White
+#R>             atet    atet.sd          by     over
+#R>  1  -0.015983909 0.02371254    (6,6.43]    Asian
+#R>  2  -0.074483104 0.01936453    (6,6.43]    Black
+#R>  3   0.025132472 0.02687571    (6,6.43] Hispanic
+#R>  4   0.085608034 0.02099113    (6,6.43]    Other
+#R>  5  -0.048900725 0.01891856    (6,6.43]    White
+#R>  11 -0.025533206 0.09713600 (6.86,7.29]    Asian
+#R>  12 -0.327284870 0.03461843 (6.86,7.29]    Black
+#R>  13  0.077691231 0.02855844 (6.86,7.29] Hispanic
+#R>  14  0.032315749 0.06025738 (6.86,7.29]    Other
+#R>  15  0.200345142 0.01642683 (6.86,7.29]    White
+#R>  21  0.194504189 0.08766893 (7.71,8.14]    Asian
+#R>  22  0.038704125 0.05220861 (7.71,8.14]    Black
+#R>  23  0.000519385 0.03140487 (7.71,8.14] Hispanic
+#R>  24 -0.245888017 0.05514657 (7.71,8.14]    Other
+#R>  25  0.372330533 0.01883086 (7.71,8.14]    White
+#R>  31  0.407580751 0.12459889    (8.57,9]    Asian
+#R>  32  0.222648494 0.05453234    (8.57,9]    Black
+#R>  33  0.121894974 0.03921493    (8.57,9] Hispanic
+#R>  34 -0.145514962 0.04502563    (8.57,9]    Other
+#R>  35  0.454140065 0.02488101    (8.57,9]    White
 tym1b_gr_age_race$plot.b
 ```
 
@@ -469,27 +450,17 @@ tym1b_gr_age_sex <- didnpplothte(
   point_size = 2,
   over.labels.values = data.frame(c(1,0), c("Female", "Male")),
   text_size = 15)
-#R>   d1b:
-#R>             atet    atet.sd          by   over
-#R>  1  -0.002866212 0.02549606    (6,6.43] Female
-#R>  2   0.054954010 0.03725189    (6,6.43]   Male
-#R>  5   0.086338267 0.02869658 (6.86,7.29] Female
-#R>  6   0.115404434 0.04244762 (6.86,7.29]   Male
-#R>  9  -0.007366675 0.04303305 (7.71,8.14] Female
-#R>  10  0.066496452 0.03115987 (7.71,8.14]   Male
-#R>  13  0.123082019 0.08840179    (8.57,9] Female
-#R>  14  0.165280060 0.04458252    (8.57,9]   Male
 
 tym1b_gr_age_sex$data.a
-#R>             atet    atet.sd          by   over
-#R>  1   0.046508387 0.06098738    (6,6.43] Female
-#R>  2  -0.001907052 0.06888927    (6,6.43]   Male
-#R>  5   0.152910875 0.05661234 (6.86,7.29] Female
-#R>  6   0.106305229 0.06672100 (6.86,7.29]   Male
-#R>  9   0.001774249 0.03186786 (7.71,8.14] Female
-#R>  10 -0.102699867 0.04465966 (7.71,8.14]   Male
-#R>  13  0.004173214 0.07068727    (8.57,9] Female
-#R>  14  0.092397690 0.04007201    (8.57,9]   Male
+#R>              atet    atet.sd          by   over
+#R>  1   0.0591634709 0.05941102    (6,6.43] Female
+#R>  2  -0.0102217556 0.05286890    (6,6.43]   Male
+#R>  5   0.1438796053 0.05857366 (6.86,7.29] Female
+#R>  6   0.1215858569 0.06130402 (6.86,7.29]   Male
+#R>  9   0.0009383166 0.04956547 (7.71,8.14] Female
+#R>  10 -0.0759060343 0.05692566 (7.71,8.14]   Male
+#R>  13  0.0197413288 0.04809669    (8.57,9] Female
+#R>  14  0.0946049730 0.04833392    (8.57,9]   Male
 tym1b_gr_age_sex$plot.a
 ```
 
@@ -499,14 +470,14 @@ tym1b_gr_age_sex$plot.a
 
 tym1b_gr_age_sex$data.b
 #R>             atet    atet.sd          by   over
-#R>  1  -0.002866212 0.02549606    (6,6.43] Female
-#R>  2   0.054954010 0.03725189    (6,6.43]   Male
-#R>  5   0.086338267 0.02869658 (6.86,7.29] Female
-#R>  6   0.115404434 0.04244762 (6.86,7.29]   Male
-#R>  9  -0.007366675 0.04303305 (7.71,8.14] Female
-#R>  10  0.066496452 0.03115987 (7.71,8.14]   Male
-#R>  13  0.123082019 0.08840179    (8.57,9] Female
-#R>  14  0.165280060 0.04458252    (8.57,9]   Male
+#R>  1   0.003383205 0.03427280    (6,6.43] Female
+#R>  2   0.040235436 0.03545742    (6,6.43]   Male
+#R>  5   0.053757977 0.03442821 (6.86,7.29] Female
+#R>  6   0.089472946 0.03783216 (6.86,7.29]   Male
+#R>  9  -0.030444727 0.04287245 (7.71,8.14] Female
+#R>  10  0.037241629 0.03916480 (7.71,8.14]   Male
+#R>  13  0.104039743 0.05770329    (8.57,9] Female
+#R>  14  0.146769182 0.04926300    (8.57,9]   Male
 tym1b_gr_age_sex$plot.b
 ```
 
@@ -532,15 +503,15 @@ tym1b_gr_sex_race <- didnpplothte(
 
 tym1b_gr_sex_race$data.a
 #R>            atet    atet.sd     by     over
-#R>  2  -0.09825377 0.01891277 Female    Black
-#R>  3   0.05093228 0.03484335 Female Hispanic
-#R>  4   0.15481958 0.09792690 Female    Other
-#R>  5   0.16793775 0.01432895 Female    White
-#R>  6   0.70576875 0.14213935   Male    Asian
-#R>  7   0.34157147 0.03567464   Male    Black
-#R>  8   0.01483445 0.02632963   Male Hispanic
-#R>  9  -0.25536083 0.05338534   Male    Other
-#R>  10  0.34587453 0.05869224   Male    White
+#R>  2  -0.10858267 0.02305363 Female    Black
+#R>  3   0.05563993 0.03193745 Female Hispanic
+#R>  4   0.13455875 0.08585094 Female    Other
+#R>  5   0.19570925 0.02591887 Female    White
+#R>  6   0.70227835 0.12504263   Male    Asian
+#R>  7   0.20560387 0.03922976   Male    Black
+#R>  8   0.02583396 0.02936440   Male Hispanic
+#R>  9  -0.17393314 0.05543052   Male    Other
+#R>  10  0.32839692 0.05821247   Male    White
 tym1b_gr_sex_race$plot.a
 ```
 
@@ -549,17 +520,17 @@ tym1b_gr_sex_race$plot.a
 ``` r
 
 tym1b_gr_sex_race$data.b
-#R>             atet     atet.sd     by     over
-#R>  1   0.107027217 0.074520424 Female    Asian
-#R>  2   0.009058775 0.046353597 Female    Black
-#R>  3   0.046264674 0.039823140 Female Hispanic
-#R>  4  -0.113366928 0.038678248 Female    Other
-#R>  5   0.228191049 0.008991708 Female    White
-#R>  6   0.089375898 0.044636703   Male    Asian
-#R>  7  -0.016989085 0.033187452   Male    Black
-#R>  8   0.098589546 0.025485545   Male Hispanic
-#R>  9   0.080541130 0.026648429   Male    Other
-#R>  10  0.207527284 0.020473383   Male    White
+#R>            atet    atet.sd     by     over
+#R>  1   0.08165344 0.10293279 Female    Asian
+#R>  2  -0.03239341 0.04201694 Female    Black
+#R>  3   0.02982270 0.03196178 Female Hispanic
+#R>  4  -0.13458069 0.03546735 Female    Other
+#R>  5   0.22459774 0.01549519 Female    White
+#R>  6   0.23864034 0.06072008   Male    Asian
+#R>  7  -0.08312274 0.03816828   Male    Black
+#R>  8   0.07652925 0.03089471   Male Hispanic
+#R>  9   0.05823271 0.03602511   Male    Other
+#R>  10  0.22764362 0.01690772   Male    White
 tym1b_gr_sex_race$plot.b
 ```
 

@@ -66,12 +66,7 @@
 
 <!-- badges: end -->
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<p>The <strong>didnp</strong> package contains tools for computing average treatment effect parameters in a Difference-in-Differences setup allowing for</p>
-<ul>
-<li>this</li>
-<li>that</li>
-</ul>
-<p>The main parameters are <strong>that</strong>. These are</p>
+<p>The <strong>didnp</strong> package contains tools for computing average treatment effect parameters in a Difference-in-Differences setup without specifying a model.</p>
 <div class="section level2">
 <h2 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h2>
@@ -84,7 +79,7 @@
 </h2>
 <p>You can install <strong>didnp</strong> from CRAN with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"didnp"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"didnp"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>or get the latest version from github with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span> <span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/" class="external-link">"devtools"</a></span><span class="op">)</span> <span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>; <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
@@ -96,34 +91,427 @@
 <blockquote>
 <p>The following is a simplified example …, which comes from <a href="https://elsevier.com/" class="external-link">that</a>.</p>
 </blockquote>
-<p>A subset of the data is available in the package and can be loaded by</p>
+<p>Data set is shared by <a href="https://doi.org/10.1257/pol.20180352" class="external-link">Kuka et al, 2020</a>. Here we showcase the functionality of the package by using a subset, which is available in the package and can be loaded by</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://olegbadunenko.github.io/didnp/" class="external-link">didnp</a></span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">DACAsub</span>, package <span class="op">=</span> <span class="st">"didnp"</span><span class="op">)</span></span></code></pre></div>
-<p>The dataset contains XXX observations</p>
-<ul>
-<li>
-<strong>LHS</strong> lhs variable</li>
-</ul>
-<p>To estimate verage treatment effects, use the <strong>didnpreg</strong> function</p>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">DACAsub</span>, package <span class="op">=</span> <span class="st">"didnp"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">DACAsub</span><span class="op">)</span></span>
+<span><span class="co">#R&gt;    inschool hs scol post elig fem race var.bpl state year age yrimmig ageimmig</span></span>
+<span><span class="co">#R&gt;  1        0  1    1    1    0   1    3       4     1 2015  27    1988        0</span></span>
+<span><span class="co">#R&gt;  2        0  1    1    0    0   1    1       0     1 2007  29    1978        0</span></span>
+<span><span class="co">#R&gt;  3        1  0    0    1    0   1    4       4     1 2013  16    2000        3</span></span>
+<span><span class="co">#R&gt;  4        0  0    0    1    1   0    3       3     1 2012  23    1990        1</span></span>
+<span><span class="co">#R&gt;  5        0  1    1    1    0   1    3       3     1 2014  26    1987       -1</span></span>
+<span><span class="co">#R&gt;  6        0  1    0    0    0   1    2       3     1 2006  21    1986        1</span></span>
+<span><span class="co">#R&gt;    a1418 a1922 a2330 htus perwt treatment_period</span></span>
+<span><span class="co">#R&gt;  1    NA    NA     1   NA    32                1</span></span>
+<span><span class="co">#R&gt;  2    NA    NA     1   NA    39                0</span></span>
+<span><span class="co">#R&gt;  3     1    NA    NA   NA   119                1</span></span>
+<span><span class="co">#R&gt;  4    NA    NA     1   NA    11                1</span></span>
+<span><span class="co">#R&gt;  5    NA    NA     1   NA   111                1</span></span>
+<span><span class="co">#R&gt;  6    NA     1    NA   NA   320                0</span></span></code></pre></div>
+<p>The description of the dataset can be found by typing</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tym1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/didnpreg.html">didnpreg</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span>  <span class="op">?</span><span class="va">DACAsub</span></span></code></pre></div>
+<p>Although this can be done on the fly, the subsample can be prepared beforehand:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># get the subsample</span></span>
+<span><span class="va">DACAsub</span><span class="op">$</span><span class="va">mysmpl</span> <span class="op">&lt;-</span> <span class="va">mysmpl</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">DACAsub</span><span class="op">$</span><span class="va">a1922</span><span class="op">==</span><span class="fl">1</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">DACAsub</span><span class="op">$</span><span class="va">a1922</span><span class="op">)</span> <span class="op">&amp;</span></span>
+<span>  <span class="va">DACAsub</span><span class="op">$</span><span class="va">htus</span><span class="op">==</span><span class="fl">1</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">DACAsub</span><span class="op">$</span><span class="va">htus</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># generate 'treatment_period'</span></span>
+<span><span class="va">DACAsub</span><span class="op">$</span><span class="va">treatment_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span> <span class="va">DACAsub</span><span class="op">[</span>,<span class="st">"year"</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">2011</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<p>To estimate the average treatment effects, we use the <strong>didnpreg</strong> function. Define the formula that we will use:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">form1</span> <span class="op">&lt;-</span> <span class="va">inschool</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">var.bpl</span> <span class="op">+</span> <span class="va">state</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">yrimmig</span> <span class="op">+</span> </span>
+<span>  <span class="va">ageimmig</span> <span class="op">|</span> <span class="va">inschool</span> <span class="op">|</span> <span class="va">year</span> <span class="op">|</span> <span class="va">elig</span> <span class="op">|</span> <span class="va">treatment_period</span> <span class="op">|</span> <span class="va">perwt</span></span></code></pre></div>
+<p>The <strong>didnpreg</strong> function allows using matrices. The manual explains how to use matrix syntax (type <code><a href="reference/didnpreg.html">?didnpreg</a></code>). To obtain standard errors,</p>
+<blockquote>
+<p>we will use a few number of bootstrap replicaitons here, but we advise to set <code>boot.num = 399</code> or more.</p>
+</blockquote>
+<p>To speed up the estimation</p>
+<blockquote>
+<p>on computers with multiple cores, use multiplrocessing by setting option <code>cores</code>.</p>
+</blockquote>
+<p>Suppress output by setting <code>print.level = 0</code>. The default value is 1.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># suppress output</span></span>
+<span><span class="va">tym1a</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/didnpreg.html">didnpreg</a></span><span class="op">(</span></span>
 <span>  <span class="va">form1</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">dat2</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">DACAsub</span>,</span>
 <span>  subset <span class="op">=</span> <span class="va">mysmpl</span>,</span>
 <span>  bwmethod <span class="op">=</span> <span class="st">"opt"</span>,</span>
-<span>  boot.num <span class="op">=</span> <span class="fl">399</span>,</span>
+<span>  boot.num <span class="op">=</span> <span class="fl">7</span>,</span>
+<span>  TTb <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  print.level <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="co">#R&gt;  Bandwidths are chosen via the plug-in method</span></span></code></pre></div>
+<p><strong>didnpreg</strong> returns a class <strong>didnp</strong> object. This object contains estimates of the average treatment effects and their standard errors. To see these, we can call the <strong>summary</strong> function.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Print the summary of estimation</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tym1a</span><span class="op">)</span></span>
+<span><span class="co">#R&gt;  Number of Observations is  34768 </span></span>
+<span><span class="co">#R&gt;  Number of Unordered Categorical Regressors is   4 </span></span>
+<span><span class="co">#R&gt;  Number of Ordered Categorical Regressors is     3 </span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;  Bandwidths are chosen via the plug-in method</span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;    Regressor    Type    Bandwidth</span></span>
+<span><span class="co">#R&gt;  1       fem  factor 9.569206e-04</span></span>
+<span><span class="co">#R&gt;  2      race  factor 5.831931e-05</span></span>
+<span><span class="co">#R&gt;  3   var.bpl  factor 8.701817e-05</span></span>
+<span><span class="co">#R&gt;  4     state  factor 1.772228e-05</span></span>
+<span><span class="co">#R&gt;  5       age ordered 4.731888e-05</span></span>
+<span><span class="co">#R&gt;  6   yrimmig ordered 2.763923e-05</span></span>
+<span><span class="co">#R&gt;  7  ageimmig ordered 8.690101e-05</span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;  Bootstrapping standard errors (7 replications) completed in 1 second</span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;  Unconditional Treatment Effect on the Treated (ATET):</span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;  TTa    = 0.03684</span></span>
+<span><span class="co">#R&gt;  TTa sd = 0.6787</span></span>
+<span><span class="co">#R&gt;  N(TTa) = 2337</span></span></code></pre></div>
+<p>Estimating <span class="math inline"><em>T</em><em>T</em><sub><em>b</em></sub></span> will take longer:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># suppress output</span></span>
+<span><span class="va">tym1b</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/didnpreg.html">didnpreg</a></span><span class="op">(</span></span>
+<span>  <span class="va">form1</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">DACAsub</span>,</span>
+<span>  subset <span class="op">=</span> <span class="va">mysmpl</span>,</span>
+<span>  bwmethod <span class="op">=</span> <span class="st">"opt"</span>,</span>
+<span>  boot.num <span class="op">=</span> <span class="fl">7</span>,</span>
 <span>  TTb <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  print.level <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  cores <span class="op">=</span> <span class="fl">32</span><span class="op">)</span></span></code></pre></div>
-<p><strong>didnpreg</strong> returns a class <strong>didnp</strong> object. This object contains estimates of the average treatment effects and their standard errors. To see these, we can call the <strong>summary</strong> function</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">tym1</span><span class="op">)</span></span></code></pre></div>
-<p>This provides estimates of</p>
-<p>It is often also convenient to plot the group-time average treatment effects. This can be done using the <strong>didnpplot</strong> command:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">didnpplot</span><span class="op">(</span><span class="va">tym1</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">.25</span>,<span class="fl">.1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>The … in the plot are</p>
+<span>  print.level <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="co">#R&gt;  Number of Observations is  34768 </span></span>
+<span><span class="co">#R&gt;  Number of Unordered Categorical Regressors is   4 </span></span>
+<span><span class="co">#R&gt;  Number of Ordered Categorical Regressors is     3 </span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;  Bandwidths are chosen via the plug-in method</span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;    Regressor    Type    Bandwidth</span></span>
+<span><span class="co">#R&gt;  1       fem  factor 9.569206e-04</span></span>
+<span><span class="co">#R&gt;  2      race  factor 5.831931e-05</span></span>
+<span><span class="co">#R&gt;  3   var.bpl  factor 8.701817e-05</span></span>
+<span><span class="co">#R&gt;  4     state  factor 1.772228e-05</span></span>
+<span><span class="co">#R&gt;  5       age ordered 4.731888e-05</span></span>
+<span><span class="co">#R&gt;  6   yrimmig ordered 2.763923e-05</span></span>
+<span><span class="co">#R&gt;  7  ageimmig ordered 8.690101e-05</span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;  Calculating ATET: TTa and TTb (may take some time)</span></span>
+<span><span class="co">#R&gt;  TTa = 0.03684, N(TTa) = 2337</span></span>
+<span><span class="co">#R&gt;  TTb = 0.07442, N(TTb) = 24018</span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;  Bootstrapping standard errors (7 replications)</span></span>
+<span><span class="co">#R&gt;  Bootstrapping standard errors completed in 12 seconds</span></span>
+<span><span class="co">#R&gt;  </span></span>
+<span><span class="co">#R&gt;  TTa sd = 0.6787 </span></span>
+<span><span class="co">#R&gt;  TTb sd = 0.6061</span></span></code></pre></div>
+<p>To plot the heterogenous treatment effects, use the <strong>didnpplothte</strong> command. Define three variables by and over which the treatment effects will be plotted:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">DACAsub</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">esample</span>, <span class="st">"race"</span><span class="op">]</span> <span class="op">-&gt;</span> <span class="va">race</span></span>
+<span><span class="va">DACAsub</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">esample</span>, <span class="st">"fem"</span><span class="op">]</span>  <span class="op">-&gt;</span> <span class="va">sex</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">DACAsub</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">esample</span>, <span class="st">"age"</span><span class="op">]</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">age</span></span></code></pre></div>
+<p>Here <code>age</code> is quasi-continuous. It will have only 4 values (in fact fewer than the Race variable), but we use it to showcase the functionality.</p>
+<p>First, use one categorical <code>by</code> variable:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_race</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/didnpplothte.html">didnpplothte</a></span><span class="op">(</span></span>
+<span>  obj <span class="op">=</span> <span class="va">tym1b</span>,</span>
+<span>  level <span class="op">=</span> <span class="fl">95</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">race</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Race"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"ATET"</span>,</span>
+<span>  by.labels.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    old <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span>,</span>
+<span>    new <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Hispanic"</span>, <span class="st">"White"</span>, <span class="st">"Black"</span>, <span class="st">"Asian"</span>, <span class="st">"Other"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tym1b_gr_race</span><span class="op">$</span><span class="va">data.a</span></span>
+<span><span class="co">#R&gt;           atet    atet.sd by      by2</span></span>
+<span><span class="co">#R&gt;  1  0.03167370 0.02333338  1    Asian</span></span>
+<span><span class="co">#R&gt;  2  0.23713539 0.02089789  2    Black</span></span>
+<span><span class="co">#R&gt;  3  0.15831095 0.02347352  3 Hispanic</span></span>
+<span><span class="co">#R&gt;  4  0.70576875 0.14213935  4    Other</span></span>
+<span><span class="co">#R&gt;  5 -0.09128866 0.03170650  5    White</span></span>
+<span><span class="va">tym1b_gr_race</span><span class="op">$</span><span class="va">data.b</span></span>
+<span><span class="co">#R&gt;            atet     atet.sd by      by2</span></span>
+<span><span class="co">#R&gt;  1  0.074070433 0.018905645  1    Asian</span></span>
+<span><span class="co">#R&gt;  2  0.217542238 0.009065189  2    Black</span></span>
+<span><span class="co">#R&gt;  3 -0.004192316 0.028846303  3 Hispanic</span></span>
+<span><span class="co">#R&gt;  4  0.095995143 0.040010388  4    Other</span></span>
+<span><span class="co">#R&gt;  5 -0.024492401 0.022590836  5    White</span></span>
+<span></span>
+<span><span class="va">tym1b_gr_race</span><span class="op">$</span><span class="va">plot.a</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_race-1.png"><!-- --></p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_race</span><span class="op">$</span><span class="va">plot.b</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_race-2.png"><!-- --></p>
+<p>Here objects <code>data.a</code> and <code>data.b</code> contain data that is used to produce <code>plot.a</code> and <code>plot.b</code>. The graphs are <code>ggplot</code> objects and can be amended further.</p>
+<p>Another example is the graph with treatment effects by sex. Note the sample object <code>tym1b</code> is used:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_sex</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/didnpplothte.html">didnpplothte</a></span><span class="op">(</span></span>
+<span>  obj <span class="op">=</span> <span class="va">tym1b</span>,</span>
+<span>  level <span class="op">=</span> <span class="fl">95</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Sex"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"ATET"</span>,</span>
+<span>  by.labels.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Female"</span>, <span class="st">"Male"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tym1b_gr_sex</span><span class="op">$</span><span class="va">data.a</span></span>
+<span><span class="co">#R&gt;          atet   atet.sd by    by2</span></span>
+<span><span class="co">#R&gt;  1 0.02387601 0.0256126  0 Female</span></span>
+<span><span class="co">#R&gt;  2 0.05162081 0.0336748  1   Male</span></span>
+<span><span class="va">tym1b_gr_sex</span><span class="op">$</span><span class="va">data.b</span></span>
+<span><span class="co">#R&gt;          atet    atet.sd by    by2</span></span>
+<span><span class="co">#R&gt;  1 0.09835338 0.02464229  0 Female</span></span>
+<span><span class="co">#R&gt;  2 0.04736845 0.03884442  1   Male</span></span>
+<span></span>
+<span><span class="va">tym1b_gr_sex</span><span class="op">$</span><span class="va">plot.a</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_sex-1.png"><!-- --></p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_sex</span><span class="op">$</span><span class="va">plot.b</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_sex-2.png"><!-- --></p>
+<p>The <strong>didnpplothte</strong> command will recognize if <code>by</code> is continuous variable, split it into given number of intervals <code>n.intervals</code> and plot the treatment effects by the split variable.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_age</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/didnpplothte.html">didnpplothte</a></span><span class="op">(</span></span>
+<span>  obj <span class="op">=</span> <span class="va">tym1b</span>,</span>
+<span>  level <span class="op">=</span> <span class="fl">95</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">age</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
+<span>  n.intervals <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Age"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">data.a</span></span>
+<span><span class="co">#R&gt;            atet    atet.sd        by</span></span>
+<span><span class="co">#R&gt;  1   0.02098298 0.04544840   (6,6.3]</span></span>
+<span><span class="co">#R&gt;  4   0.12756955 0.05124467 (6.9,7.2]</span></span>
+<span><span class="co">#R&gt;  7  -0.05394528 0.02034926 (7.8,8.1]</span></span>
+<span><span class="co">#R&gt;  10  0.05066561 0.04138021   (8.7,9]</span></span>
+<span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">data.b</span></span>
+<span><span class="co">#R&gt;           atet    atet.sd        by</span></span>
+<span><span class="co">#R&gt;  1  0.02794484 0.02296994   (6,6.3]</span></span>
+<span><span class="co">#R&gt;  4  0.10182851 0.02721182 (6.9,7.2]</span></span>
+<span><span class="co">#R&gt;  7  0.03133934 0.01940082 (7.8,8.1]</span></span>
+<span><span class="co">#R&gt;  10 0.14553113 0.03190385   (8.7,9]</span></span>
+<span></span>
+<span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">plot.a</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_age-1.png"><!-- --></p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">plot.b</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_age-2.png"><!-- --></p>
+<p>Ameding ggplot object is easy. For example adding a 0 horizontal line is</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">plot.a</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_age2-1.png"><!-- --></p>
+<blockquote>
+<p>Anternatively, one can use the <code>data.a</code> and <code>data.b</code> objects to plot from scratch.</p>
+</blockquote>
+<p>The treatment effects can be visualized by and over. Variable <code>by</code> can be both categorical and continuous, while <code>over</code> must be categorical. For example, to plot treatment effects by age over race, specify the <code>over</code> option:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_age_race</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/didnpplothte.html">didnpplothte</a></span><span class="op">(</span></span>
+<span>  obj <span class="op">=</span> <span class="va">tym1b</span>,</span>
+<span>  level <span class="op">=</span> <span class="fl">90</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">age</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
+<span>  n.intervals <span class="op">=</span> <span class="fl">7</span>,</span>
+<span>  over <span class="op">=</span> <span class="va">race</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Age"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"ATET"</span>,</span>
+<span>  point_size <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  over.labels.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    old <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span>,</span>
+<span>    new <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Hispanic"</span>, <span class="st">"White"</span>, <span class="st">"Black"</span>, <span class="st">"Asian"</span>, <span class="st">"Other"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  text_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
+<span><span class="co">#R&gt;   d1b:</span></span>
+<span><span class="co">#R&gt;            atet    atet.sd          by     over</span></span>
+<span><span class="co">#R&gt;  1  -0.20964103 0.01319274    (6,6.43]    Asian</span></span>
+<span><span class="co">#R&gt;  2  -0.07605277 0.02439777    (6,6.43]    Black</span></span>
+<span><span class="co">#R&gt;  3   0.03082975 0.02378958    (6,6.43] Hispanic</span></span>
+<span><span class="co">#R&gt;  4   0.14379465 0.02734824    (6,6.43]    Other</span></span>
+<span><span class="co">#R&gt;  5  -0.10829371 0.01355530    (6,6.43]    White</span></span>
+<span><span class="co">#R&gt;  11 -0.15249069 0.07022176 (6.86,7.29]    Asian</span></span>
+<span><span class="co">#R&gt;  12 -0.21217141 0.03923253 (6.86,7.29]    Black</span></span>
+<span><span class="co">#R&gt;  13  0.10561193 0.02800887 (6.86,7.29] Hispanic</span></span>
+<span><span class="co">#R&gt;  14  0.09982536 0.06150928 (6.86,7.29]    Other</span></span>
+<span><span class="co">#R&gt;  15  0.20387595 0.01068616 (6.86,7.29]    White</span></span>
+<span><span class="co">#R&gt;  21  0.17657789 0.05142644 (7.71,8.14]    Asian</span></span>
+<span><span class="co">#R&gt;  22  0.08737654 0.05330049 (7.71,8.14]    Black</span></span>
+<span><span class="co">#R&gt;  23  0.02689318 0.01964664 (7.71,8.14] Hispanic</span></span>
+<span><span class="co">#R&gt;  24 -0.27806531 0.04296285 (7.71,8.14]    Other</span></span>
+<span><span class="co">#R&gt;  25  0.39222103 0.01691192 (7.71,8.14]    White</span></span>
+<span><span class="co">#R&gt;  31  0.33645553 0.09689606    (8.57,9]    Asian</span></span>
+<span><span class="co">#R&gt;  32  0.27223728 0.04334071    (8.57,9]    Black</span></span>
+<span><span class="co">#R&gt;  33  0.14068491 0.03302176    (8.57,9] Hispanic</span></span>
+<span><span class="co">#R&gt;  34 -0.18383198 0.04735856    (8.57,9]    Other</span></span>
+<span><span class="co">#R&gt;  35  0.46651652 0.01969188    (8.57,9]    White</span></span>
+<span></span>
+<span><span class="va">tym1b_gr_age_race</span><span class="op">$</span><span class="va">data.a</span></span>
+<span><span class="co">#R&gt;            atet     atet.sd          by     over</span></span>
+<span><span class="co">#R&gt;  2   0.22475431 0.003203582    (6,6.43]    Black</span></span>
+<span><span class="co">#R&gt;  3   0.01334237 0.047541039    (6,6.43] Hispanic</span></span>
+<span><span class="co">#R&gt;  4   0.09140577 0.071056124    (6,6.43]    Other</span></span>
+<span><span class="co">#R&gt;  5   0.13707317 0.027991451    (6,6.43]    White</span></span>
+<span><span class="co">#R&gt;  12 -0.17871291 0.083402708 (6.86,7.29]    Black</span></span>
+<span><span class="co">#R&gt;  13  0.13554305 0.052548695 (6.86,7.29] Hispanic</span></span>
+<span><span class="co">#R&gt;  14 -0.08310313 0.250658197 (6.86,7.29]    Other</span></span>
+<span><span class="co">#R&gt;  15 -0.09325703 0.070244277 (6.86,7.29]    White</span></span>
+<span><span class="co">#R&gt;  21  0.70576875 0.142139346 (7.71,8.14]    Asian</span></span>
+<span><span class="co">#R&gt;  22  0.32083881 0.020310142 (7.71,8.14]    Black</span></span>
+<span><span class="co">#R&gt;  23 -0.06414731 0.021142968 (7.71,8.14] Hispanic</span></span>
+<span><span class="co">#R&gt;  24 -0.82890907 0.046857866 (7.71,8.14]    Other</span></span>
+<span><span class="co">#R&gt;  25  0.36450799 0.024178552 (7.71,8.14]    White</span></span>
+<span><span class="co">#R&gt;  32  0.31886794 0.046907969    (8.57,9]    Black</span></span>
+<span><span class="co">#R&gt;  33  0.03884674 0.042900616    (8.57,9] Hispanic</span></span>
+<span><span class="co">#R&gt;  34  0.27960002 0.195326520    (8.57,9]    Other</span></span>
+<span><span class="co">#R&gt;  35  0.48706793 0.036976917    (8.57,9]    White</span></span>
+<span><span class="va">tym1b_gr_age_race</span><span class="op">$</span><span class="va">plot.a</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_age_race-1.png"><!-- --></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">tym1b_gr_age_race</span><span class="op">$</span><span class="va">data.b</span></span>
+<span><span class="co">#R&gt;            atet    atet.sd          by     over</span></span>
+<span><span class="co">#R&gt;  1  -0.20964103 0.01319274    (6,6.43]    Asian</span></span>
+<span><span class="co">#R&gt;  2  -0.07605277 0.02439777    (6,6.43]    Black</span></span>
+<span><span class="co">#R&gt;  3   0.03082975 0.02378958    (6,6.43] Hispanic</span></span>
+<span><span class="co">#R&gt;  4   0.14379465 0.02734824    (6,6.43]    Other</span></span>
+<span><span class="co">#R&gt;  5  -0.10829371 0.01355530    (6,6.43]    White</span></span>
+<span><span class="co">#R&gt;  11 -0.15249069 0.07022176 (6.86,7.29]    Asian</span></span>
+<span><span class="co">#R&gt;  12 -0.21217141 0.03923253 (6.86,7.29]    Black</span></span>
+<span><span class="co">#R&gt;  13  0.10561193 0.02800887 (6.86,7.29] Hispanic</span></span>
+<span><span class="co">#R&gt;  14  0.09982536 0.06150928 (6.86,7.29]    Other</span></span>
+<span><span class="co">#R&gt;  15  0.20387595 0.01068616 (6.86,7.29]    White</span></span>
+<span><span class="co">#R&gt;  21  0.17657789 0.05142644 (7.71,8.14]    Asian</span></span>
+<span><span class="co">#R&gt;  22  0.08737654 0.05330049 (7.71,8.14]    Black</span></span>
+<span><span class="co">#R&gt;  23  0.02689318 0.01964664 (7.71,8.14] Hispanic</span></span>
+<span><span class="co">#R&gt;  24 -0.27806531 0.04296285 (7.71,8.14]    Other</span></span>
+<span><span class="co">#R&gt;  25  0.39222103 0.01691192 (7.71,8.14]    White</span></span>
+<span><span class="co">#R&gt;  31  0.33645553 0.09689606    (8.57,9]    Asian</span></span>
+<span><span class="co">#R&gt;  32  0.27223728 0.04334071    (8.57,9]    Black</span></span>
+<span><span class="co">#R&gt;  33  0.14068491 0.03302176    (8.57,9] Hispanic</span></span>
+<span><span class="co">#R&gt;  34 -0.18383198 0.04735856    (8.57,9]    Other</span></span>
+<span><span class="co">#R&gt;  35  0.46651652 0.01969188    (8.57,9]    White</span></span>
+<span><span class="va">tym1b_gr_age_race</span><span class="op">$</span><span class="va">plot.b</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_age_race-2.png"><!-- --></p>
+<p>Note that the graph shows the <strong>90%</strong> confidence interval.</p>
+<blockquote>
+<p>Alternatively use the data from the object <code>tym1b_gr_age_race</code></p>
+</blockquote>
+<p>to produce another type of graph:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">crit.value</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">)</span> <span class="co"># move them .05 to the left and right</span></span>
+<span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="va">tym1b_gr_age_race</span><span class="op">$</span><span class="va">data.b</span></span>
+<span><span class="va">d1</span><span class="op">$</span><span class="va">Race</span> <span class="op">&lt;-</span> <span class="va">d1</span><span class="op">$</span><span class="va">over</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">d1</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">by</span>, y <span class="op">=</span> <span class="va">atet</span>, color <span class="op">=</span> <span class="va">Race</span>, group <span class="op">=</span> <span class="va">Race</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">atet</span> <span class="op">-</span> <span class="va">crit.value</span><span class="op">*</span><span class="va">atet.sd</span>, ymax <span class="op">=</span> <span class="va">atet</span> <span class="op">+</span> <span class="va">crit.value</span><span class="op">*</span><span class="va">atet.sd</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"black"</span>, width <span class="op">=</span> <span class="fl">.1</span>, position <span class="op">=</span> <span class="va">pd</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>position <span class="op">=</span> <span class="va">pd</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>position <span class="op">=</span> <span class="va">pd</span>, size <span class="op">=</span> <span class="fl">3</span>, shape <span class="op">=</span> <span class="fl">21</span>, fill <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Age"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"ATET"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"right"</span>, text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">17</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_age_race2-1.png"><!-- --></p>
+<p>The next plot shows treatment effects by age over sex:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_age_sex</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/didnpplothte.html">didnpplothte</a></span><span class="op">(</span></span>
+<span>  obj <span class="op">=</span> <span class="va">tym1b</span>,</span>
+<span>  level <span class="op">=</span> <span class="fl">90</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">age</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
+<span>  n.intervals <span class="op">=</span> <span class="fl">7</span>,</span>
+<span>  over <span class="op">=</span> <span class="va">sex</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Age"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"ATET"</span>,</span>
+<span>  point_size <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  over.labels.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Female"</span>, <span class="st">"Male"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  text_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
+<span><span class="co">#R&gt;   d1b:</span></span>
+<span><span class="co">#R&gt;             atet    atet.sd          by   over</span></span>
+<span><span class="co">#R&gt;  1  -0.002866212 0.02549606    (6,6.43] Female</span></span>
+<span><span class="co">#R&gt;  2   0.054954010 0.03725189    (6,6.43]   Male</span></span>
+<span><span class="co">#R&gt;  5   0.086338267 0.02869658 (6.86,7.29] Female</span></span>
+<span><span class="co">#R&gt;  6   0.115404434 0.04244762 (6.86,7.29]   Male</span></span>
+<span><span class="co">#R&gt;  9  -0.007366675 0.04303305 (7.71,8.14] Female</span></span>
+<span><span class="co">#R&gt;  10  0.066496452 0.03115987 (7.71,8.14]   Male</span></span>
+<span><span class="co">#R&gt;  13  0.123082019 0.08840179    (8.57,9] Female</span></span>
+<span><span class="co">#R&gt;  14  0.165280060 0.04458252    (8.57,9]   Male</span></span>
+<span></span>
+<span><span class="va">tym1b_gr_age_sex</span><span class="op">$</span><span class="va">data.a</span></span>
+<span><span class="co">#R&gt;             atet    atet.sd          by   over</span></span>
+<span><span class="co">#R&gt;  1   0.046508387 0.06098738    (6,6.43] Female</span></span>
+<span><span class="co">#R&gt;  2  -0.001907052 0.06888927    (6,6.43]   Male</span></span>
+<span><span class="co">#R&gt;  5   0.152910875 0.05661234 (6.86,7.29] Female</span></span>
+<span><span class="co">#R&gt;  6   0.106305229 0.06672100 (6.86,7.29]   Male</span></span>
+<span><span class="co">#R&gt;  9   0.001774249 0.03186786 (7.71,8.14] Female</span></span>
+<span><span class="co">#R&gt;  10 -0.102699867 0.04465966 (7.71,8.14]   Male</span></span>
+<span><span class="co">#R&gt;  13  0.004173214 0.07068727    (8.57,9] Female</span></span>
+<span><span class="co">#R&gt;  14  0.092397690 0.04007201    (8.57,9]   Male</span></span>
+<span><span class="va">tym1b_gr_age_sex</span><span class="op">$</span><span class="va">plot.a</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_age_sex-1.png"><!-- --></p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">tym1b_gr_age_sex</span><span class="op">$</span><span class="va">data.b</span></span>
+<span><span class="co">#R&gt;             atet    atet.sd          by   over</span></span>
+<span><span class="co">#R&gt;  1  -0.002866212 0.02549606    (6,6.43] Female</span></span>
+<span><span class="co">#R&gt;  2   0.054954010 0.03725189    (6,6.43]   Male</span></span>
+<span><span class="co">#R&gt;  5   0.086338267 0.02869658 (6.86,7.29] Female</span></span>
+<span><span class="co">#R&gt;  6   0.115404434 0.04244762 (6.86,7.29]   Male</span></span>
+<span><span class="co">#R&gt;  9  -0.007366675 0.04303305 (7.71,8.14] Female</span></span>
+<span><span class="co">#R&gt;  10  0.066496452 0.03115987 (7.71,8.14]   Male</span></span>
+<span><span class="co">#R&gt;  13  0.123082019 0.08840179    (8.57,9] Female</span></span>
+<span><span class="co">#R&gt;  14  0.165280060 0.04458252    (8.57,9]   Male</span></span>
+<span><span class="va">tym1b_gr_age_sex</span><span class="op">$</span><span class="va">plot.b</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_age_sex-2.png"><!-- --></p>
+<p>Finally, both <code>by</code> and <code>over</code> are both categorical:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tym1b_gr_sex_race</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/didnpplothte.html">didnpplothte</a></span><span class="op">(</span></span>
+<span>  obj <span class="op">=</span> <span class="va">tym1b</span>,</span>
+<span>  level <span class="op">=</span> <span class="fl">95</span>,</span>
+<span>  by <span class="op">=</span> <span class="va">sex</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
+<span>  over <span class="op">=</span> <span class="va">race</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"Sex"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"ATET"</span>,</span>
+<span>  point_size <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  by.labels.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Female"</span>, <span class="st">"Male"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  over.labels.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    old <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span>,</span>
+<span>    new <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Hispanic"</span>, <span class="st">"White"</span>, <span class="st">"Black"</span>, <span class="st">"Asian"</span>, <span class="st">"Other"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  text_size <span class="op">=</span> <span class="fl">17</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tym1b_gr_sex_race</span><span class="op">$</span><span class="va">data.a</span></span>
+<span><span class="co">#R&gt;            atet    atet.sd     by     over</span></span>
+<span><span class="co">#R&gt;  2  -0.09825377 0.01891277 Female    Black</span></span>
+<span><span class="co">#R&gt;  3   0.05093228 0.03484335 Female Hispanic</span></span>
+<span><span class="co">#R&gt;  4   0.15481958 0.09792690 Female    Other</span></span>
+<span><span class="co">#R&gt;  5   0.16793775 0.01432895 Female    White</span></span>
+<span><span class="co">#R&gt;  6   0.70576875 0.14213935   Male    Asian</span></span>
+<span><span class="co">#R&gt;  7   0.34157147 0.03567464   Male    Black</span></span>
+<span><span class="co">#R&gt;  8   0.01483445 0.02632963   Male Hispanic</span></span>
+<span><span class="co">#R&gt;  9  -0.25536083 0.05338534   Male    Other</span></span>
+<span><span class="co">#R&gt;  10  0.34587453 0.05869224   Male    White</span></span>
+<span><span class="va">tym1b_gr_sex_race</span><span class="op">$</span><span class="va">plot.a</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_sex_race-1.png"><!-- --></p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">tym1b_gr_sex_race</span><span class="op">$</span><span class="va">data.b</span></span>
+<span><span class="co">#R&gt;             atet     atet.sd     by     over</span></span>
+<span><span class="co">#R&gt;  1   0.107027217 0.074520424 Female    Asian</span></span>
+<span><span class="co">#R&gt;  2   0.009058775 0.046353597 Female    Black</span></span>
+<span><span class="co">#R&gt;  3   0.046264674 0.039823140 Female Hispanic</span></span>
+<span><span class="co">#R&gt;  4  -0.113366928 0.038678248 Female    Other</span></span>
+<span><span class="co">#R&gt;  5   0.228191049 0.008991708 Female    White</span></span>
+<span><span class="co">#R&gt;  6   0.089375898 0.044636703   Male    Asian</span></span>
+<span><span class="co">#R&gt;  7  -0.016989085 0.033187452   Male    Black</span></span>
+<span><span class="co">#R&gt;  8   0.098589546 0.025485545   Male Hispanic</span></span>
+<span><span class="co">#R&gt;  9   0.080541130 0.026648429   Male    Other</span></span>
+<span><span class="co">#R&gt;  10  0.207527284 0.020473383   Male    White</span></span>
+<span><span class="va">tym1b_gr_sex_race</span><span class="op">$</span><span class="va">plot.b</span></span></code></pre></div>
+<p><img src="reference/figures/README-gr_sex_race-2.png"><!-- --></p>
 </div>
 <div class="section level2">
 <h2 id="additional-resources">Additional Resources<a class="anchor" aria-label="anchor" href="#additional-resources"></a>
