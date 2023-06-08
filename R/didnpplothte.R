@@ -91,12 +91,15 @@ didnpplothte <- function(
     over = NULL,
     xlab = "",
     ylab = "ATET",
+    over.lab = "ATET over",
+    over.ci.lab = "Conf.Int.",
     point_size = 3,
     line_width = 2,
-    labels.values = NULL,
+    by.labels.values = NULL,
+    over.labels.values = NULL,
     text_size = 17){
 
-    if(sum(class(obj) == "didnpreg") != 1) stop ("Run 'didnpreg' first")
+    if(sum(class(obj) == "didnpreg") != 1) stop ("Run 'didnpreg' first", call. = FALSE)
 
     # correspondence.val <- data.frame(
     #     old = c(1,2,3,4,5),
@@ -108,7 +111,7 @@ didnpplothte <- function(
     }
     crit.value <- qnorm( 1 - (1-level/100)/2 )
 
-    # check the length ----
+    # check the lengths ----
 
     if (is.null(over)) {
 
@@ -116,7 +119,7 @@ didnpplothte <- function(
 
         if (obj$do.TTb) {
             # do two plots: for TTa and TTb
-            if (length(by) != length(obj$TTb.i)) stop ("The length of 'by' must be equal to the length of 'TTb.i'")
+            if (length(by) != length(obj$TTb.i)) stop ("The length of 'by' must be equal to the length of 'TTb.i'", call. = FALSE)
 
             # ateti.b <- obj$TTb.i.boot
             # ateti   <- obj$TTb.i
@@ -125,7 +128,7 @@ didnpplothte <- function(
 
         } else {
             # do one plot
-            if (length(by) != length(obj$TTa.i)) stop ("The length of 'by' must be equal to the length of 'TTa.i'")
+            if (length(by) != length(obj$TTa.i)) stop ("The length of 'by' must be equal to the length of 'TTa.i'", call. = FALSE)
 
         }
 
@@ -135,48 +138,95 @@ didnpplothte <- function(
 
         if (obj$do.TTb) {
             # do two plots: for TTa and TTb
-            if (length(by) != length(obj$TTb.i)) stop ("The length of 'by' must be equal to the length of 'TTb.i'")
-            if (length(over) != length(obj$TTb.i)) stop ("The length of 'over' must be equal to the length of 'TTb.i'")
+            if (length(by) != length(obj$TTb.i)) stop ("The length of 'by' must be equal to the length of 'TTb.i'", call. = FALSE)
+            if (length(over) != length(obj$TTb.i)) stop ("The length of 'over' must be equal to the length of 'TTb.i'", call. = FALSE)
 
         } else {
             # do one plot
-            if (length(by) != length(obj$TTa.i)) stop ("The length of 'by' must be equal to the length of 'TTa.i'")
-            if (length(over) != length(obj$TTa.i)) stop ("The length of 'over' must be equal to the length of 'TTa.i'")
+            if (length(by) != length(obj$TTa.i)) stop ("The length of 'by' must be equal to the length of 'TTa.i'", call. = FALSE)
+            if (length(over) != length(obj$TTa.i)) stop ("The length of 'over' must be equal to the length of 'TTa.i'", call. = FALSE)
 
         }
     }
 
+    # check missing values
+
+    if ( sum(is.na(by)) ) stop ("'by' contains missing values", call. = FALSE)
+
     # graph ----
 
-    if (is.null(over)) {
+    ## handle "over" ----
 
-        # single "by" ----
+    if (!is.null(over)) {
 
-        if (class(by) == "factor"){
+        if (class(over) != "factor") stop("Inappropriate class of 'over'", call. = FALSE)
+        if ( sum(is.na(over)) ) stop ("'over' contains missing values", call. = FALSE)
 
-            ## 'by' is a factor ----
+        over.levels <- sort( levels(over) )
 
-            by.levels <- sort( unique(by) )
-            n.levels <-  length(by.levels)
+        n.over.levels <- length(by.levels)
 
-            if (is.null(labels.values)) {
+        if (is.null(over.labels.values)) {
 
-                by2.levels <- by.levels
+            over2 <- over
+            over2.levels <- over.levels
 
-            } else {
+        } else {
 
-                if (nrow(labels.values) != n.levels) stop("Inappropriate number of rows in 'labels.values'")
-                if (ncol(labels.values) != 2) stop("Inappropriate number of cols in 'labels.values'")
-                if (!all(by.levels == labels.values[,1]) ) stop("Column 1 of 'labels.values' contains some inappropriate values")
-                colnames(labels.values) <- c("old", "new")
-                by2.levels <- merge.data.frame(
-                    data.frame(old = by.levels),
-                    labels.values)[,2]
-            }
+            if (nrow(over.labels.values) != n.over.levels) stop("Inappropriate number of rows in 'over.labels.values'", call. = FALSE)
+            if (ncol(over.labels.values) != 2) stop("Inappropriate number of cols in 'over.labels.values'", call. = FALSE)
+            if (!all(over.levels == over.labels.values[,1]) ) stop("Column 1 of 'over.labels.values' contains some inappropriate values", call. = FALSE)
+            colnames(over.labels.values) <- c("old", "new")
+            over2 <- merge.data.frame(
+                data.frame(order = 1:length(over), old = over),
+                over.labels.values)
+            over2 <- factor( over2[order(over2$order), 3] )
+            over2.levels <- sort( levels(over2) )
 
-            if (obj$do.TTb) {
+        }
 
-                ## TTa and TTb ----
+        n.over.levels <- length(over2.levels)
+    }
+
+    # 'by' is a factor ----
+
+    if (class(by) == "factor"){
+
+        by.levels <- sort( unique(by) )
+        n.levels <-  length(by.levels)
+
+        if (is.null(by.labels.values)) {
+
+            by2 <- by
+            by2.levels <- by.levels
+
+        } else {
+
+            if (nrow(by.labels.values) != n.levels) stop("Inappropriate number of rows in 'by.labels.values'", call. = FALSE)
+            if (ncol(by.labels.values) != 2) stop("Inappropriate number of cols in 'by.labels.values'", call. = FALSE)
+            if (!all(sort(by.levels) == sort(by.labels.values[,1])) ) stop("Column 1 of 'by.labels.values' contains some inappropriate values", call. = FALSE)
+            colnames(by.labels.values) <- c("old", "new")
+            by2.levels <- merge.data.frame(
+                data.frame(old = by.levels),
+                by.labels.values)[,2]
+            by2 <- merge.data.frame(
+                data.frame(order = 1:length(by), old = by),
+                by.labels.values)
+            by2 <- factor( by2[order(by2$order), 3] )
+            by2.levels <- sort( levels(by2) )
+
+        }
+
+        # cat.print(table(by2))
+        # cat.print(by2.levels)
+
+        if (obj$do.TTb) {
+
+            ## TTa and TTb ----
+
+            if (is.null(over)) {
+
+                # single "by" ----
 
                 ## TTb ----
 
@@ -238,13 +288,128 @@ didnpplothte <- function(
                     theme_bw() +
                     theme(legend.position = "none", text = element_text(size = text_size))
 
-                tymch <- list(plot.a = plot.a, plot.b = plot.b, data.a = d1a, data.b = d1b)
-                class(tymch) <- c("didnpplot", "didnp")
-                return(tymch)
-
             } else {
 
-                # TTa ----
+                # double "by" ----
+
+                ## TTb ----
+
+                # cat(" factor double 'by'\n")
+
+                n.by.levels <-  n.levels
+                atet <- atet.sd <- bY <- oY <- numeric(n.by.levels*n.over.levels)
+                by10 <- over10 <-  character(n.by.levels*n.over.levels)
+
+                for (b in 1:n.by.levels) {
+                    for (o in 1:n.over.levels) {
+                        sele <- by2 == by2.levels[b] & over2 == over2.levels[o]
+                        index <- (b-1)*(n.over.levels) + o
+                        if ( sum(sele) == 0 ) {
+                            atet[index] <- NA
+                            atet.sd[index] <- NA
+                        } else if (sum(sele) == 1) {
+                            atet[index] <- obj$TTb.i[sele]
+                            atet.sd[index] <- sd(obj$TTb.i.boot[sele,])
+                        } else {
+                            atet[index] <- mean(obj$TTb.i[sele])
+                            atet.sd[index] <- sd(colMeans(obj$TTb.i.boot[sele,]))
+                        }
+                        by10[index] <- as.character(by2.levels[b])
+                        over10[index] <- over2.levels[o]
+                        bY[index] <- b
+                        oY[index] <- o
+                    }
+                }
+
+                d1b <-
+                    data.frame(
+                        atet = atet,
+                        atet.sd = atet.sd,
+                        by = by10,
+                        over = over10
+                    )
+                d1b <- d1b[complete.cases(d1b),]
+
+                plot.b <- ggplot(d1b, aes(fill = over, y = atet, x = by)) +
+                    geom_bar(position = position_dodge(width = 0.8), stat = "identity") +
+                    geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), width= .2, position = position_dodge(0.8)) +
+                    labs(x = xlab, y = ylab) +
+                    geom_point(size = point_size, position = position_dodge(0.8)) +
+                    scale_fill_discrete(
+                        name = xlab
+                    ) +
+                    theme_bw() +
+                    theme(legend.position = "none", text = element_text(size = text_size))
+
+                # cat(" factor double 'by': end\n")
+
+                ## TTa ----
+
+                by2 <- by2[obj$TTa.positions.in.TTb]
+
+                over2 <- over2[obj$TTa.positions.in.TTb]
+
+                n.by.levels <-  n.levels
+                atet <- atet.sd <- bY <- oY <- numeric(n.by.levels*n.over.levels)
+                by10 <- over10 <-  character(n.by.levels*n.over.levels)
+
+                for (b in 1:n.by.levels) {
+                    for (o in 1:n.over.levels) {
+                        sele <- by2 == by2.levels[b] & over2 == over2.levels[o]
+                        index <- (b-1)*(n.over.levels) + o
+                        if ( sum(sele) == 0 ) {
+                            atet[index] <- NA
+                            atet.sd[index] <- NA
+                        } else if (sum(sele) == 1) {
+                            atet[index] <- obj$TTa.i[sele]
+                            atet.sd[index] <- sd(obj$TTa.i.boot[sele,])
+                        } else {
+                            atet[index] <- mean(obj$TTa.i[sele])
+                            atet.sd[index] <- sd(colMeans(obj$TTa.i.boot[sele,]))
+                        }
+                        by10[index] <- as.character(by2.levels[b])
+                        # cat.print(as.character( by2.levels[b]) )
+                        # cat.print(by10[index])
+                        over10[index] <- over2.levels[o]
+                        bY[index] <- b
+                        oY[index] <- o
+                    }
+                }
+
+                d1a <-
+                    data.frame(
+                        atet = atet,
+                        atet.sd = atet.sd,
+                        by = by10,
+                        over = over10
+                    )
+                d1a <- d1a[complete.cases(d1a),]
+
+                plot.a <- ggplot(d1a, aes(fill = over, y = atet, x = by)) +
+                    geom_bar(position = position_dodge(width = 0.8), stat = "identity") +
+                    # viridis::scale_fill_viridis(discrete = TRUE, option = "A") +
+                    geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), width= .2, position = position_dodge(0.8)) +
+                    labs(x = xlab, y = ylab) +
+                    geom_point(size = point_size, position = position_dodge(0.8)) +
+                    scale_fill_discrete(
+                        name = xlab
+                    ) +
+                    theme_bw() +
+                    theme(legend.position = "none", text = element_text(size = text_size))
+
+            }
+
+            tymch <- list(plot.a = plot.a, plot.b = plot.b, data.a = d1a, data.b = d1b)
+            class(tymch) <- c("didnpplot", "didnp")
+            return(tymch)
+
+        } else {
+
+            # TTa ----
+
+            if (is.null(over)) {
+
+                # single "by" ----
 
                 atet <- atet.sd <- numeric(n.levels)
 
@@ -253,7 +418,7 @@ didnpplothte <- function(
                     atet.sd[i] <- sd(colMeans(obj$TTa.i.boot[by == by.levels[i],]))
                 }
 
-                d1 <-
+                d1a <-
                     data.frame(
                         atet = atet,
                         atet.sd = atet.sd,
@@ -261,44 +426,103 @@ didnpplothte <- function(
                         by2 = by2.levels
                     )
 
-                plot.a <- ggplot(d1, aes(x = by2, y = atet, fill = by2)) +
+                plot.a <- ggplot(d1a, aes(x = by2, y = atet, fill = by2)) +
                     geom_bar(position = position_dodge(), stat = "identity") +
                     geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), color = "black", width = .1) +
                     labs(x = xlab, y = ylab) +
                     geom_point(size = point_size) +
                     scale_fill_discrete(
-                        name = xlab,#
+                        name = xlab#,
                         # labels = c("Traditional", "Comprehensive", "Technology")
                     ) +
                     theme_bw() +
                     theme(legend.position = "none", text = element_text(size = text_size))
 
-                tymch <- list(plot.a = plot.a, data.a = d1)
-                class(tymch) <- c("didnpplot", "didnp")
-                return(tymch)
+            } else {
+
+                # double "by" ----
+
+                # cat(" factor double 'by'\n")
+
+                n.by.levels <-  n.levels
+                atet <- atet.sd <- bY <- oY <- numeric(n.by.levels*n.over.levels)
+                by10 <- over10 <-  character(n.by.levels*n.over.levels)
+
+                for (b in 1:n.by.levels) {
+                    for (o in 1:n.over.levels) {
+                        sele <- by2 == by2.levels[b] & over2 == over2.levels[o]
+                        index <- (b-1)*(n.over.levels) + o
+                        if ( sum(sele) == 0 ) {
+                            atet[index] <- NA
+                            atet.sd[index] <- NA
+                        } else if (sum(sele) == 1) {
+                            atet[index] <- obj$TTa.i[sele]
+                            atet.sd[index] <- sd(obj$TTa.i.boot[sele,])
+                        } else {
+                            atet[index] <- mean(obj$TTa.i[sele])
+                            atet.sd[index] <- sd(colMeans(obj$TTa.i.boot[sele,]))
+                        }
+                        by10[index] <- as.character(by2.levels[b])
+                        # cat.print(as.character( by2.levels[b]) )
+                        # cat.print(by10[index])
+                        over10[index] <- over2.levels[o]
+                        bY[index] <- b
+                        oY[index] <- o
+                    }
+                }
+
+                d1a <-
+                    data.frame(
+                        atet = atet,
+                        atet.sd = atet.sd,
+                        by = by10,
+                        over = over10
+                    )
+                d1a <- d1a[complete.cases(d1a),]
+
+                plot.a <- ggplot(d1a, aes(fill = over, y = atet, x = by)) +
+                    geom_bar(position = position_dodge(width = 0.8), stat = "identity") +
+                    # viridis::scale_fill_viridis(discrete = TRUE, option = "A") +
+                    geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), width= .2, position = position_dodge(0.8)) +
+                    labs(x = xlab, y = ylab) +
+                    geom_point(size = point_size, position = position_dodge(0.8)) +
+                    scale_fill_discrete(
+                        name = xlab
+                    ) +
+                    theme_bw() +
+                    theme(legend.position = "none", text = element_text(size = text_size))
+
+                # cat(" factor double 'by': end\n")
 
             }
 
+            tymch <- list(plot.a = plot.a, data.a = d1a)
+            class(tymch) <- c("didnpplot", "didnp")
+            return(tymch)
 
-        } else if (class(by) == "numeric"){
+        }
 
-            ## 'by' is a continuous ----
+    } else if (class(by) == "numeric"){
 
-            if (obj$do.TTb) {
+        # 'by' is a continuous ----
 
-                ## TTa and TTb ----
+        if (obj$do.TTb) {
 
-                ## TTb ----
+            ## TTa and TTb ----
 
-                cat("TTb begin")
+            ## TTb ----
 
-                my.by <- by
+            cat("TTb begin\n")
 
-                by <- base::cut(my.by, n.intervals)
+            my.by <- by
 
-                by.levels <- sort( unique(by) )
+            by <- base::cut(my.by, n.intervals)
 
-                n.levels <-  length(by.levels)
+            by.levels <- sort( unique(by) )
+
+            n.levels <-  length(by.levels)
+
+            if (is.null(over)) {
 
                 atet <- atet.sd <-  numeric(n.levels)
 
@@ -322,23 +546,77 @@ didnpplothte <- function(
                     theme_bw() +
                     theme(legend.position = "none", text = element_text(size = text_size))
 
-                cat("TTb end")
+            } else {
+
+                # double "by" ----
+
+                n.by.levels <-  n.levels
+                atet <- atet.sd <- numeric(n.by.levels*n.over.levels)
+                by10 <- over10 <-  character(n.by.levels*n.over.levels)
+
+                for (b in 1:n.by.levels) {
+                    for (o in 1:n.over.levels) {
+                        sele <- by == by.levels[b] & over2 == over2.levels[o]
+                        index <- (b-1)*(n.over.levels) + o
+                        if ( sum(sele) == 0 ) {
+                            atet[index] <- NA
+                            atet.sd[index] <- NA
+                        } else if (sum(sele) == 1) {
+                            atet[index] <- obj$TTb.i[sele]
+                            atet.sd[index] <- sd(obj$TTb.i.boot[sele,])
+                        } else {
+                            atet[index] <- mean(obj$TTb.i[sele])
+                            atet.sd[index] <- sd(colMeans(obj$TTb.i.boot[sele,]))
+                        }
+                        by10[index] <- by.levels[b]
+                        over10[index] <- over2.levels[o]
+                    }
+                }
+
+                d1b <-
+                    data.frame(
+                        atet = atet,
+                        atet.sd = atet.sd,
+                        by = by10,
+                        over = over10
+                    )
+                # cat.print(d1b)
+                d1b <- d1b[complete.cases(d1b),]
+
+                cat.print(d1b)
+
+                plot.b <- ggplot(d1b,aes(x = by, y = atet, color = over, group = over)) +
+                    geom_line(linewidth = line_width) +
+                    geom_point(size = point_size, shape = 16, color = "black") +
+                    labs(x = xlab, y = ylab) +
+                    geom_ribbon(aes(ymin = atet - 2*atet.sd,
+                                    ymax = atet + 2*atet.sd,
+                                    fill = over), alpha = 0.3) +
+                    guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
+                    theme_bw() +
+                    theme(legend.position = "right", text = element_text(size = 17))
+
+            }
+
+            cat("TTb end\n")
 
 
-                ## TTa ----
+            ## TTa ----
 
-                cat("TTa begin")
+            cat("TTa begin\n")
 
 
-                by <- my.by[obj$TTa.positions.in.TTb]
+            by <- my.by[obj$TTa.positions.in.TTb]
 
-                my.by <- by
+            my.by <- by
 
-                by <- base::cut(my.by, n.intervals)
+            by <- base::cut(my.by, n.intervals)
 
-                by.levels <- sort( unique(by) )
+            by.levels <- sort( levels(by) )
 
-                n.levels <-  length(by.levels)
+            n.levels <-  length(by.levels)
+
+            if (is.null(over)) {
 
                 atet <- atet.sd <-  numeric(n.levels)
 
@@ -362,23 +640,85 @@ didnpplothte <- function(
                     theme_bw() +
                     theme(legend.position = "none", text = element_text(size = text_size))
 
-                cat("TTb end")
-
-                tymch <- list(plot.a = plot.a, plot.b = plot.b, data.a = d1a, data.b = d1b)
-                class(tymch) <- c("didnpplot", "didnp")
-                return(tymch)
-
             } else {
 
-                # TTa ----
+                # double "by" ----
 
-                my.by <- by
+                over2 <- over2[obj$TTa.positions.in.TTb]
 
-                by <- base::cut(my.by, n.intervals)
+                n.by.levels <-  n.levels
+                atet <- atet.sd <- numeric(n.by.levels*n.over.levels)
+                by10 <- over10 <-  character(n.by.levels*n.over.levels)
 
-                by.levels <- sort( unique(by) )
+                for (b in 1:n.by.levels) {
+                    for (o in 1:n.over.levels) {
+                        sele <- by == by.levels[b] & over2 == over2.levels[o]
+                        index <- (b-1)*(n.over.levels) + o
+                        if ( sum(sele) == 0 ) {
+                            atet[index] <- NA
+                            atet.sd[index] <- NA
+                        } else if (sum(sele) == 1) {
+                            atet[index] <- obj$TTa.i[sele]
+                            atet.sd[index] <- sd(obj$TTa.i.boot[sele,])
+                        } else {
+                            atet[index] <- mean(obj$TTa.i[sele])
+                            atet.sd[index] <- sd(colMeans(obj$TTa.i.boot[sele,]))
+                        }
+                        by10[index] <- by.levels[b]
+                        over10[index] <- over2.levels[o]
+                    }
+                }
 
-                n.levels <-  length(by.levels)
+                d1a <-
+                    data.frame(
+                        atet = atet,
+                        atet.sd = atet.sd,
+                        by = by10,
+                        over = over10
+                    )
+                # cat.print(d1a)
+                d1a <- d1a[complete.cases(d1a),]
+
+                # cat.print(d1a)
+
+                plot.a <- ggplot(d1a,aes(x = by, y = atet, color = over, group = over)) +
+                    geom_line(linewidth = line_width) +
+                    geom_point(size = point_size, shape = 16, color = "black") +
+                    labs(x = xlab, y = ylab) +
+                    geom_ribbon(aes(ymin = atet - 2*atet.sd,
+                                    ymax = atet + 2*atet.sd,
+                                    fill = over), alpha = 0.3) +
+                    guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
+                    theme_bw() +
+                    theme(legend.position = "right", text = element_text(size = 17))
+
+            }
+
+
+
+            cat("TTa end\n")
+
+            tymch <- list(plot.a = plot.a, plot.b = plot.b, data.a = d1a, data.b = d1b)
+            class(tymch) <- c("didnpplot", "didnp")
+            return(tymch)
+
+        } else {
+
+            # TTa ----
+
+            my.by <- by
+
+            by <- base::cut(my.by, n.intervals)
+
+            by.levels <- sort( levels(by) )
+
+            # cat.print(by.levels)
+
+            n.levels <-  length(by.levels)
+
+            if (is.null(over)) {
+
+                # single "by" ----
 
                 atet <- atet.sd <-  numeric(n.levels)
 
@@ -393,6 +733,7 @@ didnpplothte <- function(
                         atet.sd = atet.sd,
                         by = by.levels
                     )
+                d1 <- d1[complete.cases(d1),]
 
                 plot.a <- ggplot(d1, aes(x = by, y = atet, group = 1)) +
                     geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
@@ -402,20 +743,76 @@ didnpplothte <- function(
                     theme_bw() +
                     theme(legend.position = "none", text = element_text(size = text_size))
 
-                tymch <- list(plot.a = plot.a, data.a = d1)
-                class(tymch) <- c("didnpplot", "didnp")
-                return(tymch)
+            } else {
 
+                # double "by" ----
+
+                n.by.levels <-  n.levels
+                atet <- atet.sd <- bY <- oY <- numeric(n.by.levels*n.over.levels)
+                by10 <- over10 <-  character(n.by.levels*n.over.levels)
+
+                for (b in 1:n.by.levels) {
+                    for (o in 1:n.over.levels) {
+                        sele <- by == by.levels[b] & over2 == over2.levels[o]
+                        # cat.print(table(sele))
+                        # cat.print(sum(sele))
+                        # cat.print(dim(obj$TTa.i.boot))
+                        # cat.print(dim(obj$TTa.i.boot[sele,]))
+                        index <- (b-1)*(n.over.levels) + o
+                        # print(c( b, o, 1111, index))
+                        if ( sum(sele) == 0 ) {
+                            atet[index] <- NA
+                            atet.sd[index] <- NA
+                        } else if (sum(sele) == 1) {
+                            # cat.print(obj$TTa.i.boot[sele,])
+                            # cat.print(obj$TTa.i[sele])
+                            atet[index] <- obj$TTa.i[sele]
+                            atet.sd[index] <- sd(obj$TTa.i.boot[sele,])
+                        } else {
+                            atet[index] <- mean(obj$TTa.i[sele])
+                            atet.sd[index] <- sd(colMeans(obj$TTa.i.boot[sele,]))
+                        }
+                        by10[index] <- by.levels[b]
+                        over10[index] <- over2.levels[o]
+                        bY[index] <- b
+                        oY[index] <- o
+                    }
+                }
+
+                d1 <-
+                    data.frame(
+                        atet = atet,
+                        atet.sd = atet.sd,
+                        by = by10,
+                        over = over10
+                    )
+                # cat.print(d1)
+                d1 <- d1[complete.cases(d1),]
+
+                # cat.print(d1)
+
+                plot.a <- ggplot(d1,aes(x = by, y = atet, color = over, group = over)) +
+                    geom_line(linewidth = line_width) +
+                    geom_point(size = point_size, shape = 16, color = "black") +
+                    labs(x = xlab, y = ylab) +
+                    geom_ribbon(aes(ymin = atet - 2*atet.sd,
+                                    ymax = atet + 2*atet.sd,
+                                    fill = over), alpha = 0.3) +
+                    guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
+                    theme_bw() +
+                    theme(legend.position = "right", text = element_text(size = 17))
 
             }
 
-        } else {
-            stop("Incorrect class of 'by'")
+            tymch <- list(plot.a = plot.a, data.a = d1)
+            class(tymch) <- c("didnpplot", "didnp")
+            return(tymch)
+
+
         }
+
     } else {
-
-        # double "by"
-
+        stop("Inappropriate class of 'by'", call. = FALSE)
     }
 
 

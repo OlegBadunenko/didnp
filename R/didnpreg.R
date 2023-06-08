@@ -5,7 +5,6 @@
 # https://pkgdown.r-lib.org/
 # Run once to configure your package to use pkgdown
 # usethis::use_pkgdown()
-# usethis::use_pkgdown_github_pages()
 # pkgdown::build_site()
 
 # Theme: https://pkgdown.r-lib.org/articles/customise.html
