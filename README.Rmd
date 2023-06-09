@@ -19,6 +19,7 @@ library(didnp)
 # devtools::load_all("~/Dropbox/did")
 # library(BMisc)
 ```
+
 # A model-free differences-in-differences framework
 
 <!-- badges: start -->
@@ -42,7 +43,7 @@ cat(
 The **didnp** package contains tools for computing average treatment effect parameters in a Difference-in-Differences setup without specifying a model.  
 
 
-## Getting Started
+## The framework
 
 The **didnp** package implements the framework developed in
 
@@ -64,11 +65,12 @@ if ( !require("devtools") ) install.packages("devtools"); library(devtools)
 devtools::install_github("OlegBadunenko/didnp")
 ```
 
-## An example
+## Illustration
 
 > The following is a simplified example ...,  which comes from [that](https://elsevier.com/).
 
 Data set is shared by [Kuka et al, 2020](https://doi.org/10.1257/pol.20180352). Here we showcase the functionality of the package by using a subset, which is available in the package and can be loaded by
+
 ```{r data, eval = TRUE}
   library(didnp)
   library(ggplot2)
@@ -94,6 +96,8 @@ DACAsub$mysmpl <- mysmpl <-
 DACAsub$treatment_period <- ifelse( DACAsub[,"year"] > 2011, 1, 0)
 ```
 
+### Estimation
+
 To estimate the average treatment effects, we use the **didnpreg** function. Define the formula that we will use:
 
 ```{r formula, eval = TRUE}
@@ -103,7 +107,7 @@ form1 <- inschool ~ fem + race + var.bpl + state + age + yrimmig +
 
 The **didnpreg** function allows using matrices. The manual explains how to use matrix syntax (type `?didnpreg`). To obtain standard errors,
 
-> we will use a few number of bootstrap replicaitons here, but we advise to set `boot.num = 399` or more. 
+> we will use a few number of bootstrap replicaitons here, but we advise to set `boot.num = 399` or larger. 
 
 To speed up the estimation
 
@@ -118,7 +122,7 @@ tym1a <- didnpreg(
   data = DACAsub,
   subset = mysmpl,
   bwmethod = "opt",
-  boot.num = 7,
+  boot.num = 99,
   TTb = FALSE,
   print.level = 0,
   cores = 8)
@@ -133,7 +137,6 @@ summary(tym1a)
 
 Estimating $TT_b$ will take longer. The bandwidths is cross-validated.
 
-
 ```{r model1b, eval=TRUE}
 # Show output as the estimation goes
 tym1b <- didnpreg(
@@ -146,6 +149,8 @@ tym1b <- didnpreg(
   print.level = 1,
   cores = 8)
 ```
+
+### Plotting Heterogenous Treatment Effects
 
 To plot the heterogenous treatment effects, use the **didnpplothte** command. Define three variables by and over which the treatment effects will be plotted:
 
@@ -283,6 +288,7 @@ tym1b_gr_age_sex <- didnpplothte(
   over = sex[tym1b$sample1],
   xlab = "Age",
   ylab = "ATET",
+  over.lab = "Sex",
   point_size = 2,
   over.labels.values = data.frame(c(1,0), c("Female", "Male")),
   text_size = 15)
@@ -304,6 +310,7 @@ tym1b_gr_sex_race <- didnpplothte(
   over = race[tym1b$sample1],
   xlab = "Sex",
   ylab = "ATET",
+  over.lab = "Race",
   point_size = 3,
   by.labels.values = data.frame(c(1,0), c("Female", "Male")),
   over.labels.values = data.frame(

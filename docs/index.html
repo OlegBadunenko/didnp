@@ -68,7 +68,7 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <p>The <strong>didnp</strong> package contains tools for computing average treatment effect parameters in a Difference-in-Differences setup without specifying a model.</p>
 <div class="section level2">
-<h2 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
+<h2 id="the-framework">The framework<a class="anchor" aria-label="anchor" href="#the-framework"></a>
 </h2>
 <p>The <strong>didnp</strong> package implements the framework developed in</p>
 <ul><li>
@@ -86,7 +86,7 @@
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"OlegBadunenko/didnp"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="an-example">An example<a class="anchor" aria-label="anchor" href="#an-example"></a>
+<h2 id="illustration">Illustration<a class="anchor" aria-label="anchor" href="#illustration"></a>
 </h2>
 <blockquote>
 <p>The following is a simplified example …, which comes from <a href="https://elsevier.com/" class="external-link">that</a>.</p>
@@ -123,13 +123,16 @@
 <span></span>
 <span><span class="co"># generate 'treatment_period'</span></span>
 <span><span class="va">DACAsub</span><span class="op">$</span><span class="va">treatment_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span> <span class="va">DACAsub</span><span class="op">[</span>,<span class="st">"year"</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">2011</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a>
+</h3>
 <p>To estimate the average treatment effects, we use the <strong>didnpreg</strong> function. Define the formula that we will use:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">form1</span> <span class="op">&lt;-</span> <span class="va">inschool</span> <span class="op">~</span> <span class="va">fem</span> <span class="op">+</span> <span class="va">race</span> <span class="op">+</span> <span class="va">var.bpl</span> <span class="op">+</span> <span class="va">state</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">yrimmig</span> <span class="op">+</span> </span>
 <span>  <span class="va">ageimmig</span> <span class="op">|</span> <span class="va">inschool</span> <span class="op">|</span> <span class="va">year</span> <span class="op">|</span> <span class="va">elig</span> <span class="op">|</span> <span class="va">treatment_period</span> <span class="op">|</span> <span class="va">perwt</span></span></code></pre></div>
 <p>The <strong>didnpreg</strong> function allows using matrices. The manual explains how to use matrix syntax (type <code><a href="reference/didnpreg.html">?didnpreg</a></code>). To obtain standard errors,</p>
 <blockquote>
-<p>we will use a few number of bootstrap replicaitons here, but we advise to set <code>boot.num = 399</code> or more.</p>
+<p>we will use a few number of bootstrap replicaitons here, but we advise to set <code>boot.num = 399</code> or larger.</p>
 </blockquote>
 <p>To speed up the estimation</p>
 <blockquote>
@@ -143,7 +146,7 @@
 <span>  data <span class="op">=</span> <span class="va">DACAsub</span>,</span>
 <span>  subset <span class="op">=</span> <span class="va">mysmpl</span>,</span>
 <span>  bwmethod <span class="op">=</span> <span class="st">"opt"</span>,</span>
-<span>  boot.num <span class="op">=</span> <span class="fl">7</span>,</span>
+<span>  boot.num <span class="op">=</span> <span class="fl">99</span>,</span>
 <span>  TTb <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  print.level <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
@@ -167,12 +170,12 @@
 <span><span class="co">#R&gt;  6   yrimmig ordered 2.763923e-05</span></span>
 <span><span class="co">#R&gt;  7  ageimmig ordered 8.690101e-05</span></span>
 <span><span class="co">#R&gt;  </span></span>
-<span><span class="co">#R&gt;  Bootstrapping standard errors (7 replications) completed in 1 second</span></span>
+<span><span class="co">#R&gt;  Bootstrapping standard errors (99 replications) completed in 15 seconds</span></span>
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  Unconditional Treatment Effect on the Treated (ATET):</span></span>
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  TTa    = 0.03684</span></span>
-<span><span class="co">#R&gt;  TTa sd = 0.6787</span></span>
+<span><span class="co">#R&gt;  TTa sd = 0.6673</span></span>
 <span><span class="co">#R&gt;  N(TTa) = 2337</span></span></code></pre></div>
 <p>Estimating <span class="math inline"><em>T</em><em>T</em><sub><em>b</em></sub></span> will take longer. The bandwidths is cross-validated.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -209,10 +212,14 @@
 <span><span class="co">#R&gt;  TTb = 0.05493, N(TTb) = 24018</span></span>
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  Bootstrapping standard errors (99 replications)</span></span>
-<span><span class="co">#R&gt;  Bootstrapping standard errors completed in 2 minutes and 47 seconds</span></span>
+<span><span class="co">#R&gt;  Bootstrapping standard errors completed in 2 minutes and 45 seconds</span></span>
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  TTa sd = 0.6344 </span></span>
 <span><span class="co">#R&gt;  TTb sd = 0.5254</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="plotting-heterogenous-treatment-effects">Plotting Heterogenous Treatment Effects<a class="anchor" aria-label="anchor" href="#plotting-heterogenous-treatment-effects"></a>
+</h3>
 <p>To plot the heterogenous treatment effects, use the <strong>didnpplothte</strong> command. Define three variables by and over which the treatment effects will be plotted:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">DACAsub</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">esample</span>, <span class="st">"race"</span><span class="op">]</span> <span class="op">-&gt;</span> <span class="va">race</span></span>
@@ -407,6 +414,7 @@
 <span>  over <span class="op">=</span> <span class="va">sex</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Age"</span>,</span>
 <span>  ylab <span class="op">=</span> <span class="st">"ATET"</span>,</span>
+<span>  over.lab <span class="op">=</span> <span class="st">"Sex"</span>,</span>
 <span>  point_size <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  over.labels.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Female"</span>, <span class="st">"Male"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  text_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
@@ -446,6 +454,7 @@
 <span>  over <span class="op">=</span> <span class="va">race</span><span class="op">[</span><span class="va">tym1b</span><span class="op">$</span><span class="va">sample1</span><span class="op">]</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Sex"</span>,</span>
 <span>  ylab <span class="op">=</span> <span class="st">"ATET"</span>,</span>
+<span>  over.lab <span class="op">=</span> <span class="st">"Race"</span>,</span>
 <span>  point_size <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  by.labels.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Female"</span>, <span class="st">"Male"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  over.labels.values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -483,6 +492,7 @@
 <span><span class="co">#R&gt;  10  0.22764362 0.01690772   Male    White</span></span>
 <span><span class="va">tym1b_gr_sex_race</span><span class="op">$</span><span class="va">plot.b</span></span></code></pre></div>
 <p><img src="reference/figures/README-gr_sex_race-2.png"><!-- --></p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="additional-resources">Additional Resources<a class="anchor" aria-label="anchor" href="#additional-resources"></a>

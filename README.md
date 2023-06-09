@@ -20,7 +20,7 @@ The **didnp** package contains tools for computing average treatment
 effect parameters in a Difference-in-Differences setup without
 specifying a model.
 
-## Getting Started
+## The framework
 
 The **didnp** package implements the framework developed in
 
@@ -41,7 +41,7 @@ if ( !require("devtools") ) install.packages("devtools"); library(devtools)
 devtools::install_github("OlegBadunenko/didnp")
 ```
 
-## An example
+## Illustration
 
 > The following is a simplified example …, which comes from
 > [that](https://elsevier.com/).
@@ -91,6 +91,8 @@ DACAsub$mysmpl <- mysmpl <-
 DACAsub$treatment_period <- ifelse( DACAsub[,"year"] > 2011, 1, 0)
 ```
 
+### Estimation
+
 To estimate the average treatment effects, we use the **didnpreg**
 function. Define the formula that we will use:
 
@@ -103,7 +105,7 @@ The **didnpreg** function allows using matrices. The manual explains how
 to use matrix syntax (type `?didnpreg`). To obtain standard errors,
 
 > we will use a few number of bootstrap replicaitons here, but we advise
-> to set `boot.num = 399` or more.
+> to set `boot.num = 399` or larger.
 
 To speed up the estimation
 
@@ -119,7 +121,7 @@ tym1a <- didnpreg(
   data = DACAsub,
   subset = mysmpl,
   bwmethod = "opt",
-  boot.num = 7,
+  boot.num = 99,
   TTb = FALSE,
   print.level = 0,
   cores = 8)
@@ -148,12 +150,12 @@ summary(tym1a)
 #R>  6   yrimmig ordered 2.763923e-05
 #R>  7  ageimmig ordered 8.690101e-05
 #R>  
-#R>  Bootstrapping standard errors (7 replications) completed in 1 second
+#R>  Bootstrapping standard errors (99 replications) completed in 15 seconds
 #R>  
 #R>  Unconditional Treatment Effect on the Treated (ATET):
 #R>  
 #R>  TTa    = 0.03684
-#R>  TTa sd = 0.6787
+#R>  TTa sd = 0.6673
 #R>  N(TTa) = 2337
 ```
 
@@ -193,11 +195,13 @@ tym1b <- didnpreg(
 #R>  TTb = 0.05493, N(TTb) = 24018
 #R>  
 #R>  Bootstrapping standard errors (99 replications)
-#R>  Bootstrapping standard errors completed in 2 minutes and 47 seconds
+#R>  Bootstrapping standard errors completed in 2 minutes and 45 seconds
 #R>  
 #R>  TTa sd = 0.6344 
 #R>  TTb sd = 0.5254
 ```
+
+### Plotting Heterogenous Treatment Effects
 
 To plot the heterogenous treatment effects, use the **didnpplothte**
 command. Define three variables by and over which the treatment effects
@@ -447,6 +451,7 @@ tym1b_gr_age_sex <- didnpplothte(
   over = sex[tym1b$sample1],
   xlab = "Age",
   ylab = "ATET",
+  over.lab = "Sex",
   point_size = 2,
   over.labels.values = data.frame(c(1,0), c("Female", "Male")),
   text_size = 15)
@@ -493,6 +498,7 @@ tym1b_gr_sex_race <- didnpplothte(
   over = race[tym1b$sample1],
   xlab = "Sex",
   ylab = "ATET",
+  over.lab = "Race",
   point_size = 3,
   by.labels.values = data.frame(c(1,0), c("Female", "Male")),
   over.labels.values = data.frame(
