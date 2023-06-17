@@ -18,6 +18,7 @@
 #' @section didnpreg: \code{\link{didnpreg}}
 #'
 #' @name didnp-package
+#' @useDynLib didnp
 #'
 #' @aliases didnp-package
 #'

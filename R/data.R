@@ -20,7 +20,7 @@
 #'   \item{a1418}{Equals 1 if age between 14 and 18}
 #'   \item{a1922}{Equals 1 if age between 19 and 22}
 #'   \item{a2330}{Equals 1 if age between 23 and 30}
-#'   \item{htus}{Available}
+#'   \item{htus}{High take-up}
 #'   \item{perwt}{Person weight}
 #' }
 #' @source \url{https://doi.org/10.1257/pol.20180352}.

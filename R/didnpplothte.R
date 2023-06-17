@@ -105,6 +105,16 @@ didnpplothte <- function(
 
     if(sum(class(obj) == "didnpreg") != 1) stop ("Run 'didnpreg' first", call. = FALSE)
 
+  if (obj$TTx == "TTa") {
+    TTb <- FALSE
+  } else {
+    TTb <- TRUE
+  }
+  do.TTb <- TTb
+
+
+
+
     # correspondence.val <- data.frame(
     #     old = c(1,2,3,4,5),
     #     new = c("Hispanic", "White","Black","Asian","Other")
@@ -121,7 +131,7 @@ didnpplothte <- function(
 
         # single "by"
 
-        if (obj$do.TTb) {
+        if (do.TTb) {
             # do two plots: for TTa and TTb
             if (length(by) != length(obj$TTb.i)) stop ("The length of 'by' must be equal to the length of 'TTb.i'", call. = FALSE)
 
@@ -140,7 +150,7 @@ didnpplothte <- function(
 
         # double "by"
 
-        if (obj$do.TTb) {
+        if (do.TTb) {
             # do two plots: for TTa and TTb
             if (length(by) != length(obj$TTb.i)) stop ("The length of 'by' must be equal to the length of 'TTb.i'", call. = FALSE)
             if (length(over) != length(obj$TTb.i)) stop ("The length of 'over' must be equal to the length of 'TTb.i'", call. = FALSE)
@@ -227,7 +237,7 @@ didnpplothte <- function(
         # cat.print(table(by2))
         # cat.print(by2.levels)
 
-        if (obj$do.TTb) {
+        if (do.TTb) {
 
             ## TTa and TTb ----
 
@@ -513,7 +523,7 @@ didnpplothte <- function(
 
         # 'by' is a continuous ----
 
-        if (obj$do.TTb) {
+        if (do.TTb) {
 
             ## TTa and TTb ----
 

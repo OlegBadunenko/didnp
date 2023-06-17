@@ -255,9 +255,9 @@ didnpreg.formula <- function(
     subset,
     bwmethod = "opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation
     boot.num = 399,
-    TTx = FALSE,
-    TTb = TRUE,
+    TTx = "TTa",
     print.level = 1,
+    digits = 4,
     cores = 1,
     seed = 17345168,
     ...)
@@ -267,6 +267,16 @@ didnpreg.formula <- function(
   # cat.print(bwmethod)
 
   # cat.print(boot.num)
+
+  ## handle TTx ----
+
+  if ( !(TTx %in% c("TTa", "TTb")) ) stop("'TTx' other than TTa or TTb not implemented yet")
+
+  # if (TTx == "TTa") {
+  #   TTb = FALSE
+  # } else {
+  #   TTb = TRUE
+  # }
 
   form1 <- Formula::Formula(formula)
   # cat.print(form1)
@@ -380,8 +390,8 @@ didnpreg.formula <- function(
     bwmethod = bwmethod,
     boot.num = boot.num,
     TTx = TTx,
-    TTb = TTb,
     print.level = print.level,
+    digits = digits,
     cores = cores,
     seed = seed,
     ...)
@@ -408,9 +418,9 @@ didnpreg.default <- function(
     weights = NULL,
     bwmethod = "opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation
     boot.num = 399,
-    TTx = FALSE,
-    TTb = TRUE,
+    TTx = "TTa",
     print.level = 1,
+    digits = 4,
     cores = 1,
     seed = 17345168,
     ...)
@@ -440,6 +450,17 @@ didnpreg.default <- function(
   if (length(treatment_period_values) != 2 | names(treatment_period_values)[1] != "0" | names(treatment_period_values)[2] != "1") stop("vector 'treatment_period' must have exactly 2 values, 0 and 1")
 
   if ( !(bwmethod %in% c("opt", "CV")) ) stop("'bwmethod' can be either 'opt' or 'CV'")
+
+  ## handle TTx ----
+
+  if ( !(TTx %in% c("TTa", "TTb")) ) stop("'TTx' other than TTa or TTb not implemented yet")
+
+  if (TTx == "TTa") {
+    TTb <- FALSE
+  } else {
+    TTb <- TRUE
+  }
+  do.TTb <- TTb
 
 
   ## check dimensions ----
@@ -492,9 +513,12 @@ didnpreg.default <- function(
   d0[ , -c(1:6), drop = FALSE] -> x # regressors
   k.x <- ncol(x)
 
+
   ## handle treatment ----
 
-  time.treatment <- min( it.time[treatment_period == 1] )
+  time.treatment <- min( it.time[treatment_period == 1]  - 1)
+  # cat.print(table(it.time))
+  # cat.print(time.treatment)
   time.min <- min( it.time )
   time.max <- max( it.time )
   if( time.treatment - time.min < 2 ) warning (
@@ -504,6 +528,7 @@ didnpreg.default <- function(
     paste0("Data ends in ",time.max,", while treatment is in ",time.treatment)
   )
   t <- it.time - time.treatment
+  # cat.print(table(t))
 
   ## variable type ----
 
@@ -514,10 +539,14 @@ didnpreg.default <- function(
 
     if (is.ordered(x[[i]])==TRUE){
 
+      x[,i] <- droplevels(x[,i])
+
       q.type[3] <- q.type[3] + 1
       q.typeY[i] <- "ordered"
 
     } else if (is.factor(x[[i]])==TRUE) {
+
+      x[,i] <- droplevels(x[,i])
 
       q.type[2] <- q.type[2] + 1
       q.typeY[i] <- "factor"
@@ -593,6 +622,10 @@ didnpreg.default <- function(
   # xx <- x
   xx10 <- x[smpl10,]
   xx00 <- x[smpl00,]
+  # for (i in 1:k.x) {
+  #   cat.print(i)
+  #   cat.print(levels(xx00[,i]))
+  # }
   # xx1less <- x[which(d==1 & t<0),]
   # xx0less <- x[which(d==0 & t<0),]
 
@@ -621,7 +654,7 @@ didnpreg.default <- function(
     tym1[smpl1] <- 1:n1
     tym1[smpl11] -> TTa.positions.in.TTb
   }
-  do.TTb <- TTb
+
 
   wy11 <- y11*w11
   wy01 <- y01*w01
@@ -636,22 +669,29 @@ didnpreg.default <- function(
 
   for (i in 1:k.x) {
 
+    # cat.print(i)
+
     if (is.ordered(xx00[,i])==TRUE){
 
       ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
       rf <- table(xx00[,i])/length(xx00[,i])
       rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+      # cat.print(rf)
+      # cat.print(rot.bw00[i])
 
     } else if (is.factor(xx00[,i])==TRUE) {
 
       ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
       rf <- table(xx00[,i])/length(xx00[,i])
       rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+      # cat.print(rf)
+      # cat.print(rot.bw00[i])
 
     } else {
 
       ## note no sd(x) because we scaled them already
       rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1])) # adjust 1.06 to values of the Gaussian row on Page 70 Table 3.3
+      # cat.print(rot.bw00[i])
 
     }
 
@@ -686,11 +726,14 @@ didnpreg.default <- function(
 
     bw.start <- rot.bw00
 
+    # cat.print(rot.bw00)
+
     # do it only on the treated in the treatment period: "11"
 
     time.05 <- proc.time()
 
     bw.optim <- minqa::bobyqa(bw.start,lcls.lscv,lower,upper,y=y11,x=xx11,w=w11)
+    # cat.print(bw.optim)
 
     time.06 <- proc.time()
     CV.time.sec <- round( (time.06-time.05)[3], 0)
@@ -716,6 +759,8 @@ didnpreg.default <- function(
     }
     bw11 <- rot.bw00
   }
+
+  # return(1)
 
   ## print bws ----
   my.bw <- data.frame(Regressor = colnames(x), Type = q.typeY, Bandwidth = bw11)
@@ -759,14 +804,31 @@ didnpreg.default <- function(
 
   ## Calculating ATET ----
 
+  time.05 <- proc.time()
+
   if (print.level > 0) {
     if (do.TTb) {
-      my.atet <- paste0("TTa and TTb (may take some time)")
+      # my.atet <- paste0("TTa and TTb (may take some time)")
+      my.atet <- paste0("TTb")
     } else {
-      my.atet <- paste0("TTa only")
+      my.atet <- paste0("TTa")
     }
     cat(paste0("\nCalculating ATET: ",my.atet,"\n"))
   }
+
+  # cat.print(dim(xx11))
+  # cat.print(dim(xx10))
+  # cat.print(dim(xx01))
+  # cat.print(dim(xx00))
+
+  # cat.print(
+  #   data.frame(rbind(
+  #     as.vector(bw11),
+  #     bw10,
+  #     bw01,
+  #     bw00
+  #   ))
+  # )
 
   if (do.TTb) {
     num11 <- np::npksum(txdat=xx11,tydat=wy11,exdat=xx1,bws=bw11)$ksum
@@ -803,18 +865,18 @@ didnpreg.default <- function(
     # cat.print(length(TTa.i))
     # cat.print(TTb)
     # cat.print(length(TTb.i))
+    # if (print.level > 0 ) {
+    #   cat(paste0("TTa = ",formatC(TTa, digits = 4),", N(TTa) = ",n11,"\n"))
+    # }
     if (print.level > 0) {
-      cat(paste0("TTa = ",formatC(TTa, digits = 4),", N(TTa) = ",n11,"\n"))
-    }
-    if (print.level > 0) {
-      cat(paste0("TTb = ",formatC(TTb, digits = 4),", N(TTb) = ",n1,"\n"))
+      cat(paste0("TTb = ",formatC(TTb, digits = digits),", N(TTb) = ",n1,"\n"))
     }
   } else {
     TTa.i <- as.vector(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
     TTa <- mean(TTa.i)
 
     if (print.level > 0) {
-      cat(paste0("TTa = ",formatC(TTa, digits = 4),", N(TTa) = ",n11,"\n"))
+      cat(paste0("TTa = ",formatC(TTa, digits = digits),", N(TTa) = ",n11,"\n"))
     }
 
     # cat.print(TTa)
@@ -824,6 +886,17 @@ didnpreg.default <- function(
   # if (print.level > 1) {
   #   cat(paste0("Calculating ATET completed\n"))
   # }
+
+  time.06 <- proc.time()
+  ATET.time.sec <- round( (time.06-time.05)[3], 0)
+  names(ATET.time.sec) <- "sec"
+
+  if (print.level > 0){
+    .timing(ATET.time.sec, "Calculating ATET completed in ")
+    # cat("___________________________________________________\n")
+  }
+
+  # return(1)
 
   ## Bootstraping ATET ----
 
@@ -928,10 +1001,10 @@ didnpreg.default <- function(
   # doParallel::registerDoParallel(cores = parallel::detectCores()/4)
   doParallel::registerDoParallel(cores = cores)
 
-  if (print.level > 0 & cores == 1)
-  {
-    pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
-  }
+  # if (print.level > 0 & cores == 1)
+  # {
+  #   pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
+  # }
 
   mcoptions <- list(set.seed = TRUE)
 
@@ -974,14 +1047,17 @@ didnpreg.default <- function(
         num00.new <- np::npksum(txdat=xx00,tydat=wy00.new,exdat=xx11,bws=bw00)$ksum
       }
 
-
+      # if (print.level > 0 & cores == 1)
+      # {
+      #   pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
+      # }
       if (print.level > 0 & cores == 1 & j == 1)
       {
         time.06 <- proc.time()
         boot.time.sec <- round( boot.num*(time.06-time.05)[3], 0)
         .timing(boot.time.sec, "\nBootstrapping will take approximately: ")
-        # cat("\n")
-        # pb <- utils::txtProgressBar(min = 1, max = boot.num, style = 3)
+        cat("\n")
+        pb <- utils::txtProgressBar(min = 1, max = boot.num, style = 3)
       }
 
       if (print.level > 0 & cores == 1 & j > 1) utils::setTxtProgressBar(pb, j)
@@ -1003,7 +1079,7 @@ didnpreg.default <- function(
     # cat("___________________________________________________\n")
   }
 
-  atet.boot <- rowMeans(atet.boot.hetero)
+  atet.boot <- colMeans(atet.boot.hetero)
 
   if (do.TTb) {
     TTa.sd <- sd(atet.boot[TTa.positions.in.TTb])
@@ -1011,14 +1087,14 @@ didnpreg.default <- function(
     # cat.print(TTa.sd)
     # cat.print(TTb.sd)
     if (print.level > 0) {
-      cat("\nTTa sd =",formatC(TTa.sd, digits = 4),"\n")
-      cat("TTb sd =",formatC(TTb.sd, digits = 4),"\n")
+      # cat("\nTTa sd =",formatC(TTa.sd, digits = 4),"\n")
+      cat("TTb sd =",formatC(TTb.sd, digits = digits),"\n")
     }
   } else {
     TTa.sd <- sd(atet.boot)
     # cat.print(TTa.sd)
     if (print.level > 0) {
-      cat("\nTTa sd =",formatC(TTa.sd, digits = 4),"\n")
+      cat("\nTTa sd =",formatC(TTa.sd, digits = digits),"\n")
     }
   }
 
@@ -1053,7 +1129,7 @@ didnpreg.default <- function(
       bw10 = bw10,
       bw01 = bw01,
       bw00 = bw00,
-      do.TTb = do.TTb,
+      TTx = TTx,
       TTa.positions.in.TTb = TTa.positions.in.TTb,
       TTa.i = TTa.i,
       TTa = TTa,
@@ -1083,8 +1159,7 @@ didnpreg.default <- function(
       bw10 = bw10,
       bw01 = bw01,
       bw00 = bw00,
-      do.TTb = do.TTb,
-      TTb = TTb,
+      TTx = TTx,
       TTa.i = TTa.i,
       TTa = TTa,
       TTa.sd = TTa.sd,
