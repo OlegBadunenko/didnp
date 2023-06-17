@@ -31,9 +31,9 @@ double pnormstd(double x)
 
 double dnormstd(double x)
 {
-  double one_over_sqrt_two_pi = 0.39894228040143267794;
-  // return 0.5 * M_2_SQRTPI * M_SQRT1_2 * exp(- x * x * 0.5);
-  return one_over_sqrt_two_pi *exp(-0.5*pow(x,2.0));
+  // double one_over_sqrt_two_pi = 0.39894228040143267794;
+  // return one_over_sqrt_two_pi *exp(-0.5*pow(x,2.0));
+  return 0.5 * M_2_SQRTPI * M_SQRT1_2 * exp(- x * x * 0.5);
 }
 
 void pnormstdC(double *x)
