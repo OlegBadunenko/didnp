@@ -23,7 +23,7 @@ A data frame with 330106 rows and 18 columns:
 \item{a1418}{Equals 1 if age between 14 and 18}
 \item{a1922}{Equals 1 if age between 19 and 22}
 \item{a2330}{Equals 1 if age between 23 and 30}
-\item{htus}{Available}
+\item{htus}{High take-up}
 \item{perwt}{Person weight}
 }
 }

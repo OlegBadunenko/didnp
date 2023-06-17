@@ -14,9 +14,9 @@ didnpreg(...)
   subset,
   bwmethod = "opt",
   boot.num = 399,
-  TTx = FALSE,
-  TTb = TRUE,
+  TTx = "TTa",
   print.level = 1,
+  digits = 4,
   cores = 1,
   seed = 17345168,
   ...
@@ -32,9 +32,9 @@ didnpreg(...)
   weights = NULL,
   bwmethod = "opt",
   boot.num = 399,
-  TTx = FALSE,
-  TTb = TRUE,
+  TTx = "TTa",
   print.level = 1,
+  digits = 4,
   cores = 1,
   seed = 17345168,
   ...
@@ -52,8 +52,6 @@ didnpreg(...)
 \item{boot.num}{399,}
 
 \item{TTx}{Conditional Treatment Effect on the Treated. Default is FALSE.}
-
-\item{TTb}{Unconditional Treatment Effect on the Treated. TTb estimates by averaging over \emph{all} treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.}
 
 \item{print.level}{the level of printing; larger number implies more output is printed. Default is 1. 0 suppresses all printing.}
 
@@ -75,6 +73,8 @@ A data frame class is required to identify the type/class of each regressor.}
 \item{treatment_period}{a vector, matrix, or data frame of length \eqn{NT} with zeros for the period before treatment and ones for the period of treatment and after.}
 
 \item{weights}{NULL,}
+
+\item{TTb}{Unconditional Treatment Effect on the Treated. TTb estimates by averaging over \emph{all} treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.}
 }
 \value{
 \code{didnpreg} returns a list containing:

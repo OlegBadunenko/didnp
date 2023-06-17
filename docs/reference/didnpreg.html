@@ -56,9 +56,9 @@
 <span>  <span class="va">subset</span>,</span>
 <span>  bwmethod <span class="op">=</span> <span class="st">"opt"</span>,</span>
 <span>  boot.num <span class="op">=</span> <span class="fl">399</span>,</span>
-<span>  TTx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  TTb <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  TTx <span class="op">=</span> <span class="st">"TTa"</span>,</span>
 <span>  print.level <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">17345168</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -75,9 +75,9 @@
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  bwmethod <span class="op">=</span> <span class="st">"opt"</span>,</span>
 <span>  boot.num <span class="op">=</span> <span class="fl">399</span>,</span>
-<span>  TTx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  TTb <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  TTx <span class="op">=</span> <span class="st">"TTa"</span>,</span>
 <span>  print.level <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  cores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">17345168</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -108,10 +108,6 @@
 
 <dt>TTx</dt>
 <dd><p>Conditional Treatment Effect on the Treated. Default is FALSE.</p></dd>
-
-
-<dt>TTb</dt>
-<dd><p>Unconditional Treatment Effect on the Treated. TTb estimates by averaging over <em>all</em> treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.</p></dd>
 
 
 <dt>print.level</dt>
@@ -153,6 +149,10 @@ A data frame class is required to identify the type/class of each regressor.</p>
 
 <dt>weights</dt>
 <dd><p>NULL,</p></dd>
+
+
+<dt>TTb</dt>
+<dd><p>Unconditional Treatment Effect on the Treated. TTb estimates by averaging over <em>all</em> treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.</p></dd>
 
 </dl></div>
     <div id="value">

@@ -88,9 +88,9 @@ Although this can be done on the fly, the subsample can be prepared beforehand:
 
 ```{r sub, eval=TRUE}
 # get the subsample
-DACAsub$mysmpl <- mysmpl <-
-  DACAsub$a1922==1 & !is.na(DACAsub$a1922) &
-  DACAsub$htus==1 & !is.na(DACAsub$htus)
+DACAsub$sub_a1418_all <- mysmpl <- 
+  DACAsub$a1418==1 & !is.na(DACAsub$a1418)
+table(DACAsub$sub_a1418_all)
 
 # generate 'treatment_period'
 DACAsub$treatment_period <- ifelse( DACAsub[,"year"] > 2011, 1, 0)
@@ -109,6 +109,11 @@ The **didnpreg** function allows using matrices. The manual explains how to use 
 
 > we will use a few number of bootstrap replicaitons here, but we advise to set `boot.num = 399` or larger. 
 
+
+```{r boot, eval = TRUE}
+B <- 99
+```
+
 To speed up the estimation
 
 > on computers with multiple cores, use multiplrocessing by setting option `cores`. 
@@ -122,10 +127,11 @@ tym1a <- didnpreg(
   data = DACAsub,
   subset = mysmpl,
   bwmethod = "opt",
-  boot.num = 99,
-  TTb = FALSE,
-  print.level = 0,
-  cores = 8)
+  boot.num = B,
+  TTx = "TTa",
+  print.level = 2,
+  digits = 8,
+  cores = 16)
 ```
 
 **didnpreg** returns a class **didnp** object.  This object contains estimates of the average treatment effects and their standard errors.  To see these, we can call the **summary** function.
@@ -133,6 +139,7 @@ tym1a <- didnpreg(
 ```{r model1asumm, eval=TRUE}
 # Print the summary of estimation
 summary(tym1a)
+rm(tym1a)
 ```
 
 Estimating $TT_b$ will take longer. The bandwidths is cross-validated.
@@ -144,10 +151,11 @@ tym1b <- didnpreg(
   data = DACAsub,
   subset = mysmpl,
   bwmethod = "CV",
-  boot.num = 99,
-  TTb = TRUE,
-  print.level = 1,
-  cores = 8)
+  boot.num = B,
+  TTx = "TTb",
+  print.level = 2,
+  digits = 8,
+  cores = 16)
 ```
 
 ### Plotting Heterogenous Treatment Effects
