@@ -1,5 +1,6 @@
 # R functions for the didnp package
 
+
 # https://stackoverflow.com/questions/7198758/roxygen2-how-to-properly-document-s3-methods
 # roxygen2::roxygenize()
 # https://pkgdown.r-lib.org/
