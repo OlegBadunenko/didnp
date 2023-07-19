@@ -164,10 +164,10 @@
 <span><span class="co">#R&gt;  Calculating residuals for the alternative model</span></span>
 <span><span class="co">#R&gt;  Calculating residuals for the alternative model completed in 36 seconds</span></span>
 <span><span class="co">#R&gt;  Calculating fitted values under the null hypothesis</span></span>
-<span><span class="co">#R&gt;  Calculating fitted values under the null hypothesis completed in 46 seconds</span></span>
+<span><span class="co">#R&gt;  Calculating fitted values under the null hypothesis completed in 47 seconds</span></span>
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  The main Loop of the Bootstrapping started</span></span>
-<span><span class="co">#R&gt;  Bootstrapping the statistic completed in 6 minutes and 45 seconds</span></span>
+<span><span class="co">#R&gt;  Bootstrapping the statistic completed in 6 minutes and 42 seconds</span></span>
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  BSC stat = 0.1346 </span></span>
 <span><span class="co">#R&gt;  BSC sd   = 0.003794 </span></span>
@@ -216,7 +216,7 @@
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  Bootstrapping standard errors (99 replications)</span></span>
 <span><span class="co">#R&gt;  Calculating residuals completed</span></span>
-<span><span class="co">#R&gt;  Bootstrapping standard errors completed in 1 minute and 49 seconds</span></span>
+<span><span class="co">#R&gt;  Bootstrapping standard errors completed in 1 minute and 46 seconds</span></span>
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  TTa sd = 0.005820258</span></span></code></pre></div>
 <p><strong>didnpreg</strong> returns a class <strong>didnp</strong> object. This object contains estimates of the average treatment effects and their standard errors. To see these, we can call the <strong>summary</strong> function.</p>
@@ -238,7 +238,7 @@
 <span><span class="co">#R&gt;  6   yrimmig ordered 8.688889e-06</span></span>
 <span><span class="co">#R&gt;  7  ageimmig ordered 1.697394e-05</span></span>
 <span><span class="co">#R&gt;  </span></span>
-<span><span class="co">#R&gt;  Bootstrapping standard errors (99 replications) completed in 1 minute and 49 seconds</span></span>
+<span><span class="co">#R&gt;  Bootstrapping standard errors (99 replications) completed in 1 minute and 46 seconds</span></span>
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  Unconditional Treatment Effect on the Treated (ATET):</span></span>
 <span><span class="co">#R&gt;  </span></span>
@@ -279,11 +279,11 @@
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  Calculating ATET: TTb</span></span>
 <span><span class="co">#R&gt;  TTb = 0.02163795, N(TTb) = 56959</span></span>
-<span><span class="co">#R&gt;  Calculating ATET completed in 21 second</span></span>
+<span><span class="co">#R&gt;  Calculating ATET completed in 22 seconds</span></span>
 <span><span class="co">#R&gt;  </span></span>
 <span><span class="co">#R&gt;  Bootstrapping standard errors (99 replications)</span></span>
 <span><span class="co">#R&gt;  Calculating residuals completed</span></span>
-<span><span class="co">#R&gt;  Bootstrapping standard errors completed in 18 minutes and 45 seconds</span></span>
+<span><span class="co">#R&gt;  Bootstrapping standard errors completed in 18 minutes and 51 second</span></span>
 <span><span class="co">#R&gt;  TTb sd = 0.0072693185</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -371,13 +371,6 @@
 <span><span class="co">#R&gt;  [1] "2.1 TTa and TTb"</span></span>
 <span><span class="co">#R&gt;  [1] "2.1.1 single 'by'"</span></span>
 <span><span class="co">#R&gt;  [1] "2.1.1.1 TTb"</span></span>
-<span><span class="co">#R&gt;   by[1:20]:</span></span>
-<span><span class="co">#R&gt;   [1] (4.6,5]   (2.6,3]   (1,1.4]   (1,1.4]   (4.6,5]   (1,1.4]   (3.8,4.2]</span></span>
-<span><span class="co">#R&gt;   [8] (1,1.4]   (4.6,5]   (1.8,2.2] (1,1.4]   (4.6,5]   (3.8,4.2] (1.8,2.2]</span></span>
-<span><span class="co">#R&gt;  [15] (1.8,2.2] (3.8,4.2] (4.6,5]   (2.6,3]   (1.8,2.2] (3.8,4.2]</span></span>
-<span><span class="co">#R&gt;  10 Levels: (1,1.4] &lt; (1.4,1.8] &lt; (1.8,2.2] &lt; (2.2,2.6] &lt; ... &lt; (4.6,5]</span></span>
-<span><span class="co">#R&gt;   length(by):</span></span>
-<span><span class="co">#R&gt;  [1] 56959</span></span>
 <span><span class="co">#R&gt;   d1b:</span></span>
 <span><span class="co">#R&gt;             atet     atet.sd count        by</span></span>
 <span><span class="co">#R&gt;  1  -0.011711563 0.008598465 11750   (1,1.4]</span></span>
@@ -385,22 +378,13 @@
 <span><span class="co">#R&gt;  5   0.019034473 0.006023782 11479   (2.6,3]</span></span>
 <span><span class="co">#R&gt;  8   0.033056671 0.009346651 11078 (3.8,4.2]</span></span>
 <span><span class="co">#R&gt;  10  0.082177748 0.016793647 10797   (4.6,5]</span></span>
-<span><span class="co">#R&gt;   length(obj$TTa.positions.in.TTb):</span></span>
-<span><span class="co">#R&gt;  [1] 5387</span></span>
-<span><span class="co">#R&gt;   length(by):</span></span>
-<span><span class="co">#R&gt;  [1] 56959</span></span>
 <span></span>
 <span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">data.a</span></span>
 <span><span class="co">#R&gt;             atet     atet.sd count        by</span></span>
 <span><span class="co">#R&gt;  1  -0.009763996 0.011617326  1059   (1,1.4]</span></span>
-<span><span class="co">#R&gt;  2           NaN          NA     0 (1.4,1.8]</span></span>
 <span><span class="co">#R&gt;  3  -0.034153071 0.007341389  1100 (1.8,2.2]</span></span>
-<span><span class="co">#R&gt;  4           NaN          NA     0 (2.2,2.6]</span></span>
 <span><span class="co">#R&gt;  5  -0.002217522 0.007659071  1062   (2.6,3]</span></span>
-<span><span class="co">#R&gt;  6           NaN          NA     0   (3,3.4]</span></span>
-<span><span class="co">#R&gt;  7           NaN          NA     0 (3.4,3.8]</span></span>
 <span><span class="co">#R&gt;  8   0.002805505 0.011864983  1087 (3.8,4.2]</span></span>
-<span><span class="co">#R&gt;  9           NaN          NA     0 (4.2,4.6]</span></span>
 <span><span class="co">#R&gt;  10  0.103344508 0.017867100  1079   (4.6,5]</span></span>
 <span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">data.b</span></span>
 <span><span class="co">#R&gt;             atet     atet.sd count        by</span></span>
@@ -410,8 +394,7 @@
 <span><span class="co">#R&gt;  8   0.033056671 0.009346651 11078 (3.8,4.2]</span></span>
 <span><span class="co">#R&gt;  10  0.082177748 0.016793647 10797   (4.6,5]</span></span>
 <span></span>
-<span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">plot.a</span></span>
-<span><span class="co">#R&gt;  Warning: Removed 5 rows containing missing values (`geom_point()`).</span></span></code></pre></div>
+<span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">plot.a</span></span></code></pre></div>
 <p><img src="reference/figures/README-gr_age-1.png"><!-- --></p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">plot.b</span></span></code></pre></div>
@@ -419,8 +402,7 @@
 <p>Ameding ggplot object is easy. For example adding a 0 horizontal line is</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tym1b_gr_age</span><span class="op">$</span><span class="va">plot.a</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="co">#R&gt;  Warning: Removed 5 rows containing missing values (`geom_point()`).</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-gr_age2-1.png"><!-- --></p>
 <blockquote>
 <p>Anternatively, one can use the <code>data.a</code> and <code>data.b</code> objects to plot from scratch.</p>
