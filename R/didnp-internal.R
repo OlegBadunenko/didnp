@@ -1,4 +1,4 @@
-lcls.lscv <- function(h,y,x,w){
+lcls.lscv0 <- function(h,y,x,w){
 
   h <- as.vector(h)
   y <- as.vector(y)
@@ -17,9 +17,57 @@ lcls.lscv <- function(h,y,x,w){
   } else {
     # section 3.1.3 Sampling Weights
     n.mhat <- np::npksum(txdat=x,tydat=wy,leave.one.out=TRUE,bandwidth.divide=TRUE,bws=h)$ksum
-    d.mhat <- np::npksum(txdat=x,tydat=w,leave.one.out=TRUE,bandwidth.divide=TRUE,bws=h)$ksum
+    d.mhat <- np::npksum(txdat=x,tydat=w, leave.one.out=TRUE,bandwidth.divide=TRUE,bws=h)$ksum
 
     mhat <- n.mhat/d.mhat
+
+    # cat.print(summary(n.mhat))
+    # cat.print(summary(d.mhat))
+    # cat.print(summary(mhat))
+
+    return(sum((y - mhat)^2)/n)
+
+  }
+
+}
+
+lcls.lscv <- function(h, cores, y, wy, w, x, xtype, nlevels, n, k){
+
+  # h <- as.vector(h)
+  # y <- as.vector(y)
+  # w <- as.vector(w)
+  #
+  # n <- length(y)
+
+  # ones11 <- as.vector(rep(1,n))
+
+  # wy <- w*y
+
+  if (min(h) <= 0) {
+
+    return(.Machine$double.xmax)
+
+  } else {
+    # section 3.1.3 Sampling Weights
+    # n.mhat <- np::npksum(txdat=x,tydat=wy,leave.one.out=TRUE,bandwidth.divide=TRUE,bws=h)$ksum
+    # d.mhat <- np::npksum(txdat=x,tydat=w, leave.one.out=TRUE,bandwidth.divide=TRUE,bws=h)$ksum
+
+    n.mhat <- .npksumYXloo(
+      Nthreds=cores,
+      ydat=wy, x=x, bw=h,
+      xtype=xtype, nlevels=nlevels, n=n,q=k
+    )
+    d.mhat <- .npksumYXloo(
+      Nthreds=cores,
+      ydat=w, x=x, bw=h,
+      xtype=xtype, nlevels=nlevels, n=n,q=k
+    )
+
+    mhat <- n.mhat/d.mhat
+
+    # cat.print(summary(n.mhat))
+    # cat.print(summary(d.mhat))
+    # cat.print(summary(mhat))
 
     return(sum((y - mhat)^2)/n)
 
@@ -83,3 +131,127 @@ cat.print <- function(x, name = NULL){
   }
   print(x)
 }
+
+.npksumYXnew <-
+  function(
+    Nthreds = 1,
+    ydat, xdat, xeval, bw,
+    xtype, nlevels, n, neval, q
+  )
+  {
+    tymch0 <- .C(
+      "npksumYXnew",
+      Nthreds = as.integer(Nthreds),
+      ydat = as.double(ydat),
+      xdat = as.double(xdat),
+      xeval = as.double(xeval),
+      bw = as.double(bw),
+      xtype = as.integer(xtype),
+      nlevels = as.integer(nlevels),
+      n = as.integer(n),
+      neval = as.integer(neval),
+      q = as.integer(q),
+      ksum = double(neval)
+    )
+    # cat.print(tymch0[1:10])
+    # cat.print(length(tym))
+    # cat.print( names(tymch0) )
+    # cat.print( tymch0 $ksum[1:100] )
+    return(tymch0 $ksum)
+  }
+
+.npksumYX <-
+  function(
+    Nthreds = 1,
+    ydat, xdat, bw,
+    xtype, nlevels, n, q
+  )
+  {
+    tymch0 <- .C(
+      "npksumYX",
+      Nthreds = as.integer(Nthreds),
+      ydat = as.double(ydat),
+      xdat = as.double(xdat),
+      bw = as.double(bw),
+      xtype = as.integer(xtype),
+      nlevels = as.integer(nlevels),
+      n = as.integer(n),
+      q = as.integer(q),
+      ksum = double(n)
+    )
+    return(tymch0 $ksum)
+  }
+
+
+.npksumYXloo <-
+  function(
+    Nthreds = 1,
+    ydat, xdat, bw,
+    xtype, nlevels, n, q
+  )
+  {
+    tymch0 <- .C(
+      "npksumYXloo",
+      Nthreds = as.integer(Nthreds),
+      ydat = as.double(ydat),
+      xdat = as.double(xdat),
+      bw = as.double(bw),
+      xtype = as.integer(xtype),
+      nlevels = as.integer(nlevels),
+      n = as.integer(n),
+      q = as.integer(q),
+      ksum = double(n)
+    )
+    return(tymch0 $ksum)
+  }
+
+
+.npksumXnew <-
+  function(
+    Nthreds = 1,
+    xdat, xeval, bw,
+    xtype, nlevels, n, neval, q
+  )
+  {
+    tymch0 <- .C(
+      "npksumXnew",
+      Nthreds = as.integer(Nthreds),
+      xdat = as.double(xdat),
+      xeval = as.double(xeval),
+      bw = as.double(bw),
+      xtype = as.integer(xtype),
+      nlevels = as.integer(nlevels),
+      n = as.integer(n),
+      neval = as.integer(neval),
+      q = as.integer(q),
+      ksum = double(neval)
+    )
+    return(tymch0 $ksum)
+  }
+
+
+.npksumX <-
+  function(
+    Nthreds = 1,
+    xdat, bw,
+    xtype, nlevels, n, q  )
+  {
+    tymch0 <- .C(
+      "npksumX",
+      Nthreds = as.integer(Nthreds),
+      xdat = as.double(xdat),
+      bw = as.double(bw),
+      xtype = as.integer(xtype),
+      nlevels = as.integer(nlevels),
+      n = as.integer(n),
+      q = as.integer(q),
+      ksum = double(n)
+    )
+    return(tymch0 $ksum)
+  }
+
+
+
+
+
+

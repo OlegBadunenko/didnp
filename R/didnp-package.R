@@ -33,7 +33,6 @@
 #' Stefan Sperlich \email{stefan.sperlich@@unige.ch}
 #'
 #' @importFrom minqa bobyqa
-#' @importFrom np npksum
 #' @importFrom Formula Formula
 #' @importFrom Formula model.part
 #' @importFrom ggplot2 ggplot
