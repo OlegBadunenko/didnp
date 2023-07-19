@@ -218,3 +218,45 @@ void npksumYX(
     tym2[j] = tym1;
   }
 }
+
+void npksumYXloo(
+    int *Nthreds,
+    double *ydat, double *xdat, double *bw,
+    int *xtype, int *nlevels, int *n, int *q,
+    double *tym2){
+
+  double tym1, Kix, difftym, tym;
+
+#pragma omp parallel for num_threads(*Nthreds) private(tym1, Kix, difftym, tym)
+  for(int j = 0; j < *n; j++){
+    tym1 = 0;
+    for (int i = 0; i < *n; i++){
+      if (i != j){
+        Kix = ydat[i];
+        for (int k = 0; k < *q; k++){
+          difftym = xdat[(k-0) * *n + j] - xdat[(k-0) * *n + i];
+          if ( xtype[k] == 3 ) { // "ordered"
+            if( difftym == 0.0 ) {
+              tym = 1.0;
+            } else {
+              tym = pow(bw[k], fabs(difftym));
+            }
+          } // end if (xtype[k] == 3)
+          if (xtype[k] == 2 ) { // "factor"
+            if( difftym == 0.0 ) {
+              tym = 1.0 - bw[k];
+            } else {
+              tym = bw[k] / nlevels[k];
+            }
+          } // end if (xtype[k] == 2)
+          if ( xtype[k] == 1) {
+            tym = dnormstd( difftym / bw[k]) / bw[k];
+          } // end if (xtype[k] == 1)
+          Kix *= tym;
+        } // end for (k in 1:q)
+        tym1 += Kix;
+      } // end if (i != j)
+    } //end for (i in 1:myn)
+    tym2[j] = tym1;
+  }
+}

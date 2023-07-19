@@ -79,7 +79,7 @@ print.summary.didnp <- function( x, digits = NULL, print.level = NULL, ... ) {
 
    if (print.level > 0) {
       cat(paste0("\nUnconditional Treatment Effect on the Treated (ATET):\n\n"))
-      if (x$TTb) {
+      if (x$TTx == "TTb") {
          cat(paste0("TTa    = ",formatC(x$TTa, digits = digits),"\n"))
          cat(paste0("TTa sd = ",formatC(x$TTa.sd, digits = digits),"\n"))
          cat(paste0("N(TTa) = ",sum(x$sample11),"\n"))

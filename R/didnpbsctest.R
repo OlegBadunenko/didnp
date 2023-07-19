@@ -13,7 +13,7 @@
 
 #' Model-free Treatment Effect Estimators
 #'
-#' The \code{didnpreg} command contains tools for computing both heterogenous and average treatment effects for the treated in a model-free differences-in-differences framework.
+#' The \code{didnpbsctest} command contains tools for computing both heterogenous and average treatment effects for the treated in a model-free differences-in-differences framework.
 #'
 #' @param formula an object of class formula (or one that can be coerced to that class): a symbolic description of the model. The details of model specification are given under `Details'
 #' @param data name of the data frame; must be specified if the 'formula' method is used
@@ -26,10 +26,7 @@
 #' @param treatment a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.
 #' @param treatment_period a vector, matrix, or data frame of length \eqn{NT} with zeros for the period before treatment and ones for the period of treatment and after.
 #' @param weights NULL,
-#' @param bwmethod bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will trigger calculating cross-validated bandwidths.
 #' @param boot.num 399,
-#' @param TTx Conditional Treatment Effect on the Treated. Default is FALSE.
-#' @param TTb Unconditional Treatment Effect on the Treated. TTb estimates by averaging over *all* treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.
 #' @param print.level the level of printing; larger number implies more output is printed. Default is 1. 0 suppresses all printing.
 #' @param cores Integer specifies the number of cores to be used for parallel computation.
 #' @param seed integer used for the random number generation for the replication purposes. Default is 17345168.
@@ -44,7 +41,7 @@
 #' form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
 #'
 #'
-#' @return \code{didnpreg} returns a list containing:
+#' @return \code{didnpbsctest} returns a list containing:
 #' \tabular{ll}{
 #'    \code{NT}
 #'    \tab Total number of observations
@@ -158,7 +155,7 @@
 #'
 #'   ## Syntax using formula
 #'   # suppress output
-#'   tym1a <- didnpreg(
+#'   tym1a <- didnpbsctest(
 #'     form1,
 #'     data = DACAsub,
 #'     subset = mysmpl,
@@ -172,7 +169,7 @@
 #'   summary(tym1a)
 #'
 #'   ## Use CV bandwidths
-#'   tym1aCV <- didnpreg(
+#'   tym1aCV <- didnpbsctest(
 #'     form1,
 #'     data = DACAsub,
 #'     subset = mysmpl,
@@ -186,7 +183,7 @@
 #'   summary(tym1aCV)
 #'
 #'   ## Calculate also TTb (will take longer)
-#'   tym1bCV <- didnpreg(
+#'   tym1bCV <- didnpbsctest(
 #'     form1,
 #'     data = DACAsub,
 #'     subset = mysmpl,
@@ -201,7 +198,7 @@
 #'
 #'   ## Syntax using matrices
 #'
-#'   tym1aM <- didnpreg(
+#'   tym1aM <- didnpbsctest(
 #'     outcome = DACAsub[mysmpl,"inschool"],
 #'     regressors = DACAsub[mysmpl,c("fem", "race", "var.bpl", "state", "age", "yrimmig", "ageimmig")],
 #'     id = DACAsub[mysmpl,"inschool"],
@@ -235,34 +232,32 @@
 #'
 #'
 # https://stackoverflow.com/questions/7198758/roxygen2-how-to-properly-document-s3-methods
-#' @rdname didnpreg
+#' @rdname didnpbsctest
 #' @export
-didnpreg <- function(...){
+didnpbsctest <- function(...){
   # args = list(...)
   # cat.print(args)
   # cat.print(names(args))
   # cat.print(class(args))
   # lapply(args, cat.print)
-  UseMethod("didnpreg")
+  UseMethod("didnpbsctest")
 }
 
-#' @rdname didnpreg
-#' @method didnpreg formula
+#' @rdname didnpbsctest
+#' @method didnpbsctest formula
 #' @export
-didnpreg.formula <- function(
+didnpbsctest.formula <- function(
     formula,
     data  = stop("argument 'data' is missing"),
     subset,
-    bwmethod = "opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation
     boot.num = 399,
-    TTx = "TTa",
     print.level = 1,
     digits = 4,
     cores = 1,
     seed = 17345168,
     ...)
 {
-  # cat("'formula': this is to get the matrices from formula and feed to 'didnpreg.default'\n")
+  # cat("'formula': this is to get the matrices from formula and feed to 'didnpbsctest.default'\n")
 
   # cat.print(bwmethod)
 
@@ -270,7 +265,7 @@ didnpreg.formula <- function(
 
   ## handle TTx ----
 
-  if ( !(TTx %in% c("TTa", "TTb")) ) stop("'TTx' other than TTa or TTb not implemented yet")
+  # if ( !(TTx %in% c("TTa", "TTb")) ) stop("'TTx' other than TTa or TTb not implemented yet")
 
   # if (TTx == "TTa") {
   #   TTb = FALSE
@@ -365,7 +360,7 @@ didnpreg.formula <- function(
   # cat("14\n")
 
   # tymch <- eval(parse(text=paste("
-  # didnpreg( outcome=Y,
+  # didnpbsctest( outcome=Y,
   #     regressors=X,
   #     id=id,
   #     time=time,
@@ -379,7 +374,7 @@ didnpreg.formula <- function(
   #     ...)
   #  ")))
 
-  tymch <- didnpreg(
+  tymch <- didnpbsctest(
     outcome=Y,
     regressors=X,
     id=id,
@@ -387,9 +382,7 @@ didnpreg.formula <- function(
     treatment=treatment,
     treatment_period=treatment_period,
     weights = weights,
-    bwmethod = bwmethod,
     boot.num = boot.num,
-    TTx = TTx,
     print.level = print.level,
     digits = digits,
     cores = cores,
@@ -400,15 +393,15 @@ didnpreg.formula <- function(
   # cat("15\n")
 
 
-  class(tymch) <- c("didnpreg", "didnp")
+  class(tymch) <- c("didnpbsctest", "didnp")
   return(tymch)
 
 }
 
-#' @rdname didnpreg
-#' @method didnpreg default
+#' @rdname didnpbsctest
+#' @method didnpbsctest default
 #' @export
-didnpreg.default <- function(
+didnpbsctest.default <- function(
     outcome,
     regressors,
     id,
@@ -416,9 +409,7 @@ didnpreg.default <- function(
     treatment,
     treatment_period,
     weights = NULL,
-    bwmethod = "opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation
     boot.num = 399,
-    TTx = "TTa",
     print.level = 1,
     digits = 4,
     cores = 1,
@@ -449,18 +440,18 @@ didnpreg.default <- function(
   table(treatment_period) -> treatment_period_values
   if (length(treatment_period_values) != 2 | names(treatment_period_values)[1] != "0" | names(treatment_period_values)[2] != "1") stop("vector 'treatment_period' must have exactly 2 values, 0 and 1")
 
-  if ( !(bwmethod %in% c("opt", "CV")) ) stop("'bwmethod' can be either 'opt' or 'CV'")
+  # if ( !(bwmethod %in% c("opt", "CV")) ) stop("'bwmethod' can be either 'opt' or 'CV'")
 
-  ## handle TTx ----
-
-  if ( !(TTx %in% c("TTa", "TTb")) ) stop("'TTx' other than TTa or TTb not implemented yet")
-
-  if (TTx == "TTa") {
-    TTb <- FALSE
-  } else {
-    TTb <- TRUE
-  }
-  do.TTb <- TTb
+  # ## handle TTx ----
+  #
+  # if ( !(TTx %in% c("TTa", "TTb")) ) stop("'TTx' other than TTa or TTb not implemented yet")
+  #
+  # if (TTx == "TTa") {
+  #   TTb <- FALSE
+  # } else {
+  #   TTb <- TRUE
+  # }
+  # do.TTb <- TTb
 
 
   ## check dimensions ----
@@ -615,16 +606,23 @@ didnpreg.default <- function(
   smpl01 <- d == 0 & t == 1
   smpl00 <- d == 0 & t == 0
 
+  smpl1less <- d == 1 & t < 0
+  smpl0less <- d == 0 & t < 0
+
+  # pooled for the bootstrap
+  smpl1pool <- d == 1 & t <= 0
+  smpl0pool <- d == 0 & t <= 0
+
   # w11 <- w[which(d==1 & t==1)]
   w11 <- w[smpl11]
   # w10 <- w[which(d==1 & t==0)]
   w10 <- w[smpl10]
-  # w1less <- w[which(d==1 & t<0)]
+  w1less <-w[smpl1less]
   # w01 <- w[which(d==0 & t==1)]
   w01 <- w[smpl01]
   # w00 <- w[which(d==0 & t==0)]
   w00 <- w[smpl00]
-  # w0less <- w[which(d==0 & t<0)]
+  w0less <- w[smpl0less]
 
   # xx <- x
   xx10 <- x[smpl10,]
@@ -633,517 +631,427 @@ didnpreg.default <- function(
   #   cat.print(i)
   #   cat.print(levels(xx00[,i]))
   # }
-  # xx1less <- x[which(d==1 & t<0),]
-  # xx0less <- x[which(d==0 & t<0),]
+  xx1less <- x[smpl1less,]
+  xx0less <- x[smpl0less,]
+  xx1pool <- x[smpl1pool,]
+  xx0pool <- x[smpl0pool,]
 
   xx11 <- x[smpl11,] # for TTa
   xx01 <- x[smpl01,]
 
   xx1 <- x[smpl1,]
 
-  y11 <- y[smpl11]
-  y10 <- y[smpl10]
-  y01 <- y[smpl01]
-  y00 <- y[smpl00]
+  n11 <- sum(smpl11)
+  n10 <- sum(smpl10)
+  n01 <- sum(smpl01)
+  n00 <- sum(smpl00)
 
-  n11 <- length(y11)
-  n10 <- length(y10)
-  n01 <- length(y01)
-  n00 <- length(y00)
+  n1less <- sum(smpl1less)
+  n0less <- sum(smpl0less)
+  n1pool <- sum(smpl1pool)
+  n0pool <- sum(smpl0pool)
+
+  t1pool <- t[smpl1pool]
+  t0pool <- t[smpl0pool]
 
   n1 <- nrow(xx1)
 
-  if (TTb) {
-    # prepare to retrieve TTa from TTb
-    # init
-    tym1 <- as.numeric(rep(NA,nt.o))
-    # fill only subsample
-    tym1[smpl1] <- 1:n1
-    tym1[smpl11] -> TTa.positions.in.TTb
-  }
+  y10 <- y[smpl10]
+  y1less <- y[smpl1less]
+  y00 <- y[smpl00]
+  y0less <- y[smpl0less]
+
+  y1pool <- y[smpl1pool]
+  y0pool <- y[smpl0pool]
+
+  ## with sample weights
+  wy10 <- w10*y10
+  wy1less <- w1less*y1less
+  wy00 <- w00*y00
+  wy0less <- w0less*y0less
+
+  ## pooled for the bootstrap
+  w1pool <- w[smpl1pool]
+  w0pool <- w[smpl0pool]
+
+  wy1pool <- y1pool*w1pool
+  wy0pool <- y0pool*w0pool
+
+#   if (TTb) {
+#     # prepare to retrieve TTa from TTb
+#     # init
+#     tym1 <- as.numeric(rep(NA,nt.o))
+#     # fill only subsample
+#     tym1[smpl1] <- 1:n1
+#     tym1[smpl11] -> TTa.positions.in.TTb
+#   }
 
 
-  wy11 <- y11*w11
-  wy01 <- y01*w01
-  wy10 <- y10*w10
-  wy00 <- y00*w00
-
-  ## plug-in bandwidths (used for starting values in LSCV)
+  ## plug-in bandwidths
   ## Silverman (1986) for cont (make it a function of q 1.06, 1.00, ....)
   ## Chu, Henderson and Parmeter (2015) for discrete
   ## bandwidths will be scaled by sample size for the other status (d=0, t=0)
-  rot.bw00 <- matrix(0,nrow=k.x,ncol=1)
+  if (print.level > 0){
+    cat("Bandwidths are chosen via the plug-in method\n")
+  }
 
-  for (i in 1:k.x) {
+  rot.bw10 <- rot.bw00 <- rot.bw1less <- rot.bw0less <- rot.bw1pool <- rot.bw0pool <- rot.bw10 <-
+    matrix(0, nrow = k.x, ncol = 1)
 
-    # cat.print(i)
+  for (i in 1:k.x){
 
-    if (is.ordered(xx00[,i])==TRUE){
-
-      ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-      rf <- table(xx00[,i])/length(xx00[,i])
-      rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-      # cat.print(rf)
-      # cat.print(rot.bw00[i])
-
-    } else if (is.factor(xx00[,i])==TRUE) {
+    if ( q.typeYnum[i] == 3){ #ordered
 
       ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-      rf <- table(xx00[,i])/length(xx00[,i])
-      rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-      # cat.print(rf)
-      # cat.print(rot.bw00[i])
+      rf <- table(xx10[,i])/length(xx10[,i])
+      rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
 
-    } else {
+      ## switch for the sample size
+      rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+      rot.bw1less[i] <- (1/(1 + (n1less*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+      rot.bw0less[i] <- (1/(1 + (n0less*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+
+      rot.bw1pool[i] <- (1/(1 + (n1pool*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+      rot.bw0pool[i] <- (1/(1 + (n0pool*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+
+    } else if (q.typeYnum[i] == 2) { # factor
+
+      ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
+      rf <- table(xx10[,i])/length(xx10[,i])
+      rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+
+      ## switch for the sample size
+      rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+      rot.bw1less[i] <- (1/(1 + (n1less*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+      rot.bw0less[i] <- (1/(1 + (n0less*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+
+      rot.bw1pool[i] <- (1/(1 + (n1pool*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+      rot.bw0pool[i] <- (1/(1 + (n0pool*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+
+    } else { # continuous
 
       ## note no sd(x) because we scaled them already
-      rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1])) # adjust 1.06 to values of the Gaussian row on Page 70 Table 3.3
-      # cat.print(rot.bw00[i])
+      rot.bw10[i] <- 1.06*n10^(-1/(4+q.type[1]))
+
+      ## switch for the sample size
+      rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1]))
+      rot.bw1less[i] <- 1.06*n1less^(-1/(4+q.type[1]))
+      rot.bw0less[i] <- 1.06*n0less^(-1/(4+q.type[1]))
+
+      rot.bw1pool[i] <- 1.06*n1pool^(-1/(4+q.type[1]))
+      rot.bw0pool[i] <- 1.06*n0pool^(-1/(4+q.type[1]))
 
     }
 
   } ## i
 
-  ## CV bandwidths ----
+  # ## print bws ----
+  # my.bw <- data.frame(Regressor = colnames(x), Type = q.typeY, Bandwidth = bw11)
+  # if (print.level > 0) {
+  #   cat("\n")
+  #   print(my.bw)
+  # }
 
-  if (bwmethod == "CV") {
-    if (print.level > 0) {
-      cat(paste0("Calculating cross-validated bandwidths\n"))
-
-      ## print info about bw ----
-
-      if (q.type[1] > 0) {
-        cat("Kernel Type for Continuous Regressors is               Gaussian\n")
-      }
-      if (q.type[2] > 0) {
-        cat("Kernel Type for Unordered Categorical Regressors is    Aitchison and Aitken\n")
-      }
-      if (q.type[3] > 0) {
-        cat("Kernel Type for Ordered Categorical is                 Li and Racine\n")
-      }
-    }
-
-    ## setting upper and lower bounds for bandwidths
-    ## need them to be 5 for the continuous variables and 1 for the discrete variables
-    lower <- rep(0,ncol(x))
-    upper <- rep(1,ncol(x))
-    for (ii in 1:k.x) {
-      upper[ii] <- ifelse(is.factor(x[,ii]),1,5)
-    }
-
-    bw.start <- rot.bw00
-
-    # cat.print(rot.bw00)
-
-    # do it only on the treated in the treatment period: "11"
-
-    time.05 <- proc.time()
-
-    # bw.optim <- minqa::bobyqa(bw.start,lcls.lscv,lower,upper,y=y11,x=xx11,w=w11)
-
-    # tym11 <- lcls.lscv0(h=bw.start,y=y11,x=xx11,w=w11)
-    # tym12 <- lcls.lscv(h=bw.start,cores=cores,
-    #                    y=y11, wy=wy11, w=w11, x=as.matrix(xx11),
-    #                    xtype=q.typeYnum, nlevels=q.levels, n=n11, k=k.x)
-    # cat.print(c(tym11,tym12))
-    #
-    # return(1)
-
-    bw.optim <- minqa::bobyqa(
-      bw.start,lcls.lscv,lower,upper,
-      cores=cores, y=y11, wy=wy11, w=w11, x=as.matrix(xx11),
-      xtype=q.typeYnum, nlevels=q.levels, n=n11, k=k.x)
-
-
-    # cat.print(bw.optim)
-
-    time.06 <- proc.time()
-    CV.time.sec <- round( (time.06-time.05)[3], 0)
-    names(CV.time.sec) <- "sec"
-
-    if (print.level > 0){
-      .timing(CV.time.sec, "Calculating cross-validated bandwidths completed in ")
-      # cat("___________________________________________________\n")
-    }
-
-    bw.optim$par
-    bw.optim$fval
-    bw.optim$feval
-    bw.optim$ierr
-
-    bw11 <- bw.optim$par
-    # if (print.level > 1) {
-    #   cat(paste0("Calculating cross-validated bandwidths completed\n"))
-    # }
-  } else {
-    if (print.level > 0){
-      cat("Bandwidths are chosen via the plug-in method\n")
-    }
-    bw11 <- rot.bw00
-  }
-
-  # return(1)
-
-  ## print bws ----
-  my.bw <- data.frame(Regressor = colnames(x), Type = q.typeY, Bandwidth = bw11)
-  if (print.level > 0) {
-    cat("\n")
-    print(my.bw)
-  }
-
-  ## take these cross-validated bandwidths and calculate the scale factors, then get the remaining bandwidths
-  sf <- rep(1,k.x)
-  bw10 <- sf
-  bw01 <- sf
-  bw00 <- sf
-
-  for (ii in 1:k.x){
-    sf[ii] <-
-      ifelse(
-        is.factor(x[,ii]),
-        bw11[ii]*(n11^(2/(4+q.type[1]))),
-        bw11[ii]*(n11^(1/(4+q.type[1])))
-      )
-    bw10[ii] <-
-      ifelse(
-        is.factor(x[,ii]),
-        sf[ii]*(n10^(-2/(4+q.type[1]))),
-        sf[ii]*(n10^(-1/(4+q.type[1])))
-      )
-    bw01[ii] <-
-      ifelse(
-        is.factor(x[,ii]),
-        sf[ii]*(n01^(-2/(4+q.type[1]))),
-        sf[ii]*(n01^(-1/(4+q.type[1])))
-      )
-    bw00[ii] <-
-      ifelse(
-        is.factor(x[, ii]),
-        sf[ii] * (n00 ^ (-2 / ( 4 + q.type[1] ))),
-        sf[ii] * (n00 ^ (-1 / ( 4 + q.type[1] )))
-      )
-  }
-
-  ## Calculating ATET ----
+   ## Calculating BSC statistic ----
 
   time.05 <- proc.time()
 
   if (print.level > 0) {
-    if (do.TTb) {
-      # my.atet <- paste0("TTa and TTb (may take some time)")
-      my.atet <- paste0("TTb")
-    } else {
-      my.atet <- paste0("TTa")
-    }
-    cat(paste0("\nCalculating ATET: ",my.atet,"\n"))
+    cat(paste0("\nCalculating BSC \n"))
   }
 
-  # cat.print(dim(xx11))
-  # cat.print(dim(xx10))
-  # cat.print(dim(xx01))
-  # cat.print(dim(xx00))
-
-  # cat.print(
-  #   data.frame(rbind(
-  #     as.vector(bw11),
-  #     bw10,
-  #     bw01,
-  #     bw00
-  #   ))
-  # )
-
-  if (do.TTb) {
-    # num11 <- np::npksum(txdat=xx11,tydat=wy11,exdat=xx1,bws=bw11)$ksum
-    # num10 <- np::npksum(txdat=xx10,tydat=wy10,exdat=xx1,bws=bw10)$ksum
-    # num01 <- np::npksum(txdat=xx01,tydat=wy01,exdat=xx1,bws=bw01)$ksum
-    # num00 <- np::npksum(txdat=xx00,tydat=wy00,exdat=xx1,bws=bw00)$ksum
-    #
-    # dem11 <- np::npksum(txdat=xx11,tydat=w11,exdat=xx1,bws=bw11)$ksum
-    # dem10 <- np::npksum(txdat=xx10,tydat=w10,exdat=xx1,bws=bw10)$ksum
-    # dem01 <- np::npksum(txdat=xx01,tydat=w01,exdat=xx1,bws=bw01)$ksum
-    # dem00 <- np::npksum(txdat=xx00,tydat=w00,exdat=xx1,bws=bw00)$ksum
-    num11 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=wy11, xdat=as.matrix(xx11), xeval=as.matrix(xx1), bw=bw11,
-      xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n1, q=k.x
-    )
-    # cat.print(num11[1:20])
-    # cat.print(q.typeYnum)
-    # cat.print(q.levels)
-    # cat.print(num11_[1:20])
-    # cat.print( data.frame(num11, num11_, num11-num11_)[1:20,] )
+  ## produce equation 8 from the analog write-up
+  # print("num10")
+  # num10_ <- np::npksum(txdat=xx10,tydat=wy10,exdat=xx10,bws=rot.bw10)$ksum
+  num10 <- .npksumYXnew(
+    Nthreds = cores,
+    ydat=wy10, xdat=as.matrix(xx10), xeval=as.matrix(xx10), bw=rot.bw10,
+    xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n10, q=k.x
+  )
+  # cat.print( data.frame(num10_, num10, num10_ - num10)[1:10,] )
 
 
-    num10 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=wy10, xdat=as.matrix(xx10), xeval=as.matrix(xx1), bw=bw10,
-      xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n1, q=k.x
-    )
-    # cat.print( data.frame(num10, num10_,num10- num10_)[1:20,] )
+  # print("num1less")
+  # num1less_ <- np::npksum(txdat=xx1less,tydat=wy1less,exdat=xx10,bws=rot.bw1less)$ksum
+  num1less <- .npksumYXnew(
+    Nthreds = cores,
+    ydat=wy1less, xdat=as.matrix(xx1less), xeval=as.matrix(xx10), bw=rot.bw1less,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx1less), neval=n10, q=k.x
+  )
+  # cat.print( data.frame(num1less_, num1less, num1less_ - num1less)[1:10,] )
 
-    num01 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=wy01, xdat=as.matrix(xx01), xeval=as.matrix(xx1), bw=bw01,
-      xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n1, q=k.x
-    )
-    # cat.print( data.frame(num01, num01_,num01- num01_)[1:20,] )
+  # print("num00")
+  # num00_ <- np::npksum(txdat=xx00,tydat=wy00,exdat=xx10,bws=rot.bw00)$ksum
+  num00 <- .npksumYXnew(
+    Nthreds = cores,
+    ydat=wy00, xdat=as.matrix(xx00), xeval=as.matrix(xx10), bw=rot.bw00,
+    xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n10, q=k.x
+  )
+  # cat.print( data.frame(num00_, num00, num00_ - num00)[1:10,] )
 
-    num00 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=wy00, xdat=as.matrix(xx00), xeval=as.matrix(xx1), bw=bw00,
-      xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n1, q=k.x
-    )
-    # cat.print( data.frame(num00, num00_,num00- num00_)[1:20,] )
-
-
-
-    dem11 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=w11, xdat=as.matrix(xx11), xeval=as.matrix(xx1), bw=bw11,
-      xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n1, q=k.x
-    )
-    # cat.print( data.frame(dem11, dem11_,dem11- dem11_)[1:20,] )
-
-    dem10 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=w10, xdat=as.matrix(xx10), xeval=as.matrix(xx1), bw=bw10,
-      xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n1, q=k.x
-    )
-    # cat.print( data.frame(dem10, dem10_,dem10- dem10_)[1:20,] )
-
-    dem01 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=w01, xdat=as.matrix(xx01), xeval=as.matrix(xx1), bw=bw01,
-      xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n1, q=k.x
-    )
-    # cat.print( data.frame(dem01, dem01_,dem01- dem01_)[1:20,] )
-
-    dem00 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=w00, xdat=as.matrix(xx00), xeval=as.matrix(xx1), bw=bw00,
-      xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n1, q=k.x
-    )
-    # cat.print( data.frame(dem00, dem00_,dem00- dem00_)[1:20,] )
-  } else {
-    # num11 <- np::npksum(txdat=xx11,tydat=wy11,exdat=xx11,bws=bw11)$ksum
-    # num10 <- np::npksum(txdat=xx10,tydat=wy10,exdat=xx11,bws=bw10)$ksum
-    # num01 <- np::npksum(txdat=xx01,tydat=wy01,exdat=xx11,bws=bw01)$ksum
-    # num00 <- np::npksum(txdat=xx00,tydat=wy00,exdat=xx11,bws=bw00)$ksum
-    #
-    # dem11 <- np::npksum(txdat=xx11,tydat=w11,exdat=xx11,bws=bw11)$ksum
-    # dem10 <- np::npksum(txdat=xx10,tydat=w10,exdat=xx11,bws=bw10)$ksum
-    # dem01 <- np::npksum(txdat=xx01,tydat=w01,exdat=xx11,bws=bw01)$ksum
-    # dem00 <- np::npksum(txdat=xx00,tydat=w00,exdat=xx11,bws=bw00)$ksum
-
-    # cat.print(cores)
-
-    num11 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=wy11, xdat=as.matrix(xx11), xeval=as.matrix(xx11), bw=bw11,
-      xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n11, q=k.x
-    )
-    # cat.print(num11[1:20])
-    # cat.print(q.typeYnum)
-    # cat.print(q.levels)
-    # cat.print(num11_[1:20])
-    # cat.print( data.frame(num11, num11_, num11-num11_)[1:20,] )
+  # print("num0less")
+  # num0less_ <- np::npksum(txdat=xx0less,tydat=wy0less,exdat=xx10,bws=rot.bw0less)$ksum
+  num0less <- .npksumYXnew(
+    Nthreds = cores,
+    ydat=wy0less, xdat=as.matrix(xx0less), xeval=as.matrix(xx10), bw=rot.bw0less,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx0less), neval=n10, q=k.x
+  )
+  # cat.print( data.frame(num0less_, num0less, num0less_ - num0less)[1:10,] )
 
 
-    num10 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=wy10, xdat=as.matrix(xx10), xeval=as.matrix(xx11), bw=bw10,
-      xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n11, q=k.x
-    )
-    # cat.print( data.frame(num10, num10_,num10- num10_)[1:20,] )
-
-    num01 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=wy01, xdat=as.matrix(xx01), xeval=as.matrix(xx11), bw=bw01,
-      xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n11, q=k.x
-    )
-    # cat.print( data.frame(num01, num01_,num01- num01_)[1:20,] )
-
-    num00 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=wy00, xdat=as.matrix(xx00), xeval=as.matrix(xx11), bw=bw00,
-      xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n11, q=k.x
-    )
-    # cat.print( data.frame(num00, num00_,num00- num00_)[1:20,] )
+  # print("dem10")
+  # dem10_ <- np::npksum(txdat=xx10,tydat=w10,exdat=xx10,bws=rot.bw10)$ksum
+  dem10 <- .npksumYXnew(
+    Nthreds = cores,
+    ydat=w10, xdat=as.matrix(xx10), xeval=as.matrix(xx10), bw=rot.bw10,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx10), neval=n10, q=k.x
+  )
+  # cat.print( data.frame(dem10_, dem10, dem10_ - dem10)[1:10,] )
 
 
+  # print("dem1less")
+  # dem1less_ <- np::npksum(txdat=xx1less,tydat=w1less,exdat=xx10,bws=rot.bw1less)$ksum
+  dem1less <- .npksumYXnew(
+    Nthreds = cores,
+    ydat=w1less, xdat=as.matrix(xx1less), xeval=as.matrix(xx10), bw=rot.bw1less,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx1less), neval=n10, q=k.x
+  )
+  # cat.print( data.frame(dem1less_, dem1less, dem1less_ - dem1less)[1:10,] )
 
-    dem11 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=w11, xdat=as.matrix(xx11), xeval=as.matrix(xx11), bw=bw11,
-      xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n11, q=k.x
-    )
-    # cat.print( data.frame(dem11, dem11_,dem11- dem11_)[1:20,] )
 
-    dem10 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=w10, xdat=as.matrix(xx10), xeval=as.matrix(xx11), bw=bw10,
-      xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n11, q=k.x
-    )
-    # cat.print( data.frame(dem10, dem10_,dem10- dem10_)[1:20,] )
+  # print("dem00")
+  # dem00_ <- np::npksum(txdat=xx00,tydat=w00,exdat=xx10,bws=rot.bw00)$ksum
+  dem00 <- .npksumYXnew(
+    Nthreds = cores,
+    ydat=w00, xdat=as.matrix(xx00), xeval=as.matrix(xx10), bw=rot.bw00,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx00), neval=n10, q=k.x
+  )
+  # cat.print( data.frame(dem00_, dem00, dem00_ - dem00)[1:10,] )
 
-    dem01 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=w01, xdat=as.matrix(xx01), xeval=as.matrix(xx11), bw=bw01,
-      xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n11, q=k.x
-    )
-    # cat.print( data.frame(dem01, dem01_,dem01- dem01_)[1:20,] )
 
-    dem00 <- .npksumYXnew(
-      Nthreds = cores,
-      ydat=w00, xdat=as.matrix(xx00), xeval=as.matrix(xx11), bw=bw00,
-      xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n11, q=k.x
-    )
-    # cat.print( data.frame(dem00, dem00_,dem00- dem00_)[1:20,] )
+  # print("dem0less")
+  # dem0less_ <- np::npksum(txdat=xx0less,tydat=w0less,exdat=xx10,bws=rot.bw0less)$ksum
+  dem0less <- .npksumYXnew(
+    Nthreds = cores,
+    ydat=w0less, xdat=as.matrix(xx0less), xeval=as.matrix(xx10), bw=rot.bw0less,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx0less), neval=n10, q=k.x
+  )
+  # cat.print( data.frame(dem0less_, dem0less, dem0less_ - dem0less)[1:10,] )
+
+
+  bsc.stat <- (1/n10)*sum(((num10/dem10) - (num1less/dem1less) - (num00/dem00) + (num0less/dem0less))^2)
+
+  if (print.level > 0) {
+    cat(paste0("BSC = ",formatC(bsc.stat, digits = 10),"\n"))
   }
-
-  # atet <- mean(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
-  # cat("101\n")
-  # atet.hetero <- as.matrix(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
-
-  if (do.TTb) {
-    TTb.i <- as.vector(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
-    TTa.i <- TTb.i[TTa.positions.in.TTb]
-    TTa <- mean(TTa.i)
-    TTb <- mean(TTb.i)
-    # cat.print(TTa)
-    # cat.print(length(TTa.i))
-    # cat.print(TTb)
-    # cat.print(length(TTb.i))
-    # if (print.level > 0 ) {
-    #   cat(paste0("TTa = ",formatC(TTa, digits = 4),", N(TTa) = ",n11,"\n"))
-    # }
-    if (print.level > 0) {
-      cat(paste0("TTb = ",formatC(TTb, digits = digits),", N(TTb) = ",n1,"\n"))
-    }
-  } else {
-    TTa.i <- as.vector(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
-    TTa <- mean(TTa.i)
-
-    if (print.level > 0) {
-      cat(paste0("TTa = ",formatC(TTa, digits = digits),", N(TTa) = ",n11,"\n"))
-    }
-
-    # cat.print(TTa)
-    # cat.print(length(TTa.i))
-  }
-
-  # if (print.level > 1) {
-  #   cat(paste0("Calculating ATET completed\n"))
-  # }
 
   time.06 <- proc.time()
-  ATET.time.sec <- round( (time.06-time.05)[3], 0)
-  names(ATET.time.sec) <- "sec"
+  BSC.time.sec <- round( (time.06-time.05)[3], 0)
+  names(BSC.time.sec) <- "sec"
 
   if (print.level > 0){
-    .timing(ATET.time.sec, "Calculating ATET completed in ")
+    .timing(BSC.time.sec, "Calculating BSC completed in ")
     # cat("___________________________________________________\n")
   }
 
   # return(1)
 
-  ## Bootstraping ATET ----
+  ## Bootstraping BSC ----
 
 
-  ## begin the bootstrap for atet
+  ## begin the bootstrap for BSC
   if (print.level > 0) {
-    cat(paste0("\nBootstrapping standard errors (",boot.num," replications)\n"))
+    cat(paste0("\nBootstrapping the statistic (",boot.num," replications)\n"))
   }
   set.seed(seed = seed)#, kind = "L'Ecuyer-CMRG")
   seeds <- sample.int(n = .Machine$integer.max, size = boot.num)
 
-  ## need to evaluate the data at the observations to get the residuals
-  # if (print.level > 1) {
-  #   cat(paste0("Calculating residuals\n"))
-  # }
+  ### residuals -----
+  ## obtain residuals for the alternative model
+  ## estimate the functions at the actual data points for each group, time period
+  if (print.level > 0) {
+    cat(paste0("Calculating residuals for the alternative model\n"))
+  }
+  time.05 <- proc.time()
 
+  t.rot.bw10 <- rot.bw10
+  t.rot.bw1less <- rot.bw1less
+  t.rot.bw00 <- rot.bw00
+  t.rot.bw0less <- rot.bw0less
 
-  # nnum11 <- np::npksum(txdat=xx11,tydat=wy11,exdat=xx11,bws=bw11)$ksum
-  # nnum10 <- np::npksum(txdat=xx10,tydat=wy10,exdat=xx10,bws=bw10)$ksum
-  # nnum01 <- np::npksum(txdat=xx01,tydat=wy01,exdat=xx01,bws=bw01)$ksum
-  # nnum00 <- np::npksum(txdat=xx00,tydat=wy00,exdat=xx00,bws=bw00)$ksum
-
-
-  nnum11 <- .npksumYX(
-    Nthreds = cores,
-    ydat=wy11, xdat=as.matrix(xx11), bw=bw11,
-    xtype=q.typeYnum, nlevels=q.levels, n=n11, q=k.x
-  )
+  # nnum10_ <- npksum(txdat=xx10,tydat=wy10,exdat=xx10,bws=t.rot.bw10)$ksum
   nnum10 <- .npksumYX(
     Nthreds = cores,
-    ydat=wy10, xdat=as.matrix(xx10), bw=bw10,
+    ydat=wy10, xdat=as.matrix(xx10), bw=t.rot.bw10,
     xtype=q.typeYnum, nlevels=q.levels, n=n10, q=k.x
   )
-  nnum01 <- .npksumYX(
+  # cat.print( data.frame(nnum10_, nnum10, nnum10_ - nnum10)[1:10,] )
+
+  # nnum1less_ <- npksum(txdat=xx1less,tydat=wy1less,exdat=xx1less,bws=t.rot.bw1less)$ksum
+  nnum1less <- .npksumYX(
     Nthreds = cores,
-    ydat=wy01, xdat=as.matrix(xx01), bw=bw01,
-    xtype=q.typeYnum, nlevels=q.levels, n=n01, q=k.x
+    ydat=wy1less, xdat=as.matrix(xx1less), bw=t.rot.bw1less,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx1less), q=k.x
   )
+  # cat.print( data.frame(nnum1less_, nnum1less, nnum1less_ - nnum1less)[1:10,] )
+
+  # nnum00_ <- npksum(txdat=xx00,tydat=wy00,exdat=xx00,bws=t.rot.bw00)$ksum
   nnum00 <- .npksumYX(
     Nthreds = cores,
-    ydat=wy00, xdat=as.matrix(xx00), bw=bw00,
+    ydat=wy00, xdat=as.matrix(xx00), bw=t.rot.bw00,
     xtype=q.typeYnum, nlevels=q.levels, n=n00, q=k.x
   )
+  # cat.print( data.frame(nnum00_, nnum00, nnum00_ - nnum00)[1:10,] )
 
-  # ddem11 <- np::npksum(txdat=xx11,tydat=w11,exdat=xx11,bws=bw11)$ksum
-  # ddem10 <- np::npksum(txdat=xx10,tydat=w10,exdat=xx10,bws=bw10)$ksum
-  # ddem01 <- np::npksum(txdat=xx01,tydat=w01,exdat=xx01,bws=bw01)$ksum
-  # ddem00 <- np::npksum(txdat=xx00,tydat=w00,exdat=xx00,bws=bw00)$ksum
-
-
-  ddem11 <- .npksumYX(
+  # nnum0less_ <- npksum(txdat=xx0less,tydat=wy0less,exdat=xx0less,bws=t.rot.bw0less)$ksum
+  nnum0less <- .npksumYX(
     Nthreds = cores,
-    ydat=w11, xdat=as.matrix(xx11), bw=bw11,
-    xtype=q.typeYnum, nlevels=q.levels, n=n11, q=k.x
+    ydat=wy0less, xdat=as.matrix(xx0less), bw=t.rot.bw0less,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx0less), q=k.x
   )
+  # cat.print( data.frame(nnum0less_, nnum0less, nnum0less_ - nnum0less)[1:10,] )
+
+
+  # ddem10_ <- npksum(txdat=xx10,tydat=w10,exdat=xx10,bws=t.rot.bw10)$ksum
   ddem10 <- .npksumYX(
     Nthreds = cores,
-    ydat=w10, xdat=as.matrix(xx10), bw=bw10,
-    xtype=q.typeYnum, nlevels=q.levels, n=n10, q=k.x
+    ydat=w10, xdat=as.matrix(xx10), bw=t.rot.bw10,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx10), q=k.x
   )
-  ddem01 <- .npksumYX(
+  # cat.print( data.frame(ddem10_, ddem10, ddem10_ - ddem10)[1:10,] )
+
+
+  # ddem1less_ <- npksum(txdat=xx1less,tydat=w1less,exdat=xx1less,bws=t.rot.bw1less)$ksum
+  ddem1less <- .npksumYX(
     Nthreds = cores,
-    ydat=w01, xdat=as.matrix(xx01), bw=bw01,
-    xtype=q.typeYnum, nlevels=q.levels, n=n01, q=k.x
+    ydat=w1less, xdat=as.matrix(xx1less), bw=t.rot.bw1less,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx1less), q=k.x
   )
+  # cat.print( data.frame(ddem1less_, ddem1less, ddem1less_ - ddem1less)[1:10,] )
+
+  # ddem00_ <- npksum(txdat=xx00,tydat=w00,exdat=xx00,bws=t.rot.bw00)$ksum
   ddem00 <- .npksumYX(
     Nthreds = cores,
-    ydat=w00, xdat=as.matrix(xx00), bw=bw00,
-    xtype=q.typeYnum, nlevels=q.levels, n=n00, q=k.x
+    ydat=w00, xdat=as.matrix(xx00), bw=t.rot.bw00,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx00), q=k.x
   )
+  # cat.print( data.frame(ddem00_, ddem00, ddem00_ - ddem00)[1:10,] )
 
-  # cat.print( data.frame(nnum11, nnum11_, nnum11 - nnum11_)[1:20,] )
-  # cat.print( data.frame(nnum10, nnum10_, nnum10 - nnum10_)[1:20,] )
-  # cat.print( data.frame(nnum01, nnum01_, nnum01 - nnum01_)[1:20,] )
-  # cat.print( data.frame(nnum00, nnum00_, nnum00 - nnum00_)[1:20,] )
-  #
-  # cat.print( data.frame(ddem11, ddem11_, ddem11 - ddem11_)[1:20,] )
-  # cat.print( data.frame(ddem10, ddem10_, ddem10 - ddem10_)[1:20,] )
-  # cat.print( data.frame(ddem01, ddem01_, ddem01 - ddem01_)[1:20,] )
-  # cat.print( data.frame(ddem00, ddem00_, ddem00 - ddem00_)[1:20,] )
 
-  # return(2)
+  # ddem0less_ <- npksum(txdat=xx0less,tydat=w0less,exdat=xx0less,bws=t.rot.bw0less)$ksum
+  ddem0less <- .npksumYX(
+    Nthreds = cores,
+    ydat=w0less, xdat=as.matrix(xx0less), bw=t.rot.bw0less,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx0less), q=k.x
+  )
+  # cat.print( data.frame(ddem0less_, ddem0less, ddem0less_ - ddem0less)[1:10,] )
 
-  tt11 <- nnum11/ddem11
-  tt10 <- nnum10/ddem10
-  tt01 <- nnum01/ddem01
-  tt00 <- nnum00/ddem00
+  time.06 <- proc.time()
+  rez.time.sec <- round( (time.06-time.05)[3], 0)
+  names(rez.time.sec) <- "sec"
 
-  resid.11 <- y11 - tt11
-  resid.10 <- y10 - tt10
-  resid.01 <- y01 - tt01
-  resid.00 <- y00 - tt00
+  if (print.level > 1){
+    .timing(rez.time.sec, "Calculating residuals for the alternative model completed in ")
+    # cat("___________________________________________________\n")
+  }
 
-  if (print.level > 1) {
-    cat(paste0("Calculating residuals completed\n"))
+  m10 <- nnum10/ddem10
+  m1less <- nnum1less/ddem1less
+  m00 <- nnum00/ddem00
+  m0less <- nnum0less/ddem0less
+
+  resid.10 <- y10 - m10
+  resid.1less <- y1less - m1less
+  resid.00 <- y00 - m00
+  resid.0less <- y0less - m0less
+
+  resid.10 <- resid.10 - mean(resid.10)
+  resid.1less <- resid.1less - mean(resid.1less)
+  resid.00 <- resid.00 - mean(resid.00)
+  resid.0less <- resid.0less - mean(resid.0less)
+
+  ### fitted values ----
+  ## created fitted values under the null hypothesis
+  ## pool the 0 and past time periods together (separately for both treated and control groups)
+  if (print.level > 0) {
+    cat(paste0("Calculating fitted values under the null hypothesis\n"))
+  }
+  time.05 <- proc.time()
+
+  # nnum1pool_ <- npksum(txdat=xx1pool,tydat=wy1pool,exdat=xx1pool,bws=rot.bw1pool)$ksum
+  nnum1pool <- .npksumYX(
+    Nthreds = cores,
+    ydat=wy1pool, xdat=as.matrix(xx1pool), bw=rot.bw1pool,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx1pool), q=k.x
+  )
+  # cat.print( data.frame(nnum1pool_, nnum1pool, nnum1pool_ - nnum1pool)[1:10,] )
+
+  # nnum0pool_ <- npksum(txdat=xx0pool,tydat=wy0pool,exdat=xx0pool,bws=rot.bw0pool)$ksum
+  nnum0pool <- .npksumYX(
+    Nthreds = cores,
+    ydat=wy0pool, xdat=as.matrix(xx0pool), bw=rot.bw0pool,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx0pool), q=k.x
+  )
+  # cat.print( data.frame(nnum0pool_, nnum0pool, nnum0pool_ - nnum0pool)[1:10,] )
+
+  # ddem1pool_ <- npksum(txdat=xx1pool,tydat=w1pool,exdat=xx1pool,bws=rot.bw1pool)$ksum
+  ddem1pool <- .npksumYX(
+    Nthreds = cores,
+    ydat=w1pool, xdat=as.matrix(xx1pool), bw=rot.bw1pool,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx1pool), q=k.x
+  )
+  # cat.print( data.frame(ddem1pool_, ddem1pool, ddem1pool_ - ddem1pool)[1:10,] )
+
+  # ddem0pool_ <- npksum(txdat=xx0pool,tydat=w0pool,exdat=xx0pool,bws=rot.bw0pool)$ksum
+  ddem0pool <- .npksumYX(
+    Nthreds = cores,
+    ydat=w0pool, xdat=as.matrix(xx0pool), bw=rot.bw0pool,
+    xtype=q.typeYnum, nlevels=q.levels, n=nrow(xx0pool), q=k.x
+  )
+  # cat.print( data.frame(ddem0pool_, ddem0pool, ddem0pool_ - ddem0pool_)[1:10,] )
+  # cat.print(summary(ddem0pool))
+
+  m1pool <- nnum1pool/ddem1pool
+  m0pool <- nnum0pool/ddem0pool
+
+  m1pool0 <- m1pool[which(t1pool==0)]
+  m1poolless <- m1pool[which(t1pool<0)]
+
+  m0pool0 <- m0pool[which(t0pool==0)]
+  m0poolless <- m0pool[which(t0pool<0)]
+
+  # cat.print(table(t0pool))
+  # cat.print(table(t1pool))
+
+  # if (print.level > 1) {
+  #   cat(paste0("Calculating fitted values under the null hypothesis completed\n"))
+  # }
+  time.06 <- proc.time()
+  fit.time.sec <- round( (time.06-time.05)[3], 0)
+  names(fit.time.sec) <- "sec"
+
+  if (print.level > 1){
+    .timing(fit.time.sec, "Calculating fitted values under the null hypothesis completed in ")
+    # cat("___________________________________________________\n")
   }
 
   time.05 <- proc.time()
+
+  # cat.print(length(m1pool0))
+  # cat.print(length(resid.10))
+  # cat.print(n10)
+  #
+  # cat.print(length(m1poolless))
+  # cat.print(length(resid.1less))
+  # cat.print(n1less)
+  #
+  # cat.print(length(m0pool0))
+  # cat.print(length(resid.00))
+  # cat.print(n00)
+  #
+  # cat.print(length(m0poolless))
+  # cat.print(length(resid.0less))
+  # cat.print(n0less)
 
   # # do sequentially
   # atet.boot <- rep(1, boot.num)
@@ -1215,93 +1123,66 @@ didnpreg.default <- function(
 
   mcoptions <- list(set.seed = TRUE)
 
-  atet.boot.hetero <-
-    foreach::foreach(j = 1:boot.num, .options.multicore = mcoptions, .combine = "cbind", .verbose = FALSE) %dopar% {
+  if (print.level > 0) {
+    cat(paste0("\nThe main Loop of the Bootstrapping started\n"))
+  }
+
+  cores1 <- 1
+
+  bsc.boot <-
+    foreach::foreach(j = 1:boot.num, .options.multicore = mcoptions, .combine = "c", .verbose = FALSE) %dopar% {
 
       set.seed(seeds[j])
 
-      ## bootstrap if the y variable is binary
-      if (is.binary(y) == TRUE) {
+      y10.new <- m1pool0 + resid.10*rnorm(n10,0,1)
+      y1less.new <- m1poolless + resid.1less*rnorm(n1less,0,1)
+      y00.new <- m0pool0 + resid.00*rnorm(n00,0,1)
+      y0less.new <- m0poolless + resid.0less*rnorm(n0less,0,1)
 
-        y11.new <- ifelse(tt11 > runif(n11, min = 0, max = 1),1,0)
-        y10.new <- ifelse(tt10 > runif(n10, min = 0, max = 1),1,0)
-        y01.new <- ifelse(tt01 > runif(n01, min = 0, max = 1),1,0)
-        y00.new <- ifelse(tt00 > runif(n00, min = 0, max = 1),1,0)
-
-      } else {
-
-        y11.new <- tt11 + resid.11*rnorm(n11,0,1)
-        y10.new <- tt10 + resid.10*rnorm(n10,0,1)
-        y01.new <- tt01 + resid.01*rnorm(n01,0,1)
-        y00.new <- tt00 + resid.00*rnorm(n00,0,1)
-
-      }
-
-      wy11.new <- as.vector(w11*y11.new)
       wy10.new <- as.vector(w10*y10.new)
-      wy01.new <- as.vector(w01*y01.new)
+      wy1less.new <- as.vector(w1less*y1less.new)
       wy00.new <- as.vector(w00*y00.new)
+      wy0less.new <- as.vector(w0less*y0less.new)
 
-      if (do.TTb) {
-        # num11.new <- np::npksum(txdat=xx11,tydat=wy11.new,exdat=xx1,bws=bw11)$ksum
-        # num10.new <- np::npksum(txdat=xx10,tydat=wy10.new,exdat=xx1,bws=bw10)$ksum
-        # num01.new <- np::npksum(txdat=xx01,tydat=wy01.new,exdat=xx1,bws=bw01)$ksum
-        # num00.new <- np::npksum(txdat=xx00,tydat=wy00.new,exdat=xx1,bws=bw00)$ksum
+      ## produce equation 8 from the analog write-up
+      # num10.new_ <- npksum(txdat=xx10,tydat=wy10.new,exdat=xx10,bws=rot.bw10)$ksum
+      num10.new <- .npksumYX(
+        Nthreds = cores1,
+        ydat=wy10.new, xdat=as.matrix(xx10), bw=rot.bw10,
+        xtype=q.typeYnum, nlevels=q.levels, n=n10, q=k.x
+      )
+      # cat.print( data.frame(num10.new_, num10.new, num10.new_ - num10.new)[1:10,] )
 
-        num11.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy11.new, xdat=as.matrix(xx11), xeval=as.matrix(xx1), bw=bw11,
-          xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n1, q=k.x
-        )
-        num10.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy10.new, xdat=as.matrix(xx10), xeval=as.matrix(xx1), bw=bw10,
-          xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n1, q=k.x
-        )
-        num01.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy01.new, xdat=as.matrix(xx01), xeval=as.matrix(xx1), bw=bw01,
-          xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n1, q=k.x
-        )
-        num00.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy00.new, xdat=as.matrix(xx00), xeval=as.matrix(xx1), bw=bw00,
-          xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n1, q=k.x
-        )
+      # num1less.new_ <- npksum(txdat=xx1less,tydat=wy1less.new,exdat=xx10,bws=rot.bw1less)$ksum
+      num1less.new <- .npksumYXnew(
+        Nthreds = cores1,
+        ydat=wy1less.new, xdat=as.matrix(xx1less), xeval=as.matrix(xx10), bw=rot.bw1less,
+        xtype=q.typeYnum, nlevels=q.levels, n=n1less, neval=n10, q=k.x
+      )
+      # cat.print( data.frame(num1less.new_, num1less.new, num1less.new_ - num1less.new)[1:10,] )
 
-      } else {
-        # num11.new <- np::npksum(txdat=xx11,tydat=wy11.new,exdat=xx11,bws=bw11)$ksum
-        # num10.new <- np::npksum(txdat=xx10,tydat=wy10.new,exdat=xx11,bws=bw10)$ksum
-        # num01.new <- np::npksum(txdat=xx01,tydat=wy01.new,exdat=xx11,bws=bw01)$ksum
-        # num00.new <- np::npksum(txdat=xx00,tydat=wy00.new,exdat=xx11,bws=bw00)$ksum
 
-        num11.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy11.new, xdat=as.matrix(xx11), xeval=as.matrix(xx11), bw=bw11,
-          xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n11, q=k.x
-        )
-        num10.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy10.new, xdat=as.matrix(xx10), xeval=as.matrix(xx11), bw=bw10,
-          xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n11, q=k.x
-        )
-        num01.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy01.new, xdat=as.matrix(xx01), xeval=as.matrix(xx11), bw=bw01,
-          xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n11, q=k.x
-        )
-        num00.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy00.new, xdat=as.matrix(xx00), xeval=as.matrix(xx11), bw=bw00,
-          xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n11, q=k.x
-        )
+      # num00.new_ <- npksum(txdat=xx00,tydat=wy00.new,exdat=xx10,bws=rot.bw00)$ksum
+      num00.new <- .npksumYXnew(
+        Nthreds = cores1,
+        ydat=wy00.new, xdat=as.matrix(xx00), xeval=as.matrix(xx10), bw=rot.bw00,
+        xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n10, q=k.x
+      )
+      # cat.print( data.frame(num00.new_, num00.new, num00.new_ - num00.new)[1:10,] )
 
+      # num0less.new_ <- npksum(txdat=xx0less,tydat=wy0less.new,exdat=xx10,bws=rot.bw0less)$ksum
+      num0less.new <- .npksumYXnew(
+        Nthreds = cores1,
+        ydat=wy0less.new, xdat=as.matrix(xx0less), xeval=as.matrix(xx10), bw=rot.bw0less,
+        xtype=q.typeYnum, nlevels=q.levels, n=n0less, neval=n10, q=k.x
+      )
+      # cat.print( data.frame(num0less.new_, num0less.new, num0less.new_ - num0less.new)[1:10,] )
+
+
+      if (print.level > 0 & cores == 1)
+      {
+        pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
       }
-
-      # if (print.level > 0 & cores == 1)
-      # {
-      #   pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
-      # }
       if (print.level > 0 & cores == 1 & j == 1)
       {
         time.06 <- proc.time()
@@ -1313,9 +1194,8 @@ didnpreg.default <- function(
 
       if (print.level > 0 & cores == 1 & j > 1) utils::setTxtProgressBar(pb, j)
 
-      # it does not matter if 'TTa' or 'TTb', since denominators are
-      # not bootstrapped and are already calculated
-      num11.new/dem11 - num10.new/dem10 - num01.new/dem01 + num00.new/dem00
+      (1/n10)*sum(((num10.new/dem10) - (num1less.new/dem1less) - (num00.new/dem00) + (num0less.new/dem0less))^2)
+
     }
 
   # do parallel completed
@@ -1326,28 +1206,22 @@ didnpreg.default <- function(
   names(boot.time.sec) <- "sec"
 
   if (print.level >= 1){
-    .timing(boot.time.sec, "Bootstrapping standard errors completed in ")
+    .timing(boot.time.sec, "Bootstrapping the statistic completed in ")
     # cat("___________________________________________________\n")
   }
 
-  atet.boot <- colMeans(atet.boot.hetero)
+  bsc.sd <- sd(bsc.boot)
 
-  if (do.TTb) {
-    TTa.sd <- sd(atet.boot[TTa.positions.in.TTb])
-    TTb.sd <- sd(atet.boot)
-    # cat.print(TTa.sd)
-    # cat.print(TTb.sd)
-    if (print.level > 0) {
-      # cat("\nTTa sd =",formatC(TTa.sd, digits = 4),"\n")
-      cat("TTb sd =",formatC(TTb.sd, digits = digits),"\n")
-    }
-  } else {
-    TTa.sd <- sd(atet.boot)
-    # cat.print(TTa.sd)
-    if (print.level > 0) {
-      cat("\nTTa sd =",formatC(TTa.sd, digits = digits),"\n")
-    }
+  ## Calculate p-value
+  rank.stat <- rank(c(bsc.stat,bsc.boot))
+  p.value <- 1-(rank.stat[1]/(boot.num+1))
+
+  if (print.level > 0) {
+    cat("\nBSC stat =",formatC(bsc.stat, digits = digits),"")
+    cat("\nBSC sd   =",formatC(bsc.sd, digits = digits),"")
+    cat("\n p-value =",formatC(p.value, digits = digits),"\n")
   }
+
 
   # if (print.level > 0) cat("\n")
 
@@ -1355,72 +1229,24 @@ didnpreg.default <- function(
 
   # sd.atet <- sd(atet.boot)
 
+
+
   # cat("12\n")
 
   ## Return ----
 
-  ## let's return the objects npdid,npdid.se,rot.bw,lscv.bw
-
-  if (do.TTb) {
-    tymch <- list(
-      NT = nt.o,
-      esample = esample,
-      sample1 = smpl1,
-      sample11 = smpl11,
-      sample10 = smpl10,
-      sample01 = smpl01,
-      sample00 = smpl00,
-      regressor.type = q.type,
-      bwmethod = bwmethod,
-      bw.time = ifelse(bwmethod == "CV", CV.time.sec, 0),
-      bws = my.bw,
-      boot.time = boot.time.sec,
-      boot.num = boot.num,
-      bw11 = as.vector(bw11),
-      bw10 = bw10,
-      bw01 = bw01,
-      bw00 = bw00,
-      TTx = TTx,
-      TTa.positions.in.TTb = TTa.positions.in.TTb,
-      TTa.i = TTa.i,
-      TTa = TTa,
-      TTb.i = TTb.i,
-      TTb = TTb,
-      TTa.sd = TTa.sd,
-      TTb.sd = TTb.sd,
-      TTa.i.boot = atet.boot.hetero[TTa.positions.in.TTb,],
-      TTb.i.boot = atet.boot.hetero
+  tymch <- list(
+    BSC = bsc.stat,
+    BSC.sd = bsc.sd,
+    BSC.P = p.value,
+    BSC.boot = bsc.boot,
+    boot.num = boot.num,
+    plot(density(bsc.boot,bw="sj")),abline(v=bsc.stat)
     )
-  } else {
-    tymch <- list(
-      NT = nt.o,
-      esample = esample,
-      sample1 = smpl1,
-      sample11 = smpl11,
-      sample10 = smpl10,
-      sample01 = smpl01,
-      sample00 = smpl00,
-      regressor.type = q.type,
-      bwmethod = bwmethod,
-      bw.time = ifelse(bwmethod == "CV", CV.time.sec, 0),
-      bws = my.bw,
-      boot.time = boot.time.sec,
-      boot.num = boot.num,
-      bw11 = as.vector(bw11),
-      bw10 = bw10,
-      bw01 = bw01,
-      bw00 = bw00,
-      TTx = TTx,
-      TTa.i = TTa.i,
-      TTa = TTa,
-      TTa.sd = TTa.sd,
-      TTa.i.boot = atet.boot.hetero
-    )
-  }
 
   # cat("13\n")
 
-  class(tymch) <- c("didnpreg", "didnp")
+  class(tymch) <- c("didnpbsctest", "didnp")
   return(tymch)
 
 }

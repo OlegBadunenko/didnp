@@ -160,7 +160,7 @@ tym1b <- didnpreg(
 
 ### Plotting Heterogenous Treatment Effects
 
-To plot the heterogenous treatment effects, use the **didnpplothte** command. Define three variables by and over which the treatment effects will be plotted:
+To plot the heterogenous treatment effects, use the **didnpplot** command. Define three variables by and over which the treatment effects will be plotted:
 
 ```{r by_over, eval=TRUE}
 DACAsub[tym1b$esample, "race"] -> race
@@ -173,7 +173,7 @@ Here `age` is quasi-continuous. It will have only 4 values (in fact fewer than t
 First, use one categorical `by` variable:
 
 ```{r gr_race, eval=TRUE}
-tym1b_gr_race <- didnpplothte(
+tym1b_gr_race <- didnpplot(
   obj = tym1b,
   level = 95,
   by = race[tym1b$sample1],
@@ -196,7 +196,7 @@ Here objects `data.a` and `data.b` contain data that is used to produce `plot.a`
 Another example is the graph with treatment effects by sex. Note the sample object `tym1b` is used:
 
 ```{r gr_sex, eval=TRUE}
-tym1b_gr_sex <- didnpplothte(
+tym1b_gr_sex <- didnpplot(
   obj = tym1b,
   level = 95,
   by = sex[tym1b$sample1],
@@ -212,10 +212,10 @@ tym1b_gr_sex$plot.a
 tym1b_gr_sex$plot.b
 ```
 
-The **didnpplothte** command will recognize if `by` is continuous variable, split it into given number of intervals `n.intervals` and plot the treatment effects by the split variable.
+The **didnpplot** command will recognize if `by` is continuous variable, split it into given number of intervals `n.intervals` and plot the treatment effects by the split variable.
 
 ```{r gr_age, eval=TRUE}
-tym1b_gr_age <- didnpplothte(
+tym1b_gr_age <- didnpplot(
   obj = tym1b,
   level = 95,
   by = age[tym1b$sample1],
@@ -242,7 +242,7 @@ tym1b_gr_age$plot.a +
 The treatment effects can be visualized by and over. Variable `by` can be both categorical and continuous, while `over` must be categorical. For example, to plot treatment effects by age over race, specify the `over` option:
 
 ```{r gr_age_race, eval=TRUE}
-tym1b_gr_age_race <- didnpplothte(
+tym1b_gr_age_race <- didnpplot(
   obj = tym1b,
   level = 90,
   by = age[tym1b$sample1],
@@ -288,7 +288,7 @@ ggplot(d1, aes(x = by, y = atet, color = Race, group = Race)) +
 The next plot shows treatment effects by age over sex:
 
 ```{r gr_age_sex, eval=TRUE}
-tym1b_gr_age_sex <- didnpplothte(
+tym1b_gr_age_sex <- didnpplot(
   obj = tym1b,
   level = 90,
   by = age[tym1b$sample1],
@@ -311,7 +311,7 @@ tym1b_gr_age_sex$plot.b
 Finally, both `by` and `over` are both categorical:
 
 ```{r gr_sex_race, eval=TRUE}
-tym1b_gr_sex_race <- didnpplothte(
+tym1b_gr_sex_race <- didnpplot(
   obj = tym1b,
   level = 95,
   by = sex[tym1b$sample1],
