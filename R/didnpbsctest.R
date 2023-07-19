@@ -1240,8 +1240,8 @@ didnpbsctest.default <- function(
     BSC.sd = bsc.sd,
     BSC.P = p.value,
     BSC.boot = bsc.boot,
-    boot.num = boot.num,
-    plot(density(bsc.boot,bw="sj")),abline(v=bsc.stat)
+    boot.num = boot.num#,
+    # plot(density(bsc.boot,bw="sj")),abline(v=bsc.stat)
     )
 
   # cat("13\n")

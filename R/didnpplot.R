@@ -767,8 +767,8 @@ didnpplot <- function(
           ## 2.1.1.1 TTb ----
           print("2.1.1.1 TTb")
 
-          cat.print(by[1:20])
-          cat.print(length(by))
+          # cat.print(by[1:20])
+          # cat.print(length(by))
 
 
           atet <- atet.sd <- myCount <- numeric(n.levels)
@@ -801,8 +801,8 @@ didnpplot <- function(
 
           ## 2.1.1.2 TTa ----
 
-          cat.print(length(obj$TTa.positions.in.TTb))
-          cat.print(length(by))
+          # cat.print(length(obj$TTa.positions.in.TTb))
+          # cat.print(length(by))
 
           by.a <- by[obj$TTa.positions.in.TTb]
 
@@ -822,6 +822,8 @@ didnpplot <- function(
               count = myCount,
               by = by.levels
             )
+          d1a <- d1a[complete.cases(d1a),]
+
 
           plot.a <- ggplot(d1a, aes(x = by, y = atet, group = 1)) +
             geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +

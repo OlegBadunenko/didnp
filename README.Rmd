@@ -96,16 +96,14 @@ table(DACAsub$sub_a1418_all)
 DACAsub$treatment_period <- ifelse( DACAsub[,"year"] > 2011, 1, 0)
 ```
 
-### Estimation
-
-To estimate the average treatment effects, we use the **didnpreg** function. Define the formula that we will use:
+> Define the formula that we will use:
 
 ```{r formula, eval = TRUE}
 form1 <- inschool ~ fem + race + var.bpl + state + age + yrimmig + 
   ageimmig | inschool | year | elig | treatment_period | perwt
 ```
 
-The **didnpreg** function allows using matrices. The manual explains how to use matrix syntax (type `?didnpreg`). To obtain standard errors,
+To obtain standard errors and perform testing,
 
 > we will use a few number of bootstrap replicaitons here, but we advise to set `boot.num = 399` or larger. 
 
@@ -113,6 +111,26 @@ The **didnpreg** function allows using matrices. The manual explains how to use 
 ```{r boot, eval = TRUE}
 B <- 99
 ```
+
+### Testing
+
+To test if there is a violation of the bias stability condition use command **didnptest**
+
+```{r model1test, eval=TRUE}
+tym1test <- didnpbsctest(
+  form1,
+  data = DACAsub,
+  subset = mysmpl,
+  boot.num = 99,
+  print.level = 2,
+  cores = 16)
+```
+
+We fail to reject the null hypothesis that the bias stability condition holds.
+
+### Estimation
+
+To estimate the average treatment effects, we use the **didnpreg** function.  The **didnpreg** function allows using matrices. The manual explains how to use matrix syntax (type `?didnpreg`). 
 
 To speed up the estimation
 
