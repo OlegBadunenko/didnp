@@ -126,7 +126,7 @@ tym1test <- didnpbsctest(
   cores = 16)
 ```
 
-We fail to reject the null hypothesis that the bias stability condition holds.
+We don't find evidence to reject the null hypothesis that the bias stability condition holds.
 
 ### Estimation
 

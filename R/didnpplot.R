@@ -789,7 +789,7 @@ didnpplot <- function(
             )
           d1b <- d1b[complete.cases(d1b),]
 
-          cat.print(d1b)
+          # cat.print(d1b)
 
           plot.b <- ggplot(d1b, aes(x = by, y = atet, group = 1)) +
             geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
@@ -800,6 +800,7 @@ didnpplot <- function(
             theme(legend.position = "none", text = element_text(size = text_size))
 
           ## 2.1.1.2 TTa ----
+          print("2.1.1.2 TTa")
 
           # cat.print(length(obj$TTa.positions.in.TTb))
           # cat.print(length(by))

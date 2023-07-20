@@ -137,17 +137,17 @@ tym1test <- didnpbsctest(
 #R>  Calculating residuals for the alternative model
 #R>  Calculating residuals for the alternative model completed in 36 seconds
 #R>  Calculating fitted values under the null hypothesis
-#R>  Calculating fitted values under the null hypothesis completed in 46 seconds
+#R>  Calculating fitted values under the null hypothesis completed in 47 seconds
 #R>  
 #R>  The main Loop of the Bootstrapping started
-#R>  Bootstrapping the statistic completed in 6 minutes and 45 seconds
+#R>  Bootstrapping the statistic completed in 6 minutes and 42 seconds
 #R>  
 #R>  BSC stat = 0.1346 
 #R>  BSC sd   = 0.003794 
 #R>   p-value =  0.99
 ```
 
-We fail to reject the null hypothesis that the bias stability condition
+We don't find evidence to reject the null hypothesis that the bias stability condition
 holds.
 
 ### Estimation
@@ -196,7 +196,7 @@ tym1a <- didnpreg(
 #R>  
 #R>  Bootstrapping standard errors (99 replications)
 #R>  Calculating residuals completed
-#R>  Bootstrapping standard errors completed in 1 minute and 49 seconds
+#R>  Bootstrapping standard errors completed in 1 minute and 46 seconds
 #R>  
 #R>  TTa sd = 0.005820258
 ```
@@ -223,7 +223,7 @@ summary(tym1a)
 #R>  6   yrimmig ordered 8.688889e-06
 #R>  7  ageimmig ordered 1.697394e-05
 #R>  
-#R>  Bootstrapping standard errors (99 replications) completed in 1 minute and 49 seconds
+#R>  Bootstrapping standard errors (99 replications) completed in 1 minute and 46 seconds
 #R>  
 #R>  Unconditional Treatment Effect on the Treated (ATET):
 #R>  
@@ -267,11 +267,11 @@ tym1b <- didnpreg(
 #R>  
 #R>  Calculating ATET: TTb
 #R>  TTb = 0.02163795, N(TTb) = 56959
-#R>  Calculating ATET completed in 21 second
+#R>  Calculating ATET completed in 22 seconds
 #R>  
 #R>  Bootstrapping standard errors (99 replications)
 #R>  Calculating residuals completed
-#R>  Bootstrapping standard errors completed in 18 minutes and 45 seconds
+#R>  Bootstrapping standard errors completed in 18 minutes and 51 second
 #R>  TTb sd = 0.0072693185
 ```
 
@@ -388,13 +388,6 @@ tym1b_gr_age <- didnpplot(
 #R>  [1] "2.1 TTa and TTb"
 #R>  [1] "2.1.1 single 'by'"
 #R>  [1] "2.1.1.1 TTb"
-#R>   by[1:20]:
-#R>   [1] (4.6,5]   (2.6,3]   (1,1.4]   (1,1.4]   (4.6,5]   (1,1.4]   (3.8,4.2]
-#R>   [8] (1,1.4]   (4.6,5]   (1.8,2.2] (1,1.4]   (4.6,5]   (3.8,4.2] (1.8,2.2]
-#R>  [15] (1.8,2.2] (3.8,4.2] (4.6,5]   (2.6,3]   (1.8,2.2] (3.8,4.2]
-#R>  10 Levels: (1,1.4] < (1.4,1.8] < (1.8,2.2] < (2.2,2.6] < ... < (4.6,5]
-#R>   length(by):
-#R>  [1] 56959
 #R>   d1b:
 #R>             atet     atet.sd count        by
 #R>  1  -0.011711563 0.008598465 11750   (1,1.4]
@@ -402,22 +395,13 @@ tym1b_gr_age <- didnpplot(
 #R>  5   0.019034473 0.006023782 11479   (2.6,3]
 #R>  8   0.033056671 0.009346651 11078 (3.8,4.2]
 #R>  10  0.082177748 0.016793647 10797   (4.6,5]
-#R>   length(obj$TTa.positions.in.TTb):
-#R>  [1] 5387
-#R>   length(by):
-#R>  [1] 56959
 
 tym1b_gr_age$data.a
 #R>             atet     atet.sd count        by
 #R>  1  -0.009763996 0.011617326  1059   (1,1.4]
-#R>  2           NaN          NA     0 (1.4,1.8]
 #R>  3  -0.034153071 0.007341389  1100 (1.8,2.2]
-#R>  4           NaN          NA     0 (2.2,2.6]
 #R>  5  -0.002217522 0.007659071  1062   (2.6,3]
-#R>  6           NaN          NA     0   (3,3.4]
-#R>  7           NaN          NA     0 (3.4,3.8]
 #R>  8   0.002805505 0.011864983  1087 (3.8,4.2]
-#R>  9           NaN          NA     0 (4.2,4.6]
 #R>  10  0.103344508 0.017867100  1079   (4.6,5]
 tym1b_gr_age$data.b
 #R>             atet     atet.sd count        by
@@ -428,7 +412,6 @@ tym1b_gr_age$data.b
 #R>  10  0.082177748 0.016793647 10797   (4.6,5]
 
 tym1b_gr_age$plot.a
-#R>  Warning: Removed 5 rows containing missing values (`geom_point()`).
 ```
 
 ![](man/figures/README-gr_age-1.png)<!-- -->
@@ -444,7 +427,6 @@ Ameding ggplot object is easy. For example adding a 0 horizontal line is
 ``` r
 tym1b_gr_age$plot.a +
   geom_hline(yintercept = 0)
-#R>  Warning: Removed 5 rows containing missing values (`geom_point()`).
 ```
 
 ![](man/figures/README-gr_age2-1.png)<!-- -->
