@@ -147,7 +147,7 @@ tym1test <- didnpbsctest(
 #R>   p-value =  0.99
 ```
 
-We don't find evidence to reject the null hypothesis that the bias stability condition
+We don't find evidence against the null hypothesis that the bias stability condition
 holds.
 
 ### Estimation
