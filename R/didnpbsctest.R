@@ -112,7 +112,7 @@
 #'    \code{TTb.i}
 #'    \tab the DiD estimators of the unconditional TT
 #'    \cr \tab \cr
-#'    \code{TTa.sd}
+#'    \code{TTa.se}
 #'    \tab the standard error of the DiD estimator of the avarage unconditional TT
 #'    \cr \tab \cr
 #'    \code{TTb.sd}
@@ -698,12 +698,17 @@ didnpbsctest.default <- function(
   rot.bw10 <- rot.bw00 <- rot.bw1less <- rot.bw0less <- rot.bw1pool <- rot.bw0pool <- rot.bw10 <-
     matrix(0, nrow = k.x, ncol = 1)
 
+  # cat.print(head(xx10))
+
   for (i in 1:k.x){
+
+    # cat.print(i)
 
     if ( q.typeYnum[i] == 3){ #ordered
 
       ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
       rf <- table(xx10[,i])/length(xx10[,i])
+      # cat.print(rf)
       rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
 
       ## switch for the sample size
@@ -718,6 +723,7 @@ didnpbsctest.default <- function(
 
       ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
       rf <- table(xx10[,i])/length(xx10[,i])
+      # cat.print(rf)
       rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
 
       ## switch for the sample size
@@ -743,6 +749,8 @@ didnpbsctest.default <- function(
 
     }
 
+    # cat.print(rot.bw10)
+
   } ## i
 
   # ## print bws ----
@@ -761,6 +769,14 @@ didnpbsctest.default <- function(
   }
 
   ## produce equation 8 from the analog write-up
+  # cat.print(head(wy10))
+  # cat.print(head(xx10))
+  # cat.print(rot.bw10)
+  # cat.print(q.typeYnum)
+  # cat.print(q.levels)
+  # cat.print(n10)
+  # cat.print(k.x)
+
   # print("num10")
   # num10_ <- np::npksum(txdat=xx10,tydat=wy10,exdat=xx10,bws=rot.bw10)$ksum
   num10 <- .npksumYXnew(
@@ -1218,7 +1234,7 @@ didnpbsctest.default <- function(
 
   if (print.level > 0) {
     cat("\nBSC stat =",formatC(bsc.stat, digits = digits),"")
-    cat("\nBSC sd   =",formatC(bsc.sd, digits = digits),"")
+    cat("\nBSC se   =",formatC(bsc.sd, digits = digits),"")
     cat("\n p-value =",formatC(p.value, digits = digits),"\n")
   }
 

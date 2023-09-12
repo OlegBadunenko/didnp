@@ -23,7 +23,7 @@
 #' A data frame class is required to identify the type/class of each regressor.
 #' @param id a vector, matrix, or data frame of length \eqn{NT} that identifies the unit of observation.
 #' @param time a vector, matrix, or data frame of length \eqn{NT} that specifies in which period \code{id} is observed.
-#' @param treatment a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.
+#' @param treated a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.
 #' @param treatment_period a vector, matrix, or data frame of length \eqn{NT} with zeros for the period before treatment and ones for the period of treatment and after.
 #' @param weights NULL,
 #' @param bwmethod bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will trigger calculating cross-validated bandwidths.
@@ -37,11 +37,11 @@
 #' @details
 #' The formula shell contain multiple parts separated by '|'. An example is
 #'
-#' form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period | weights
+#' form1 <- y ~ x1 + x2 | id | time | treated | treatment_period | weights
 #'
 #' weights can be omitted if not available
 #'
-#' form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
+#' form1 <- y ~ x1 + x2 | id | time | treated | treatment_period
 #'
 #'
 #' @return \code{didnpreg} returns a list containing:
@@ -115,10 +115,10 @@
 #'    \code{TTb.i}
 #'    \tab the DiD estimators of the unconditional TT
 #'    \cr \tab \cr
-#'    \code{TTa.sd}
+#'    \code{TTa.se}
 #'    \tab the standard error of the DiD estimator of the avarage unconditional TT
 #'    \cr \tab \cr
-#'    \code{TTb.sd}
+#'    \code{TTb.se}
 #'    \tab the standard error of the DiD estimator of the avarage unconditional TT
 #'    \cr \tab \cr
 #'    \code{TTx}
@@ -206,7 +206,7 @@
 #'     regressors = DACAsub[mysmpl,c("fem", "race", "var.bpl", "state", "age", "yrimmig", "ageimmig")],
 #'     id = DACAsub[mysmpl,"inschool"],
 #'     time = DACAsub[mysmpl,"year"],
-#'     treatment = DACAsub[mysmpl,"elig"],
+#'     treated = DACAsub[mysmpl,"elig"],
 #'     treatment_period = ifelse(DACAsub[mysmpl,"year"]>2011,1,0),
 #'     weights = DACAsub[mysmpl,"perwt"],
 #'     bwmethod = "opt",
@@ -344,10 +344,10 @@ didnpreg.formula <- function(
   if (length(time) != nt) stop("specificaion 'time' is inappropriate")
   # cat.print(class(time))
   # cat.print(head(time))
-  model.matrix(form1, lhs = 0, rhs = 4, data = mf)[,-1] -> treatment
-  if (length(treatment) != nt) stop("specificaion 'treatment' is inappropriate")
-  # cat.print(class(treatment))
-  # cat.print(head(treatment))
+  model.matrix(form1, lhs = 0, rhs = 4, data = mf)[,-1] -> treated
+  if (length(treated) != nt) stop("specificaion 'treated' is inappropriate")
+  # cat.print(class(treated))
+  # cat.print(head(treated))
   model.matrix(form1, lhs = 0, rhs = 5, data = mf)[,-1] -> treatment_period
   if (length(treatment_period) != nt) stop("specificaion 'treatment_period' is inappropriate")
   # cat.print(class(treatment_period))
@@ -369,7 +369,7 @@ didnpreg.formula <- function(
   #     regressors=X,
   #     id=id,
   #     time=time,
-  #     treatment=treatment,
+  #     treated=treated,
   #     treatment_period=treatment_period,
   #     weights = weights,
   #     bwmethod = bwmethod,
@@ -384,7 +384,7 @@ didnpreg.formula <- function(
     regressors=X,
     id=id,
     time=time,
-    treatment=treatment,
+    treated=treated,
     treatment_period=treatment_period,
     weights = weights,
     bwmethod = bwmethod,
@@ -413,7 +413,7 @@ didnpreg.default <- function(
     regressors,
     id,
     time,
-    treatment,
+    treated,
     treatment_period,
     weights = NULL,
     bwmethod = "opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation
@@ -426,7 +426,7 @@ didnpreg.default <- function(
     ...)
 {
   # cat("'default': this is the workhorse\n")
-  # c(class(outcome), class(regressors), class(id), class(time), class(treatment), class(treatment_period))
+  # c(class(outcome), class(regressors), class(id), class(time), class(treated), class(treatment_period))
   ## check specifications ----
   if (missing(outcome)) stop("vector 'outcome' is missing")
   if ( !(class(outcome) %in% c("numeric")) ) stop("wrong class of 'outcome': must be 'numeric'")
@@ -439,10 +439,10 @@ didnpreg.default <- function(
   if (missing(time)) stop("vector 'time' is missing")
   if ( !(class(time) %in% c("numeric")) ) stop("wrong class of 'time': must be 'numeric'")
 
-  if (missing(treatment)) stop("vector 'treatment' is missing")
-  if ( !(class(treatment) %in% c("numeric")) ) stop("wrong class of 'treatment': must be 'numeric'")
-  table(treatment) -> treatment_values
-  if (length(treatment_values) != 2 | names(treatment_values)[1] != "0" | names(treatment_values)[2] != "1") stop("vector 'treatment' must have exactly 2 values, 0 and 1")
+  if (missing(treated)) stop("vector 'treated' is missing")
+  if ( !(class(treated) %in% c("numeric")) ) stop("wrong class of 'treated': must be 'numeric'")
+  table(treated) -> treatment_values
+  if (length(treatment_values) != 2 | names(treatment_values)[1] != "0" | names(treatment_values)[2] != "1") stop("vector 'treated' must have exactly 2 values, 0 and 1")
 
   if (missing(treatment_period)) stop("vector 'treatment_period' is missing")
   if ( !(class(treatment_period) %in% c("numeric")) ) stop("wrong class of 'treatment_period': must be 'numeric'")
@@ -469,7 +469,7 @@ didnpreg.default <- function(
   nt.x <- nrow(regressors)
   nt.id <- length(id)
   nt.time <- length(time)
-  nt.tr <- length(treatment)
+  nt.tr <- length(treated)
   nt.tr.p <- length(treatment_period)
   if (is.null(weights)) {
     weights <- rep(1, n.o)
@@ -479,7 +479,7 @@ didnpreg.default <- function(
   if(nt.o != nt.x) stop("vector 'outcome' and data.frame 'regressors' have different number of observations")
   if(nt.o != nt.id) stop("vector 'outcome' and vector 'id' have different number of observations")
   if(nt.o != nt.time) stop("vector 'outcome' and vector 'time' have different number of observations")
-  if(nt.o != nt.tr) stop("vector 'outcome' and vector 'treatment' have different number of observations")
+  if(nt.o != nt.tr) stop("vector 'outcome' and vector 'treated' have different number of observations")
   if(nt.o != nt.tr.p) stop("vector 'outcome' and vector 'treatment_period' have different number of observations")
   if(nt.o != nt.w) stop("vector 'outcome' and vector 'weights' have different number of observations")
 
@@ -489,7 +489,7 @@ didnpreg.default <- function(
     data.frame(
       weights,
       treatment_period,
-      treatment,
+      treated,
       time,
       id,
       outcome,
@@ -506,7 +506,7 @@ didnpreg.default <- function(
 
   d0[,1] -> w
   d0[,2] -> treatment_period
-  d0[,3] -> d # treatment
+  d0[,3] -> d # treated
   d0[,4] -> it.time # time
   d0[,5] -> it.id # id
   d0[,6] -> y # outcome
@@ -522,10 +522,10 @@ didnpreg.default <- function(
   time.min <- min( it.time )
   time.max <- max( it.time )
   if( time.treatment - time.min < 2 ) warning (
-    paste0("Data starts in ",time.min,", while treatment is in ",time.treatment)
+    paste0("Data starts in ",time.min,", while the treatment is in ",time.treatment)
   )
   if( time.max - time.treatment < 2 ) warning (
-    paste0("Data ends in ",time.max,", while treatment is in ",time.treatment)
+    paste0("Data ends in ",time.max,", while the treatment is in ",time.treatment)
   )
   t <- it.time - time.treatment
   # cat.print(table(t))
@@ -539,23 +539,23 @@ didnpreg.default <- function(
 
   for (i in 1:k.x){
 
-    if (is.ordered(x[[i]])==TRUE){
+    if (is.ordered(x[,i])==TRUE){
 
       x[,i] <- droplevels(x[,i])
 
       q.type[3] <- q.type[3] + 1
       q.typeY[i] <- "ordered"
       q.typeYnum[i] <- 3
-      q.levels[i] <- length( levels( x[[i]] ) ) - 1
+      q.levels[i] <- length( levels( x[,i] ) ) - 1
 
-    } else if (is.factor(x[[i]])==TRUE) {
+    } else if (is.factor(x[,i])==TRUE) {
 
       x[,i] <- droplevels(x[,i])
 
       q.type[2] <- q.type[2] + 1
       q.typeY[i] <- "factor"
       q.typeYnum[i] <- 2
-      q.levels[i] <- length( levels( x[[i]] ) ) - 1
+      q.levels[i] <- length( levels( x[,i] ) ) - 1
 
     } else {
 
@@ -566,7 +566,7 @@ didnpreg.default <- function(
       ## divide each continuous x by its standard deviation
       ## it is only a mean to an end
       ## it will not change the conclusion of the test
-      x[[i]] <- as.vector(x[[i]]/sd(x[[i]]))
+      x[,i] <- as.vector(x[,i]/sd(x[,i]))
 
     }
 
@@ -681,7 +681,9 @@ didnpreg.default <- function(
     if (is.ordered(xx00[,i])==TRUE){
 
       ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-      rf <- table(xx00[,i])/length(xx00[,i])
+      tym <- table(xx00[,i])
+      rf <- tym[tym>0]/length(xx00[,i])
+      # rf <- table(xx00[,i])/length(xx00[,i])
       rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
       # cat.print(rf)
       # cat.print(rot.bw00[i])
@@ -689,7 +691,9 @@ didnpreg.default <- function(
     } else if (is.factor(xx00[,i])==TRUE) {
 
       ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-      rf <- table(xx00[,i])/length(xx00[,i])
+      tym <- table(xx00[,i])
+      rf <- tym[tym>0]/length(xx00[,i])
+      # rf <- table(xx00[,i])/length(xx00[,i])
       rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
       # cat.print(rf)
       # cat.print(rot.bw00[i])
@@ -697,7 +701,7 @@ didnpreg.default <- function(
     } else {
 
       ## note no sd(x) because we scaled them already
-      rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1])) # adjust 1.06 to values of the Gaussian row on Page 70 Table 3.3
+        rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1])) # adjust 1.06 to values of the Gaussian row on Page 70 Table 3.3
       # cat.print(rot.bw00[i])
 
     }
@@ -755,7 +759,8 @@ didnpreg.default <- function(
       xtype=q.typeYnum, nlevels=q.levels, n=n11, k=k.x)
 
 
-    # cat.print(bw.optim)
+    cat.print(bw.start)
+    cat.print(bw.optim)
 
     time.06 <- proc.time()
     CV.time.sec <- round( (time.06-time.05)[3], 0)
@@ -1010,6 +1015,9 @@ didnpreg.default <- function(
     TTa.i <- TTb.i[TTa.positions.in.TTb]
     TTa <- mean(TTa.i)
     TTb <- mean(TTb.i)
+
+    cat.print(mean(TTb.i))
+    cat.print(mean(TTb.i, na.rm = TRUE))
     # cat.print(TTa)
     # cat.print(length(TTa.i))
     # cat.print(TTb)
@@ -1023,6 +1031,8 @@ didnpreg.default <- function(
   } else {
     TTa.i <- as.vector(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
     TTa <- mean(TTa.i)
+    cat.print(mean(TTa.i))
+    cat.print(mean(TTa.i, na.rm = TRUE))
 
     if (print.level > 0) {
       cat(paste0("TTa = ",formatC(TTa, digits = digits),", N(TTa) = ",n11,"\n"))
@@ -1333,21 +1343,82 @@ didnpreg.default <- function(
   atet.boot <- colMeans(atet.boot.hetero)
 
   if (do.TTb) {
-    TTa.sd <- sd(atet.boot[TTa.positions.in.TTb])
-    TTb.sd <- sd(atet.boot)
-    # cat.print(TTa.sd)
-    # cat.print(TTb.sd)
+    TTa.se <- sd(atet.boot[TTa.positions.in.TTb])
+    TTb.se <- sd(atet.boot)
+    # cat.print(TTa.se)
+    # cat.print(TTb.se)
     if (print.level > 0) {
-      # cat("\nTTa sd =",formatC(TTa.sd, digits = 4),"\n")
-      cat("TTb sd =",formatC(TTb.sd, digits = digits),"\n")
+      # cat("\nTTa sd =",formatC(TTa.se, digits = 4),"\n")
+      cat("TTb se =",formatC(TTb.se, digits = digits),"\n")
+      cat("\nBootstrapped 95% confidence interval: [",quantile(atet.boot, probs = c(.025)),",",quantile(atet.boot, probs = c(.975)),"]\n")
     }
+    atets <- cbind(round(TTb, digits = digits),
+                   round(TTb.se, digits = digits),
+                   round(TTb/TTb.se,digits = 2),
+                   round(pnorm(abs(TTb/TTb.se), lower.tail = FALSE)*2, digits = digits),
+                   round(TTb-1.96*TTb.se, digits = digits),
+                   round(TTb+1.96*TTb.se, digits = digits))
+    rownames(atets) <- "ATET"
+    colnames(atets) <- c("Coef.", "SE ", "z ",  "P>|z|", "CIl", "CIu")
+    max.name.length <- max(nchar(row.names(atets)))
+    mycutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1)
+    mysymbols = c("***", "**", "*", ".", " ")
+    na.print = "NA"
   } else {
-    TTa.sd <- sd(atet.boot)
-    # cat.print(TTa.sd)
+    TTa.se <- sd(atet.boot)
+    # cat.print(TTa.se)
     if (print.level > 0) {
-      cat("\nTTa sd =",formatC(TTa.sd, digits = digits),"\n")
+      cat("\nTTa se =",formatC(TTa.se, digits = digits),"\n")
+      cat("\nBootstrapped 95% confidence interval: [",quantile(atet.boot, probs = c(.025)),",",quantile(atet.boot, probs = c(.975)),"]\n")
     }
+    atets <- cbind(round(TTa, digits = digits),
+                   round(TTa.se, digits = digits),
+                   round(TTa/TTa.se,digits = 2),
+                   round(pnorm(abs(TTa/TTa.se), lower.tail = FALSE)*2, digits = digits),
+                   round(TTa-1.96*TTa.se, digits = digits),
+                   round(TTa+1.96*TTa.se, digits = digits))
+    rownames(atets) <- "ATET"
+    colnames(atets) <- c("Coef.", "SE ", "z ",  "P>|z|", "CIl", "CIu")
+    max.name.length <- max(nchar(row.names(atets)))
+    mycutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1)
+    mysymbols = c("***", "**", "*", ".", " ")
+    na.print = "NA"
   }
+
+  if (print.level > 0) {
+    cat("\np-value and confidence interval assuming ATET is normally distributed:\n\n")
+
+    Cf <- cbind(
+      ifelse(atets[,1, drop = FALSE]> 999,
+             formatC(atets[,1, drop = FALSE], digits=1, format="e",width=10),
+             formatC(atets[,1, drop = FALSE], digits=digits, format="f", width=10)),
+      ifelse(atets[,2, drop = FALSE]>999,
+             formatC(atets[,2, drop = FALSE], digits=1, format="e", width=10),
+             formatC(atets[,2, drop = FALSE], digits=digits, format="f", width=10)),
+      ifelse(atets[,3, drop = FALSE]>999,
+             formatC(atets[,3, drop = FALSE], digits=1, format="e", width=7),
+             formatC(atets[,3, drop = FALSE], digits=2, format="f", width=7)),
+      ifelse(atets[,4, drop = FALSE]>999,
+             formatC(atets[,4, drop = FALSE], digits=1, format="e", width=10),
+             formatC(atets[,4, drop = FALSE], digits=digits, format="f", width=10)),
+      # formatC(mysymbols[findInterval(x = atets[,4], vec = mycutpoints)], flag = "-"),
+      ifelse(atets[,5, drop = FALSE]> 999,
+             formatC(atets[,5, drop = FALSE], digits=1, format="e", width=10),
+             formatC(atets[,5, drop = FALSE], digits=digits, format="f", width=10)),
+      ifelse(atets[,6, drop = FALSE]> 999,
+             formatC(atets[,6, drop = FALSE], digits=1, format="e",width=10),
+             formatC(atets[,6, drop = FALSE], digits=digits, format="f", width=10))
+    )
+
+    row.names(Cf) <- formatC(row.names(Cf), width = max(nchar(row.names(Cf))), flag = "-")
+    cat("",rep(" ", max.name.length+6),"Coef.        SE       z       P>|z|  [95% confidence interval]", sep = "")
+
+
+    # cat.print(Cf)
+    dimnames(Cf)[[2]] <- rep("", dim(Cf)[[2]])
+    print.default(Cf[1:1,,drop=FALSE], quote = FALSE, right = TRUE, na.print = na.print)
+  }
+
 
   # if (print.level > 0) cat("\n")
 
@@ -1386,8 +1457,8 @@ didnpreg.default <- function(
       TTa = TTa,
       TTb.i = TTb.i,
       TTb = TTb,
-      TTa.sd = TTa.sd,
-      TTb.sd = TTb.sd,
+      TTa.se = TTa.se,
+      TTb.se = TTb.se,
       TTa.i.boot = atet.boot.hetero[TTa.positions.in.TTb,],
       TTb.i.boot = atet.boot.hetero
     )
@@ -1413,7 +1484,7 @@ didnpreg.default <- function(
       TTx = TTx,
       TTa.i = TTa.i,
       TTa = TTa,
-      TTa.sd = TTa.sd,
+      TTa.se = TTa.se,
       TTa.i.boot = atet.boot.hetero
     )
   }

@@ -63,6 +63,9 @@ lcls.lscv <- function(h, cores, y, wy, w, x, xtype, nlevels, n, k){
       xtype=xtype, nlevels=nlevels, n=n,q=k
     )
 
+    # cat.print(summary(n.mhat))
+    # cat.print(summary(d.mhat))
+
     mhat <- n.mhat/d.mhat
 
     # cat.print(summary(n.mhat))
@@ -82,9 +85,10 @@ is.binary <- function(v) {
 
 .timing <- function(x, wording = "Time elapsed is")
 {
+  # print(x)
   if(x < 60){
     # cat("\n")
-    my.sec <- ifelse(x %% 10 == 1 | x == 1, "second", "seconds")
+    my.sec <- ifelse(x %% 10 == 1 | x == 1 & x != 11, "second", "seconds")
     cat("",wording,"",x," ",my.sec,"\n", sep = "")
     # cat("\n")
   } else {
@@ -139,6 +143,7 @@ cat.print <- function(x, name = NULL){
     xtype, nlevels, n, neval, q
   )
   {
+    # cat.print(xtype)
     tymch0 <- .C(
       "npksumYXnew",
       Nthreds = as.integer(Nthreds),
@@ -147,7 +152,7 @@ cat.print <- function(x, name = NULL){
       xeval = as.double(xeval),
       bw = as.double(bw),
       xtype = as.integer(xtype),
-      nlevels = as.integer(nlevels),
+      nlevels = as.double(nlevels),
       n = as.integer(n),
       neval = as.integer(neval),
       q = as.integer(q),
@@ -174,7 +179,7 @@ cat.print <- function(x, name = NULL){
       xdat = as.double(xdat),
       bw = as.double(bw),
       xtype = as.integer(xtype),
-      nlevels = as.integer(nlevels),
+      nlevels = as.double(nlevels),
       n = as.integer(n),
       q = as.integer(q),
       ksum = double(n)
@@ -197,7 +202,7 @@ cat.print <- function(x, name = NULL){
       xdat = as.double(xdat),
       bw = as.double(bw),
       xtype = as.integer(xtype),
-      nlevels = as.integer(nlevels),
+      nlevels = as.double(nlevels),
       n = as.integer(n),
       q = as.integer(q),
       ksum = double(n)
@@ -220,7 +225,7 @@ cat.print <- function(x, name = NULL){
       xeval = as.double(xeval),
       bw = as.double(bw),
       xtype = as.integer(xtype),
-      nlevels = as.integer(nlevels),
+      nlevels = as.double(nlevels),
       n = as.integer(n),
       neval = as.integer(neval),
       q = as.integer(q),
@@ -242,7 +247,7 @@ cat.print <- function(x, name = NULL){
       xdat = as.double(xdat),
       bw = as.double(bw),
       xtype = as.integer(xtype),
-      nlevels = as.integer(nlevels),
+      nlevels = as.double(nlevels),
       n = as.integer(n),
       q = as.integer(q),
       ksum = double(n)
