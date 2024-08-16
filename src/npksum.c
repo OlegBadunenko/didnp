@@ -50,7 +50,7 @@ void dnormstdC(double *x)
 void npksumXnew(
     int *Nthreds,
     double *xdat, double *xeval, double *bw,
-    int *xtype, int *nlevels, int *n, int *neval, int *q,
+    int *xtype, double *nlevels, int *n, int *neval, int *q,
     double *tym2){
 
   double tym1, Kix, difftym, tym;
@@ -98,7 +98,7 @@ void npksumXnew(
 void npksumX(
     int *Nthreds,
     double *xdat, double *bw,
-    int *xtype, int *nlevels, int *n, int *q,
+    int *xtype, double *nlevels, int *n, int *q,
     double *tym2){
 
   double tym1, Kix, difftym, tym;
@@ -125,7 +125,7 @@ void npksumX(
           }
         } // end if (xtype[k] == 2)
         if ( xtype[k] == 1) {
-          tym = dnormstd( difftym / bw[k]) / bw[k];
+          tym = dnormstd( difftym / bw[k]) ; // / bw[k];
         } // end if (xtype[k] == 1)
         Kix *= tym;
       } // end for (k in 1:q)
@@ -138,7 +138,7 @@ void npksumX(
 void npksumYXnew(
     int *Nthreds,
     double *ydat, double *xdat, double *xeval, double *bw,
-    int *xtype, int *nlevels, int *n, int *neval, int *q,
+    int *xtype, double *nlevels, int *n, int *neval, int *q,
     double *tym2){
 
   double tym1, Kix, difftym, tym;
@@ -166,7 +166,7 @@ void npksumYXnew(
           }
         } // end if (xtype[k] == 2)
         if ( xtype[k] == 1) {
-          tym = dnormstd( difftym / bw[k]) / bw[k];
+          tym = dnormstd( difftym / bw[k]) ; // / bw[k];
         } // end if (xtype[k] == 1)
         Kix *= tym;
         // if ( j == 5 & i == 0){
@@ -182,7 +182,7 @@ void npksumYXnew(
 void npksumYX(
     int *Nthreds,
     double *ydat, double *xdat, double *bw,
-    int *xtype, int *nlevels, int *n, int *q,
+    int *xtype, double *nlevels, int *n, int *q,
     double *tym2){
 
   double tym1, Kix, difftym, tym;
@@ -209,7 +209,7 @@ void npksumYX(
           }
         } // end if (xtype[k] == 2)
         if ( xtype[k] == 1) {
-          tym = dnormstd( difftym / bw[k]) / bw[k];
+          tym = dnormstd( difftym / bw[k]) ; // / bw[k];
         } // end if (xtype[k] == 1)
         Kix *= tym;
       } // end for (k in 1:q)
@@ -222,7 +222,7 @@ void npksumYX(
 void npksumYXloo(
     int *Nthreds,
     double *ydat, double *xdat, double *bw,
-    int *xtype, int *nlevels, int *n, int *q,
+    int *xtype, double *nlevels, int *n, int *q,
     double *tym2){
 
   double tym1, Kix, difftym, tym;
@@ -250,7 +250,7 @@ void npksumYXloo(
             }
           } // end if (xtype[k] == 2)
           if ( xtype[k] == 1) {
-            tym = dnormstd( difftym / bw[k]) / bw[k];
+            tym = dnormstd( difftym / bw[k]) ; // / bw[k];
           } // end if (xtype[k] == 1)
           Kix *= tym;
         } // end for (k in 1:q)

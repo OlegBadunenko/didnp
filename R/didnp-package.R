@@ -22,8 +22,6 @@
 #'
 #' @aliases didnp-package
 #'
-#' @docType package
-#'
 #' @section Bugreport: Any bug or suggestion can be reported using the
 #' \code{didnp} tracker facilities at: \url{https://github.com/}
 #'
@@ -40,3 +38,4 @@
 #' @import parallel
 #' @import foreach
 NULL
+

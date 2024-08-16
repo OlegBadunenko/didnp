@@ -12,9 +12,11 @@ didnpreg(...)
   formula,
   data = stop("argument 'data' is missing"),
   subset,
+  bws = NULL,
   bwmethod = "opt",
   boot.num = 399,
   TTx = "TTa",
+  level = 95,
   print.level = 1,
   digits = 4,
   cores = 1,
@@ -25,14 +27,15 @@ didnpreg(...)
 \method{didnpreg}{default}(
   outcome,
   regressors,
-  id,
   time,
-  treatment,
+  treated,
   treatment_period,
   weights = NULL,
+  bws = NULL,
   bwmethod = "opt",
   boot.num = 399,
   TTx = "TTa",
+  level = 95,
   print.level = 1,
   digits = 4,
   cores = 1,
@@ -47,9 +50,11 @@ didnpreg(...)
 
 \item{subset}{NULL, optional subsample of 'data'}
 
-\item{bwmethod}{bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will trigger calculating cross-validated bandwidths.}
+\item{bws}{a bandwidth specification. A vector of bandwidths of length corresponding to the number of regressors.}
 
-\item{boot.num}{399,}
+\item{bwmethod}{bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will calculate cross-validated bandwidths.}
+
+\item{boot.num}{an single value specifying the number of bootstrap replications.  Default is 399.}
 
 \item{TTx}{Conditional Treatment Effect on the Treated. Default is FALSE.}
 
@@ -64,11 +69,9 @@ didnpreg(...)
 \item{regressors}{a data frame with \eqn{NT} rows that contains regressors.
 A data frame class is required to identify the type/class of each regressor.}
 
-\item{id}{a vector, matrix, or data frame of length \eqn{NT} that identifies the unit of observation.}
-
 \item{time}{a vector, matrix, or data frame of length \eqn{NT} that specifies in which period \code{id} is observed.}
 
-\item{treatment}{a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.}
+\item{treated}{a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.}
 
 \item{treatment_period}{a vector, matrix, or data frame of length \eqn{NT} with zeros for the period before treatment and ones for the period of treatment and after.}
 
@@ -89,16 +92,28 @@ A data frame class is required to identify the type/class of each regressor.}
 \tab A vector of TRUE/FALSE values identifying treated observations.
 \cr \tab \cr
 \code{sample11}
-\tab A vector of TRUE/FALSE values identifying treated observations right after the treatement
+\tab A vector of TRUE/FALSE values identifying treated observations right after the treatment
 \cr \tab \cr
 \code{sample10}
 \tab A vector of TRUE/FALSE values identifying treated observations just before the treatment
 \cr \tab \cr
 \code{sample01}
-\tab A vector of TRUE/FALSE values identifying observations in control group right after the treatement
+\tab A vector of TRUE/FALSE values identifying observations in control group right after the treatment
 \cr \tab \cr
 \code{sample00}
-\tab A vector of TRUE/FALSE values identifying observations in control group just before the treatement
+\tab A vector of TRUE/FALSE values identifying observations in control group just before the treatment
+\cr \tab \cr
+\code{n11}
+\tab A number of treated observations right after the treatment
+\cr \tab \cr
+\code{n10}
+\tab A number of treated observations just before the treatment
+\cr \tab \cr
+\code{n01}
+\tab A number of observations in control group right after the treatment
+\cr \tab \cr
+\code{n00}
+\tab A number of observations in control group just before the treatment
 \cr \tab \cr
 \code{regressor.type}
 \tab A vector of length 3 with number of continuous, unordered categorical, and ordered categorical regressors.
@@ -128,7 +143,7 @@ A data frame class is required to identify the type/class of each regressor.}
 \tab Bandwidths calculated for the sample of of observations in control group right after the treatment.
 \cr \tab \cr
 \code{bw00}
-\tab Bandwidths calculated for the sample of observations in control group just before the treatement
+\tab Bandwidths calculated for the sample of observations in control group just before the treatment
 \cr \tab \cr
 \code{do.TTb}
 \tab TRUE/FALSE whether to perform TTb
@@ -148,10 +163,10 @@ A data frame class is required to identify the type/class of each regressor.}
 \code{TTb.i}
 \tab the DiD estimators of the unconditional TT
 \cr \tab \cr
-\code{TTa.sd}
+\code{TTa.se}
 \tab the standard error of the DiD estimator of the avarage unconditional TT
 \cr \tab \cr
-\code{TTb.sd}
+\code{TTb.se}
 \tab the standard error of the DiD estimator of the avarage unconditional TT
 \cr \tab \cr
 \code{TTx}
@@ -171,11 +186,11 @@ The \code{didnpreg} command contains tools for computing both heterogenous and a
 \details{
 The formula shell contain multiple parts separated by '|'. An example is
 
-form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period | weights
+form1 <- y ~ x1 + x2 | time | treated | treatment_period | weights
 
 weights can be omitted if not available
 
-form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
+form1 <- y ~ x1 + x2 | time | treated | treatment_period
 }
 \examples{
 \dontrun{
@@ -248,7 +263,7 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
     regressors = DACAsub[mysmpl,c("fem", "race", "var.bpl", "state", "age", "yrimmig", "ageimmig")],
     id = DACAsub[mysmpl,"inschool"],
     time = DACAsub[mysmpl,"year"],
-    treatment = DACAsub[mysmpl,"elig"],
+    treated = DACAsub[mysmpl,"elig"],
     treatment_period = ifelse(DACAsub[mysmpl,"year"]>2011,1,0),
     weights = DACAsub[mysmpl,"perwt"],
     bwmethod = "opt",
@@ -264,9 +279,9 @@ form1 <- y ~ x1 + x2 | id | time | treatment | treatment_period
 
 }
 \references{
-... (...). This. \emph{Journal of },
-\bold{1}(1), 1-1
-\url{https://doi.org/10.}
+Daniel J. Henderson and Stefan Sperlich (2023). A Complete Framework for Model-Free Difference-in-Differences Estimation. \emph{Foundations and Trends in Econometrics},
+\bold{12}(3), 232-323
+\url{http://dx.doi.org/10.1561/0800000046.}
 }
 \author{
 Oleg Badunenko \email{oleg.badunenko@brunel.ac.uk},

@@ -23,9 +23,8 @@ didnpbsctest(...)
 \method{didnpbsctest}{default}(
   outcome,
   regressors,
-  id,
   time,
-  treatment,
+  treated,
   treatment_period,
   weights = NULL,
   boot.num = 399,
@@ -43,7 +42,7 @@ didnpbsctest(...)
 
 \item{subset}{NULL, optional subsample of 'data'}
 
-\item{boot.num}{399,}
+\item{boot.num}{an single value specifying the number of bootstrap replications.  Default is 399.}
 
 \item{print.level}{the level of printing; larger number implies more output is printed. Default is 1. 0 suppresses all printing.}
 
@@ -56,15 +55,13 @@ didnpbsctest(...)
 \item{regressors}{a data frame with \eqn{NT} rows that contains regressors.
 A data frame class is required to identify the type/class of each regressor.}
 
-\item{id}{a vector, matrix, or data frame of length \eqn{NT} that identifies the unit of observation.}
-
 \item{time}{a vector, matrix, or data frame of length \eqn{NT} that specifies in which period \code{id} is observed.}
-
-\item{treatment}{a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.}
 
 \item{treatment_period}{a vector, matrix, or data frame of length \eqn{NT} with zeros for the period before treatment and ones for the period of treatment and after.}
 
 \item{weights}{NULL,}
+
+\item{treatment}{a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.}
 }
 \value{
 \code{didnpbsctest} returns a list containing:
@@ -90,17 +87,23 @@ A data frame class is required to identify the type/class of each regressor.}
 \code{sample00}
 \tab A vector of TRUE/FALSE values identifying observations in control group just before the treatement
 \cr \tab \cr
+\code{n11}
+\tab A number of treated observations right after the treatment
+\cr \tab \cr
+\code{n10}
+\tab A number of treated observations just before the treatment
+\cr \tab \cr
+\code{n01}
+\tab A number of observations in control group right after the treatment
+\cr \tab \cr
+\code{n00}
+\tab A number of observations in control group just before the treatment
+\cr \tab \cr
 \code{regressor.type}
 \tab A vector of length 3 with number of continuous, unordered categorical, and ordered categorical regressors.
 \cr \tab \cr
-\code{bwmethod}
-\tab bandwidth type
-\cr \tab \cr
 \code{bw.time}
 \tab Time in seconds it took to calculate bandwidths. For bandwidth type "opt" is 0.
-\cr \tab \cr
-\code{bws}
-\tab Data frame with variable names, type of the regressor and bandwidths.
 \cr \tab \cr
 \code{boot.time}
 \tab Time in seconds it took to bootstrap the standard errors.
@@ -119,39 +122,6 @@ A data frame class is required to identify the type/class of each regressor.}
 \cr \tab \cr
 \code{bw00}
 \tab Bandwidths calculated for the sample of observations in control group just before the treatement
-\cr \tab \cr
-\code{do.TTb}
-\tab TRUE/FALSE whether to perform TTb
-\cr \tab \cr
-\code{TTa.positions.in.TTb}
-\tab Positions of TTa observations in TTb. Only if \code{do.TTb}
-\cr \tab \cr
-\code{TTa}
-\tab the DiD estimator of the avarage unconditional TT
-\cr \tab \cr
-\code{TTa.i}
-\tab the DiD estimators of the unconditional TT
-\cr \tab \cr
-\code{TTb}
-\tab the DiD estimator of the avarage unconditional TT
-\cr \tab \cr
-\code{TTb.i}
-\tab the DiD estimators of the unconditional TT
-\cr \tab \cr
-\code{TTa.sd}
-\tab the standard error of the DiD estimator of the avarage unconditional TT
-\cr \tab \cr
-\code{TTb.sd}
-\tab the standard error of the DiD estimator of the avarage unconditional TT
-\cr \tab \cr
-\code{TTx}
-\tab the DiD estimators of the conditional TT (also known as CATET)
-\cr \tab \cr
-\code{TTa.i.boot}
-\tab Matrix of the size \eqn{n_{11} \times boot.num}
-\cr \tab \cr
-\code{TTb.i.boot}
-\tab Matrix of the size \eqn{n_{1} \times boot.num}
 \cr
 }
 }

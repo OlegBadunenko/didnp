@@ -21,13 +21,13 @@
 #' @param outcome a vector, matrix, or data frame of length \eqn{NT}. The outcome can be a continuous or dummy variable.
 #' @param regressors a data frame with \eqn{NT} rows that contains regressors.
 #' A data frame class is required to identify the type/class of each regressor.
-#' @param id a vector, matrix, or data frame of length \eqn{NT} that identifies the unit of observation.
 #' @param time a vector, matrix, or data frame of length \eqn{NT} that specifies in which period \code{id} is observed.
 #' @param treated a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.
 #' @param treatment_period a vector, matrix, or data frame of length \eqn{NT} with zeros for the period before treatment and ones for the period of treatment and after.
 #' @param weights NULL,
-#' @param bwmethod bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will trigger calculating cross-validated bandwidths.
-#' @param boot.num 399,
+#' @param bws a bandwidth specification. A vector of bandwidths of length corresponding to the number of regressors.
+#' @param bwmethod bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will calculate cross-validated bandwidths.
+#' @param boot.num an single value specifying the number of bootstrap replications.  Default is 399.
 #' @param TTx Conditional Treatment Effect on the Treated. Default is FALSE.
 #' @param TTb Unconditional Treatment Effect on the Treated. TTb estimates by averaging over *all* treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.
 #' @param print.level the level of printing; larger number implies more output is printed. Default is 1. 0 suppresses all printing.
@@ -37,11 +37,11 @@
 #' @details
 #' The formula shell contain multiple parts separated by '|'. An example is
 #'
-#' form1 <- y ~ x1 + x2 | id | time | treated | treatment_period | weights
+#' form1 <- y ~ x1 + x2 | time | treated | treatment_period | weights
 #'
 #' weights can be omitted if not available
 #'
-#' form1 <- y ~ x1 + x2 | id | time | treated | treatment_period
+#' form1 <- y ~ x1 + x2 | time | treated | treatment_period
 #'
 #'
 #' @return \code{didnpreg} returns a list containing:
@@ -56,16 +56,28 @@
 #'    \tab A vector of TRUE/FALSE values identifying treated observations.
 #'    \cr \tab \cr
 #'    \code{sample11}
-#'    \tab A vector of TRUE/FALSE values identifying treated observations right after the treatement
+#'    \tab A vector of TRUE/FALSE values identifying treated observations right after the treatment
 #'    \cr \tab \cr
 #'    \code{sample10}
 #'    \tab A vector of TRUE/FALSE values identifying treated observations just before the treatment
 #'    \cr \tab \cr
 #'    \code{sample01}
-#'    \tab A vector of TRUE/FALSE values identifying observations in control group right after the treatement
+#'    \tab A vector of TRUE/FALSE values identifying observations in control group right after the treatment
 #'    \cr \tab \cr
 #'    \code{sample00}
-#'    \tab A vector of TRUE/FALSE values identifying observations in control group just before the treatement
+#'    \tab A vector of TRUE/FALSE values identifying observations in control group just before the treatment
+#'    \cr \tab \cr
+#'    \code{n11}
+#'    \tab A number of treated observations right after the treatment
+#'    \cr \tab \cr
+#'    \code{n10}
+#'    \tab A number of treated observations just before the treatment
+#'    \cr \tab \cr
+#'    \code{n01}
+#'    \tab A number of observations in control group right after the treatment
+#'    \cr \tab \cr
+#'    \code{n00}
+#'    \tab A number of observations in control group just before the treatment
 #'    \cr \tab \cr
 #'    \code{regressor.type}
 #'    \tab A vector of length 3 with number of continuous, unordered categorical, and ordered categorical regressors.
@@ -95,7 +107,7 @@
 #'    \tab Bandwidths calculated for the sample of of observations in control group right after the treatment.
 #'    \cr \tab \cr
 #'    \code{bw00}
-#'    \tab Bandwidths calculated for the sample of observations in control group just before the treatement
+#'    \tab Bandwidths calculated for the sample of observations in control group just before the treatment
 #'    \cr \tab \cr
 #'    \code{do.TTb}
 #'    \tab TRUE/FALSE whether to perform TTb
@@ -221,9 +233,9 @@
 #' }
 #'
 #' @references
-#' ... (...). This. \emph{Journal of },
-#' \bold{1}(1), 1-1
-#' \url{https://doi.org/10.}
+#' Daniel J. Henderson and Stefan Sperlich (2023). A Complete Framework for Model-Free Difference-in-Differences Estimation. \emph{Foundations and Trends in Econometrics},
+#' \bold{12}(3), 232-323
+#' \url{http://dx.doi.org/10.1561/0800000046.}
 #'
 #' @author
 #' Oleg Badunenko \email{oleg.badunenko@@brunel.ac.uk},
@@ -253,9 +265,11 @@ didnpreg.formula <- function(
     formula,
     data  = stop("argument 'data' is missing"),
     subset,
+    bws = NULL,
     bwmethod = "opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation
     boot.num = 399,
     TTx = "TTa",
+    level = 95,
     print.level = 1,
     digits = 4,
     cores = 1,
@@ -319,6 +333,7 @@ didnpreg.formula <- function(
 
   # cat("12\n")
 
+  # cat.print(form1)
   # cat.print(length(form1))
   # cat.print(length(form1)[2])
 
@@ -336,27 +351,28 @@ didnpreg.formula <- function(
   # cat.print(dim(X))
   # cat.print(head(X))
   # cat.print(class(X))
-  model.matrix(form1, lhs = 0, rhs = 2, data = mf)[,-1] -> id
-  if (length(id) != nt) stop("specificaion 'id' is inappropriate")
+  # model.matrix(form1, lhs = 0, rhs = 2, data = mf)[,-1] -> id
+  # if (length(id) != nt) stop("specificaion 'id' is inappropriate")
   # cat.print(class(id))
   # cat.print(head(id))
-  model.matrix(form1, lhs = 0, rhs = 3, data = mf)[,-1] -> time
+  model.matrix(form1, lhs = 0, rhs = 2, data = mf)[,-1] -> time
   if (length(time) != nt) stop("specificaion 'time' is inappropriate")
   # cat.print(class(time))
   # cat.print(head(time))
-  model.matrix(form1, lhs = 0, rhs = 4, data = mf)[,-1] -> treated
+  model.matrix(form1, lhs = 0, rhs = 3, data = mf)[,-1] -> treated
   if (length(treated) != nt) stop("specificaion 'treated' is inappropriate")
   # cat.print(class(treated))
   # cat.print(head(treated))
-  model.matrix(form1, lhs = 0, rhs = 5, data = mf)[,-1] -> treatment_period
+  model.matrix(form1, lhs = 0, rhs = 4, data = mf)[,-1] -> treatment_period
   if (length(treatment_period) != nt) stop("specificaion 'treatment_period' is inappropriate")
   # cat.print(class(treatment_period))
   # cat.print(head(treatment_period))
+  # cat.print(table(treatment_period))
   # see if weights was specified
   if (length(form1)[2] == 5) {
     weights <-  rep(1, nt)
   } else {
-    model.matrix(form1, lhs = 0, rhs = 6, data = mf)[,-1] -> weights
+    model.matrix(form1, lhs = 0, rhs = 5, data = mf)[,-1] -> weights
     if (length(weights) != nt) stop("specificaion 'weights' is inappropriate")
   }
   # cat.print(class(weights))
@@ -382,21 +398,23 @@ didnpreg.formula <- function(
   tymch <- didnpreg(
     outcome=Y,
     regressors=X,
-    id=id,
     time=time,
     treated=treated,
     treatment_period=treatment_period,
     weights = weights,
+    bws=bws,
     bwmethod = bwmethod,
     boot.num = boot.num,
     TTx = TTx,
+    level = level,
     print.level = print.level,
     digits = digits,
     cores = cores,
     seed = seed,
     ...)
 
-  tymch$esample <- esample
+  # tymch[["esample"]] <- esample
+  tymch <- c(tymch, esample = list(esample))   # Add element to list
   # cat("15\n")
 
 
@@ -411,14 +429,15 @@ didnpreg.formula <- function(
 didnpreg.default <- function(
     outcome,
     regressors,
-    id,
     time,
     treated,
     treatment_period,
     weights = NULL,
+    bws = NULL,
     bwmethod = "opt", # plug-in is rule of thumb for continuous and basic for categorical, can be cross-validation
     boot.num = 399,
     TTx = "TTa",
+    level = 95,
     print.level = 1,
     digits = 4,
     cores = 1,
@@ -434,8 +453,6 @@ didnpreg.default <- function(
   if (missing(regressors)) stop("data.frame 'regressors' is missing")
   if ( !(class(regressors) %in% c("data.frame")) ) stop("wrong class of 'regressors': must be 'data.frame'")
 
-  if (missing(id)) stop("vector 'id' is missing")
-
   if (missing(time)) stop("vector 'time' is missing")
   if ( !(class(time) %in% c("numeric")) ) stop("wrong class of 'time': must be 'numeric'")
 
@@ -447,6 +464,7 @@ didnpreg.default <- function(
   if (missing(treatment_period)) stop("vector 'treatment_period' is missing")
   if ( !(class(treatment_period) %in% c("numeric")) ) stop("wrong class of 'treatment_period': must be 'numeric'")
   table(treatment_period) -> treatment_period_values
+  # cat.print(treatment_period_values)
   if (length(treatment_period_values) != 2 | names(treatment_period_values)[1] != "0" | names(treatment_period_values)[2] != "1") stop("vector 'treatment_period' must have exactly 2 values, 0 and 1")
 
   if ( !(bwmethod %in% c("opt", "CV")) ) stop("'bwmethod' can be either 'opt' or 'CV'")
@@ -462,12 +480,17 @@ didnpreg.default <- function(
   }
   do.TTb <- TTb
 
+  if (level < 10 | level > 99.99) {
+    stop("'level' must be between 10 and 99.99 inclusive")
+  }
+  level <- floor(level)
+
 
   ## check dimensions ----
 
   nt.o <- length(outcome)
   nt.x <- nrow(regressors)
-  nt.id <- length(id)
+  # nt.id <- length(id)
   nt.time <- length(time)
   nt.tr <- length(treated)
   nt.tr.p <- length(treatment_period)
@@ -477,7 +500,7 @@ didnpreg.default <- function(
   nt.w <- length(weights)
 
   if(nt.o != nt.x) stop("vector 'outcome' and data.frame 'regressors' have different number of observations")
-  if(nt.o != nt.id) stop("vector 'outcome' and vector 'id' have different number of observations")
+  # if(nt.o != nt.id) stop("vector 'outcome' and vector 'id' have different number of observations")
   if(nt.o != nt.time) stop("vector 'outcome' and vector 'time' have different number of observations")
   if(nt.o != nt.tr) stop("vector 'outcome' and vector 'treated' have different number of observations")
   if(nt.o != nt.tr.p) stop("vector 'outcome' and vector 'treatment_period' have different number of observations")
@@ -491,7 +514,6 @@ didnpreg.default <- function(
       treatment_period,
       treated,
       time,
-      id,
       outcome,
       regressors
     )
@@ -508,11 +530,10 @@ didnpreg.default <- function(
   d0[,2] -> treatment_period
   d0[,3] -> d # treated
   d0[,4] -> it.time # time
-  d0[,5] -> it.id # id
-  d0[,6] -> y # outcome
-  d0[ , -c(1:6), drop = FALSE] -> x # regressors
+  # d0[,5] -> it.id # id
+  d0[,5] -> y # outcome
+  d0[ , -c(1:5), drop = FALSE] -> x # regressors
   k.x <- ncol(x)
-
 
   ## handle treatment ----
 
@@ -527,21 +548,38 @@ didnpreg.default <- function(
   if( time.max - time.treatment < 2 ) warning (
     paste0("Data ends in ",time.max,", while the treatment is in ",time.treatment)
   )
+  # t <- it.time - time.treatment
+  # t <- treatment_period
+  # cat.print(table(t))
+  # t <- it.time
+  # cat.print(table(t))
   t <- it.time - time.treatment
   # cat.print(table(t))
 
+  # return(1)
+
+  time.treatment <- min( it.time[treatment_period == 1] ) - 1
+  # cat.print(time.treatment)
+  ta <- it.time - time.treatment
+  # cat.print(table(ta))
+
   ## variable type ----
 
-  q.type <- matrix(0,nrow=3,ncol=1)
-  q.typeY <- character(k.x)
-  q.typeYnum <- double(k.x)
-  q.levels <- rep(1, k.x)
+  q.type <- matrix( 0, nrow = 3, ncol = 1 ) # count type of variables
+  q.typeY <- character(k.x) # character names
+  q.typeYnum <- double(k.x) # type of each variable
+  q.levels <- rep(1, k.x) # number of levels of each variable; 1 for continuous
 
   for (i in 1:k.x){
 
     if (is.ordered(x[,i])==TRUE){
 
       x[,i] <- droplevels(x[,i])
+
+      rf <- table(droplevels(x[,i]))
+      if( length(rf) == 1) {
+        stop("Variable ", colnames(x)[i], " has no variation\n")
+      }
 
       q.type[3] <- q.type[3] + 1
       q.typeY[i] <- "ordered"
@@ -552,12 +590,21 @@ didnpreg.default <- function(
 
       x[,i] <- droplevels(x[,i])
 
+      rf <- table(droplevels(x[,i]))
+      if( length(rf) == 1) {
+        stop("Variable ", colnames(x)[i], " has no variation\n")
+      }
+
       q.type[2] <- q.type[2] + 1
       q.typeY[i] <- "factor"
       q.typeYnum[i] <- 2
       q.levels[i] <- length( levels( x[,i] ) ) - 1
 
     } else {
+
+      if( sd(x[,i]) == 0) {
+        stop("Variable ", colnames(x)[i], " has no variation\n")
+      }
 
       q.type[1] <- q.type[1] + 1
       q.typeY[i] <- "continuous"
@@ -575,45 +622,39 @@ didnpreg.default <- function(
   ## print info about the data ----
 
   if (print.level > 0) {
-    cat("Number of Observations is ", nt.o, "\n")
-  }
-
-  ## print info about regressors ----
-
-  if (print.level > 0) {
-
-    if (q.type[1] > 0) {
-      cat("Number of Continuous Regressors is             ", q.type[1], "\n")
-    }
-
-    if (q.type[1] > 0 & q.type[1] <= 3){
-      cat("There are 3 or fewer continuous regressors\n")
-    }
-    if (q.type[1] > 3) {
-      cat("There are more than 3 continuous regressors\n")
-    }
-
-
-    if (q.type[2] > 0) {
-      cat("Number of Unordered Categorical Regressors is  ", q.type[2], "\n")
-    }
-
-    if (q.type[3] > 0) {
-      cat("Number of Ordered Categorical Regressors is    ", q.type[3], "\n")
-    }
-
-    cat("\n")
-
+    cat("Number of Observations =", nt.o, "\n")
   }
 
   ## separating the data by time and treatment status
 
-  # subsamples
-  smpl1  <- d == 1
-  smpl11 <- d == 1 & t == 1
-  smpl10 <- d == 1 & t == 0
-  smpl01 <- d == 0 & t == 1
-  smpl00 <- d == 0 & t == 0
+  ## subsamples ------
+
+  if(do.TTb){
+
+    smpl1  <- d == 1
+    smpl11 <- d == 1 & t == 1
+    smpl10 <- d == 1 & t == 0
+    smpl01 <- d == 0 & t == 1
+    smpl00 <- d == 0 & t == 0
+
+  } else {
+
+    if (print.level > 0) {
+      cat("Number of observations in the year of the treatment and one year after the treatment =", sum(ta == 1 | ta == 0), "\n")
+    }
+
+    smpl1  <- d == 1
+    smpl11 <- d == 1 & ta == 1
+    smpl10 <- d == 1 & ta == 0
+    smpl01 <- d == 0 & ta == 1
+    smpl00 <- d == 0 & ta == 0
+
+  }
+
+  # cat.print(table(d))
+  # cat.print(table(t))
+  # cat.print(table(smpl00))
+  # cat.print(table(smpl11))
 
   # w11 <- w[which(d==1 & t==1)]
   w11 <- w[smpl11]
@@ -646,75 +687,94 @@ didnpreg.default <- function(
   y01 <- y[smpl01]
   y00 <- y[smpl00]
 
+  wy11 <- y11*w11
+  wy01 <- y01*w01
+  wy10 <- y10*w10
+  wy00 <- y00*w00
+
   n11 <- length(y11)
   n10 <- length(y10)
   n01 <- length(y01)
   n00 <- length(y00)
 
+  if (print.level > 0) {
+    cat("\n")
+    cat("Number of observations in treated group right after the treatment (N_ 1, 1) =" ,n11, "\n")
+    cat("Number of observations in treated group just before the treatment (N_ 1, 0) =" ,n10, "\n")
+    cat("Number of observations in control group right after the treatment (N_ 0, 1) =" ,n01, "\n")
+    cat("Number of observations in control group just before the treatment (N_ 0, 0) =" ,n00, "\n")
+  }
+
+  # sanity checks ----
+
+  if(!is.finite(n11) || n11 == 0){
+    stop("No observations in treated group right after the treatment")
+  }
+  if(!is.finite(n10) || n10 == 0){
+    stop("No observations in treated group just before the treatment")
+  }
+
+  if(!is.finite(n01) || n01 == 0){
+    stop("No observations in control group right after the treatment")
+  }
+  if(!is.finite(n00) || n00 == 0){
+    stop("No observations in control group just before the treatment")
+  }
+
+
   n1 <- nrow(xx1)
+
+  ## print info about regressors ----
+
+  if (print.level > 0) {
+
+    cat("\n")
+
+    # if (q.type[1] > 0) {
+    cat("Number of Continuous Regressors            =" ,q.type[1], "\n")
+    # }
+
+    if (print.level > 2) {
+      if (q.type[1] >= 0 & q.type[1] <= 3){
+        cat("There are 3 or fewer continuous regressors\n")
+      }
+      if (q.type[1] > 3) {
+        cat("There are more than 3 continuous regressors\n")
+      }
+    }
+
+    # if (q.type[2] > 0) {
+    cat("Number of Unordered Categorical Regressors =" ,q.type[2], "\n")
+    # }
+
+    # if (q.type[3] > 0) {
+    cat("Number of Ordered Categorical Regressors   =" ,q.type[3], "\n")
+    # }
+
+    cat("\n")
+
+  }
 
   if (TTb) {
     # prepare to retrieve TTa from TTb
     # init
-    tym1 <- as.numeric(rep(NA,nt.o))
+    tym1 <- as.numeric( rep(NA, nt.o) )
     # fill only subsample
     tym1[smpl1] <- 1:n1
     tym1[smpl11] -> TTa.positions.in.TTb
   }
 
 
-  wy11 <- y11*w11
-  wy01 <- y01*w01
-  wy10 <- y10*w10
-  wy00 <- y00*w00
 
-  ## plug-in bandwidths (used for starting values in LSCV)
-  ## Silverman (1986) for cont (make it a function of q 1.06, 1.00, ....)
-  ## Chu, Henderson and Parmeter (2015) for discrete
-  ## bandwidths will be scaled by sample size for the other status (d=0, t=0)
-  rot.bw00 <- matrix(0,nrow=k.x,ncol=1)
+  ## bandwidths ----
 
-  for (i in 1:k.x) {
-
-    # cat.print(i)
-
-    if (is.ordered(xx00[,i])==TRUE){
-
-      ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-      tym <- table(xx00[,i])
-      rf <- tym[tym>0]/length(xx00[,i])
-      # rf <- table(xx00[,i])/length(xx00[,i])
-      rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-      # cat.print(rf)
-      # cat.print(rot.bw00[i])
-
-    } else if (is.factor(xx00[,i])==TRUE) {
-
-      ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-      tym <- table(xx00[,i])
-      rf <- tym[tym>0]/length(xx00[,i])
-      # rf <- table(xx00[,i])/length(xx00[,i])
-      rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-      # cat.print(rf)
-      # cat.print(rot.bw00[i])
-
-    } else {
-
-      ## note no sd(x) because we scaled them already
-        rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1])) # adjust 1.06 to values of the Gaussian row on Page 70 Table 3.3
-      # cat.print(rot.bw00[i])
-
-    }
-
-  } ## i
-
-  ## CV bandwidths ----
+  ### CV  ----
 
   if (bwmethod == "CV") {
     if (print.level > 0) {
       cat(paste0("Calculating cross-validated bandwidths\n"))
 
-      ## print info about bw ----
+      #### print info about bw ----
 
       if (q.type[1] > 0) {
         cat("Kernel Type for Continuous Regressors is               Gaussian\n")
@@ -725,6 +785,49 @@ didnpreg.default <- function(
       if (q.type[3] > 0) {
         cat("Kernel Type for Ordered Categorical is                 Li and Racine\n")
       }
+    }
+
+    ## plug-in bandwidths (used for starting values in LSCV)
+    ## Silverman (1986) for cont (make it a function of q 1.06, 1.00, ....)
+    ## Chu, Henderson and Parmeter (2015) for discrete
+    ## bandwidths will be scaled by sample size for the other status (d=0, t=0)
+    rot.bw00 <- matrix(0,nrow=k.x,ncol=1)
+
+    # cat.print(dim(xx00))
+    # cat.print(table(d,t))
+
+    for (i in 1:k.x) {
+
+      # cat.print(i)
+
+      if (is.ordered(xx00[,i])==TRUE){
+
+        ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
+        tym <- table(droplevels(xx00[,i]))
+        rf <- tym[tym>0]/length(xx00[,i])
+        # rf <- table(xx00[,i])/length(xx00[,i])
+        rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+        # cat.print(rf)
+        # cat.print(rot.bw00[i])
+
+      } else if (is.factor(xx00[,i])==TRUE) {
+
+        ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
+        tym <- table(droplevels(xx00[,i]))
+        rf <- tym[tym>0]/length(xx00[,i])
+        # rf <- table(xx00[,i])/length(xx00[,i])
+        rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+        # cat.print(rf)
+        # cat.print(rot.bw00[i])
+
+      } else {
+
+        ## note no sd(x) because we scaled them already
+        rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1])) # adjust 1.06 to values of the Gaussian row on Page 70 Table 3.3
+        # cat.print(rot.bw00[i])
+
+      }
+
     }
 
     ## setting upper and lower bounds for bandwidths
@@ -750,17 +853,17 @@ didnpreg.default <- function(
     #                    y=y11, wy=wy11, w=w11, x=as.matrix(xx11),
     #                    xtype=q.typeYnum, nlevels=q.levels, n=n11, k=k.x)
     # cat.print(c(tym11,tym12))
-    #
+
     # return(1)
 
     bw.optim <- minqa::bobyqa(
-      bw.start,lcls.lscv,lower,upper,
-      cores=cores, y=y11, wy=wy11, w=w11, x=as.matrix(xx11),
-      xtype=q.typeYnum, nlevels=q.levels, n=n11, k=k.x)
+      bw.start, lcls.lscv, lower, upper,
+      cores = cores, y = y11, wy = wy11, w = w11, x = as.matrix(xx11),
+      xtype = q.typeYnum, nlevels = q.levels, n = n11, k = k.x)
 
 
-    cat.print(bw.start)
-    cat.print(bw.optim)
+    # cat.print(bw.start)
+    # cat.print(bw.optim)
 
     time.06 <- proc.time()
     CV.time.sec <- round( (time.06-time.05)[3], 0)
@@ -771,63 +874,135 @@ didnpreg.default <- function(
       # cat("___________________________________________________\n")
     }
 
-    bw.optim$par
-    bw.optim$fval
-    bw.optim$feval
-    bw.optim$ierr
+    # bw.optim$par
+    # bw.optim$fval
+    # bw.optim$feval
+    # bw.optim$ierr
 
     bw11 <- bw.optim$par
     # if (print.level > 1) {
     #   cat(paste0("Calculating cross-validated bandwidths completed\n"))
     # }
+
+    ## take these cross-validated bandwidths and calculate the scale factors, then get the remaining bandwidths
+    sf <- rep(1,k.x)
+    bw10 <- sf
+    bw01 <- sf
+    bw00 <- sf
+
+    for (ii in 1:k.x){
+      sf[ii] <-
+        ifelse(
+          is.factor(x[,ii]),
+          bw11[ii]*(n11^(2/(4+q.type[1]))),
+          bw11[ii]*(n11^(1/(4+q.type[1])))
+        )
+      bw10[ii] <-
+        ifelse(
+          is.factor(x[,ii]),
+          sf[ii]*(n10^(-2/(4+q.type[1]))),
+          sf[ii]*(n10^(-1/(4+q.type[1])))
+        )
+      bw01[ii] <-
+        ifelse(
+          is.factor(x[,ii]),
+          sf[ii]*(n01^(-2/(4+q.type[1]))),
+          sf[ii]*(n01^(-1/(4+q.type[1])))
+        )
+      bw00[ii] <-
+        ifelse(
+          is.factor(x[, ii]),
+          sf[ii] * (n00 ^ (-2 / ( 4 + q.type[1] ))),
+          sf[ii] * (n00 ^ (-1 / ( 4 + q.type[1] )))
+        )
+    }
   } else {
+    ### plug-in ----
     if (print.level > 0){
       cat("Bandwidths are chosen via the plug-in method\n")
     }
-    bw11 <- rot.bw00
+    # bw11 <- rot.bw00
+
+    ## plug-in bandwidths
+    ## Silverman (1986) for cont (make it a function of q 1.06, 1.00, ....)
+    ## Chu, Henderson and Parmeter (2015) for discrete
+    rot.bw00 <- rot.bw01 <- rot.bw10 <- rot.bw11 <-  matrix(0,nrow=k.x,ncol=1)
+
+    for (i in 1:k.x){
+
+      # cat.print(i)
+
+      # if (is.ordered(xx00[,i])==TRUE){
+      if ( q.typeYnum[i] == 3 ){
+
+        ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
+        # cat.print(levels(xx00[,i]))
+        rf <- table(droplevels(xx00[,i]))/length(xx00[,i])
+        # cat.print(rf)
+        rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+        # cat.print(rot.bw00[i])
+        rf <- table(droplevels(xx01[,i]))/length(xx01[,i])
+        rot.bw01[i] <- (1/(1 + (n01*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+        rf <- table(droplevels(xx10[,i]))/length(xx10[,i])
+        rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+        rf <- table(droplevels(xx11[,i]))/length(xx11[,i])
+        rot.bw11[i] <- (1/(1 + (n11*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+
+        # } else if (is.factor(xx00[,i])==TRUE) {
+      } else if ( q.typeYnum[i] == 2 ) {
+
+        ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
+        rf <- table(droplevels(xx00[,i]))/length(xx00[,i])
+        # cat.print(rf)
+        if( length(rf) == 1) {
+          stop("Variable ", colnames(x)[i], " has no variation\n")
+        }
+        rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+        # cat.print(rot.bw00[i])
+        rf <- table(droplevels(xx01[,i]))/length(xx01[,i])
+        rot.bw01[i] <- (1/(1 + (n01*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+        rf <- table(droplevels(xx10[,i]))/length(xx10[,i])
+        rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+        rf <- table(droplevels(xx11[,i]))/length(xx11[,i])
+        rot.bw11[i] <- (1/(1 + (n11*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+
+      } else {
+
+        if( sd(xx00[,i]) == 0) {
+          cat("Variable ", colnames(x)[i], " has no variation\n")
+        }
+
+        ## note: no sd(x) because we scaled them already
+        rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1]))
+        # cat.print(rot.bw00[i] )
+        rot.bw01[i] <- 1.06*n01^(-1/(4+q.type[1]))
+        rot.bw10[i] <- 1.06*n10^(-1/(4+q.type[1]))
+        rot.bw11[i] <- 1.06*n11^(-1/(4+q.type[1]))
+
+      }
+
+    } ## i
+
+    # print(rot.bw11)
+
+    ## ROT bandwidths instead of LSCV
+    bw11 <- rot.bw11
+    bw10 <- rot.bw10
+    bw01 <- rot.bw01
+    bw00 <- rot.bw00
+
   }
 
   # return(1)
 
   ## print bws ----
+
   my.bw <- data.frame(Regressor = colnames(x), Type = q.typeY, Bandwidth = bw11)
   if (print.level > 0) {
     cat("\n")
     print(my.bw)
   }
 
-  ## take these cross-validated bandwidths and calculate the scale factors, then get the remaining bandwidths
-  sf <- rep(1,k.x)
-  bw10 <- sf
-  bw01 <- sf
-  bw00 <- sf
-
-  for (ii in 1:k.x){
-    sf[ii] <-
-      ifelse(
-        is.factor(x[,ii]),
-        bw11[ii]*(n11^(2/(4+q.type[1]))),
-        bw11[ii]*(n11^(1/(4+q.type[1])))
-      )
-    bw10[ii] <-
-      ifelse(
-        is.factor(x[,ii]),
-        sf[ii]*(n10^(-2/(4+q.type[1]))),
-        sf[ii]*(n10^(-1/(4+q.type[1])))
-      )
-    bw01[ii] <-
-      ifelse(
-        is.factor(x[,ii]),
-        sf[ii]*(n01^(-2/(4+q.type[1]))),
-        sf[ii]*(n01^(-1/(4+q.type[1])))
-      )
-    bw00[ii] <-
-      ifelse(
-        is.factor(x[, ii]),
-        sf[ii] * (n00 ^ (-2 / ( 4 + q.type[1] ))),
-        sf[ii] * (n00 ^ (-1 / ( 4 + q.type[1] )))
-      )
-  }
 
   ## Calculating ATET ----
 
@@ -856,6 +1031,15 @@ didnpreg.default <- function(
   #     bw00
   #   ))
   # )
+
+  # cat.print(bw11)
+  # cat.print(dim(xx11))
+  # cat.print(bw10)
+  # cat.print(dim(xx10))
+  # cat.print(bw01)
+  # cat.print(dim(xx01))
+  # cat.print(bw00)
+  # cat.print(dim(xx00))
 
   if (do.TTb) {
     # num11 <- np::npksum(txdat=xx11,tydat=wy11,exdat=xx1,bws=bw11)$ksum
@@ -930,16 +1114,14 @@ didnpreg.default <- function(
     )
     # cat.print( data.frame(dem00, dem00_,dem00- dem00_)[1:20,] )
   } else {
-    # num11 <- np::npksum(txdat=xx11,tydat=wy11,exdat=xx11,bws=bw11)$ksum
-    # num10 <- np::npksum(txdat=xx10,tydat=wy10,exdat=xx11,bws=bw10)$ksum
-    # num01 <- np::npksum(txdat=xx01,tydat=wy01,exdat=xx11,bws=bw01)$ksum
-    # num00 <- np::npksum(txdat=xx00,tydat=wy00,exdat=xx11,bws=bw00)$ksum
-    #
-    # dem11 <- np::npksum(txdat=xx11,tydat=w11,exdat=xx11,bws=bw11)$ksum
-    # dem10 <- np::npksum(txdat=xx10,tydat=w10,exdat=xx11,bws=bw10)$ksum
-    # dem01 <- np::npksum(txdat=xx01,tydat=w01,exdat=xx11,bws=bw01)$ksum
-    # dem00 <- np::npksum(txdat=xx00,tydat=w00,exdat=xx11,bws=bw00)$ksum
-
+    # num11_ <- np::npksum(txdat=xx11,tydat=wy11,exdat=xx11,bws=bw11)$ksum
+    # num10_ <- np::npksum(txdat=xx10,tydat=wy10,exdat=xx11,bws=bw10)$ksum
+    # num01_ <- np::npksum(txdat=xx01,tydat=wy01,exdat=xx11,bws=bw01)$ksum
+    # num00_ <- np::npksum(txdat=xx00,tydat=wy00,exdat=xx11,bws=bw00)$ksum
+    # dem11_ <- np::npksum(txdat=xx11,tydat=w11,exdat=xx11,bws=bw11)$ksum
+    # dem10_ <- np::npksum(txdat=xx10,tydat=w10,exdat=xx11,bws=bw10)$ksum
+    # dem01_ <- np::npksum(txdat=xx01,tydat=w01,exdat=xx11,bws=bw01)$ksum
+    # dem00_ <- np::npksum(txdat=xx00,tydat=w00,exdat=xx11,bws=bw00)$ksum
     # cat.print(cores)
 
     num11 <- .npksumYXnew(
@@ -1006,8 +1188,10 @@ didnpreg.default <- function(
     # cat.print( data.frame(dem00, dem00_,dem00- dem00_)[1:20,] )
   }
 
-  # atet <- mean(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
+  atet <- mean(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
   # cat("101\n")
+  # cat.print(mean(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00))
+  # cat.print(mean(num11_/dem11_ - num10_/dem10_ - num01_/dem01_ + num00_/dem00_))
   # atet.hetero <- as.matrix(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
 
   if (do.TTb) {
@@ -1016,8 +1200,8 @@ didnpreg.default <- function(
     TTa <- mean(TTa.i)
     TTb <- mean(TTb.i)
 
-    cat.print(mean(TTb.i))
-    cat.print(mean(TTb.i, na.rm = TRUE))
+    # cat.print(mean(TTb.i))
+    # cat.print(mean(TTb.i, na.rm = TRUE))
     # cat.print(TTa)
     # cat.print(length(TTa.i))
     # cat.print(TTb)
@@ -1026,16 +1210,16 @@ didnpreg.default <- function(
     #   cat(paste0("TTa = ",formatC(TTa, digits = 4),", N(TTa) = ",n11,"\n"))
     # }
     if (print.level > 0) {
-      cat(paste0("TTb = ",formatC(TTb, digits = digits),", N(TTb) = ",n1,"\n"))
+      cat(paste0("TTb = ",formatC(TTb, digits = digits),", N (TTb; all treated) = ",n1,"\n"))
     }
   } else {
     TTa.i <- as.vector(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
     TTa <- mean(TTa.i)
-    cat.print(mean(TTa.i))
-    cat.print(mean(TTa.i, na.rm = TRUE))
+    # cat.print(mean(TTa.i))
+    # cat.print(mean(TTa.i, na.rm = TRUE))
 
     if (print.level > 0) {
-      cat(paste0("TTa = ",formatC(TTa, digits = digits),", N(TTa) = ",n11,"\n"))
+      cat(paste0("TTa = ",formatC(TTa, digits = digits),", N (TTa; treated in t = 1 or N_11) = ",n11,"\n"))
     }
 
     # cat.print(TTa)
@@ -1056,6 +1240,19 @@ didnpreg.default <- function(
   }
 
   # return(1)
+
+  # tym <- cbind(
+  #   num11,dem11 , num10,dem10 , num01,dem01 , num00,dem00
+  # )
+  # cat.print(tym[1:20,])
+  #
+  # cat.print(mean(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00))
+  # cat.print(mean(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00, na.rm = TRUE))
+  #
+  # cat.print(head(xx11))
+  # cat.print(head(wy11))
+  # cat.print(head(xx1))
+  # cat.print(bw11)
 
   ## Bootstraping ATET ----
 
@@ -1216,120 +1413,127 @@ didnpreg.default <- function(
   # do parallel
 
   # doParallel::registerDoParallel(cores = parallel::detectCores()/4)
-  doParallel::registerDoParallel(cores = cores)
 
-  # if (print.level > 0 & cores == 1)
+  cores1 = 1
+  # doParallel::registerDoParallel(cores = cores1)
+
+  # if (print.level > 0 & cores1 == 1)
   # {
   #   pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
   # }
 
-  mcoptions <- list(set.seed = TRUE)
+  # mcoptions <- list(set.seed = TRUE)
 
-  atet.boot.hetero <-
-    foreach::foreach(j = 1:boot.num, .options.multicore = mcoptions, .combine = "cbind", .verbose = FALSE) %dopar% {
+  atet.boot.hetero <- matrix(NA, nrow = length(dem11), ncol = boot.num)
 
-      set.seed(seeds[j])
+  for(j in 1:boot.num){
 
-      ## bootstrap if the y variable is binary
-      if (is.binary(y) == TRUE) {
+    # atet.boot.hetero <-
+    #   foreach::foreach(j = 1:boot.num, .options.multicore = mcoptions, .combine = "cbind", .verbose = FALSE) %dopar% {
 
-        y11.new <- ifelse(tt11 > runif(n11, min = 0, max = 1),1,0)
-        y10.new <- ifelse(tt10 > runif(n10, min = 0, max = 1),1,0)
-        y01.new <- ifelse(tt01 > runif(n01, min = 0, max = 1),1,0)
-        y00.new <- ifelse(tt00 > runif(n00, min = 0, max = 1),1,0)
+    set.seed(seeds[j])
 
-      } else {
+    ## bootstrap if the y variable is binary
+    if (is.binary(y) == TRUE) {
 
-        y11.new <- tt11 + resid.11*rnorm(n11,0,1)
-        y10.new <- tt10 + resid.10*rnorm(n10,0,1)
-        y01.new <- tt01 + resid.01*rnorm(n01,0,1)
-        y00.new <- tt00 + resid.00*rnorm(n00,0,1)
+      y11.new <- ifelse(tt11 > runif(n11, min = 0, max = 1),1,0)
+      y10.new <- ifelse(tt10 > runif(n10, min = 0, max = 1),1,0)
+      y01.new <- ifelse(tt01 > runif(n01, min = 0, max = 1),1,0)
+      y00.new <- ifelse(tt00 > runif(n00, min = 0, max = 1),1,0)
 
-      }
+    } else {
 
-      wy11.new <- as.vector(w11*y11.new)
-      wy10.new <- as.vector(w10*y10.new)
-      wy01.new <- as.vector(w01*y01.new)
-      wy00.new <- as.vector(w00*y00.new)
+      y11.new <- tt11 + resid.11*rnorm(n11,0,1)
+      y10.new <- tt10 + resid.10*rnorm(n10,0,1)
+      y01.new <- tt01 + resid.01*rnorm(n01,0,1)
+      y00.new <- tt00 + resid.00*rnorm(n00,0,1)
 
-      if (do.TTb) {
-        # num11.new <- np::npksum(txdat=xx11,tydat=wy11.new,exdat=xx1,bws=bw11)$ksum
-        # num10.new <- np::npksum(txdat=xx10,tydat=wy10.new,exdat=xx1,bws=bw10)$ksum
-        # num01.new <- np::npksum(txdat=xx01,tydat=wy01.new,exdat=xx1,bws=bw01)$ksum
-        # num00.new <- np::npksum(txdat=xx00,tydat=wy00.new,exdat=xx1,bws=bw00)$ksum
-
-        num11.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy11.new, xdat=as.matrix(xx11), xeval=as.matrix(xx1), bw=bw11,
-          xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n1, q=k.x
-        )
-        num10.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy10.new, xdat=as.matrix(xx10), xeval=as.matrix(xx1), bw=bw10,
-          xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n1, q=k.x
-        )
-        num01.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy01.new, xdat=as.matrix(xx01), xeval=as.matrix(xx1), bw=bw01,
-          xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n1, q=k.x
-        )
-        num00.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy00.new, xdat=as.matrix(xx00), xeval=as.matrix(xx1), bw=bw00,
-          xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n1, q=k.x
-        )
-
-      } else {
-        # num11.new <- np::npksum(txdat=xx11,tydat=wy11.new,exdat=xx11,bws=bw11)$ksum
-        # num10.new <- np::npksum(txdat=xx10,tydat=wy10.new,exdat=xx11,bws=bw10)$ksum
-        # num01.new <- np::npksum(txdat=xx01,tydat=wy01.new,exdat=xx11,bws=bw01)$ksum
-        # num00.new <- np::npksum(txdat=xx00,tydat=wy00.new,exdat=xx11,bws=bw00)$ksum
-
-        num11.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy11.new, xdat=as.matrix(xx11), xeval=as.matrix(xx11), bw=bw11,
-          xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n11, q=k.x
-        )
-        num10.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy10.new, xdat=as.matrix(xx10), xeval=as.matrix(xx11), bw=bw10,
-          xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n11, q=k.x
-        )
-        num01.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy01.new, xdat=as.matrix(xx01), xeval=as.matrix(xx11), bw=bw01,
-          xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n11, q=k.x
-        )
-        num00.new <- .npksumYXnew(
-          Nthreds = 1,
-          ydat=wy00.new, xdat=as.matrix(xx00), xeval=as.matrix(xx11), bw=bw00,
-          xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n11, q=k.x
-        )
-
-      }
-
-      # if (print.level > 0 & cores == 1)
-      # {
-      #   pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
-      # }
-      if (print.level > 0 & cores == 1 & j == 1)
-      {
-        time.06 <- proc.time()
-        boot.time.sec <- round( boot.num*(time.06-time.05)[3], 0)
-        .timing(boot.time.sec, "\nBootstrapping will take approximately: ")
-        cat("\n")
-        pb <- utils::txtProgressBar(min = 1, max = boot.num, style = 3)
-      }
-
-      if (print.level > 0 & cores == 1 & j > 1) utils::setTxtProgressBar(pb, j)
-
-      # it does not matter if 'TTa' or 'TTb', since denominators are
-      # not bootstrapped and are already calculated
-      num11.new/dem11 - num10.new/dem10 - num01.new/dem01 + num00.new/dem00
     }
 
+    wy11.new <- as.vector(w11*y11.new)
+    wy10.new <- as.vector(w10*y10.new)
+    wy01.new <- as.vector(w01*y01.new)
+    wy00.new <- as.vector(w00*y00.new)
+
+    if (do.TTb) {
+      # num11.new <- np::npksum(txdat=xx11,tydat=wy11.new,exdat=xx1,bws=bw11)$ksum
+      # num10.new <- np::npksum(txdat=xx10,tydat=wy10.new,exdat=xx1,bws=bw10)$ksum
+      # num01.new <- np::npksum(txdat=xx01,tydat=wy01.new,exdat=xx1,bws=bw01)$ksum
+      # num00.new <- np::npksum(txdat=xx00,tydat=wy00.new,exdat=xx1,bws=bw00)$ksum
+
+      num11.new <- .npksumYXnew(
+        Nthreds = cores,
+        ydat=wy11.new, xdat=as.matrix(xx11), xeval=as.matrix(xx1), bw=bw11,
+        xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n1, q=k.x
+      )
+      num10.new <- .npksumYXnew(
+        Nthreds = cores,
+        ydat=wy10.new, xdat=as.matrix(xx10), xeval=as.matrix(xx1), bw=bw10,
+        xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n1, q=k.x
+      )
+      num01.new <- .npksumYXnew(
+        Nthreds = cores,
+        ydat=wy01.new, xdat=as.matrix(xx01), xeval=as.matrix(xx1), bw=bw01,
+        xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n1, q=k.x
+      )
+      num00.new <- .npksumYXnew(
+        Nthreds = cores,
+        ydat=wy00.new, xdat=as.matrix(xx00), xeval=as.matrix(xx1), bw=bw00,
+        xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n1, q=k.x
+      )
+
+    } else {
+      # num11.new <- np::npksum(txdat=xx11,tydat=wy11.new,exdat=xx11,bws=bw11)$ksum
+      # num10.new <- np::npksum(txdat=xx10,tydat=wy10.new,exdat=xx11,bws=bw10)$ksum
+      # num01.new <- np::npksum(txdat=xx01,tydat=wy01.new,exdat=xx11,bws=bw01)$ksum
+      # num00.new <- np::npksum(txdat=xx00,tydat=wy00.new,exdat=xx11,bws=bw00)$ksum
+
+      num11.new <- .npksumYXnew(
+        Nthreds = cores,
+        ydat=wy11.new, xdat=as.matrix(xx11), xeval=as.matrix(xx11), bw=bw11,
+        xtype=q.typeYnum, nlevels=q.levels, n=n11, neval=n11, q=k.x
+      )
+      num10.new <- .npksumYXnew(
+        Nthreds = cores,
+        ydat=wy10.new, xdat=as.matrix(xx10), xeval=as.matrix(xx11), bw=bw10,
+        xtype=q.typeYnum, nlevels=q.levels, n=n10, neval=n11, q=k.x
+      )
+      num01.new <- .npksumYXnew(
+        Nthreds = cores,
+        ydat=wy01.new, xdat=as.matrix(xx01), xeval=as.matrix(xx11), bw=bw01,
+        xtype=q.typeYnum, nlevels=q.levels, n=n01, neval=n11, q=k.x
+      )
+      num00.new <- .npksumYXnew(
+        Nthreds = cores,
+        ydat=wy00.new, xdat=as.matrix(xx00), xeval=as.matrix(xx11), bw=bw00,
+        xtype=q.typeYnum, nlevels=q.levels, n=n00, neval=n11, q=k.x
+      )
+
+    }
+
+    # if (print.level > 0 & cores == 1)
+    # {
+    #   pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
+    # }
+    if (print.level > 0 & cores1 == 1 & j == 1)
+    {
+      time.06 <- proc.time()
+      boot.time.sec <- round( boot.num*(time.06-time.05)[3], 0)
+      .timing(boot.time.sec, "\nBootstrapping will take approximately: ")
+      cat("\n")
+      pb <- utils::txtProgressBar(min = 1, max = boot.num, style = 3)
+    }
+
+    if (print.level > 0 & cores1 == 1 & j > 1) utils::setTxtProgressBar(pb, j)
+
+    # it does not matter if 'TTa' or 'TTb', since denominators are
+    # not bootstrapped and are already calculated
+    # num11.new/dem11 - num10.new/dem10 - num01.new/dem01 + num00.new/dem00
+    atet.boot.hetero[,j] <- num11.new/dem11 - num10.new/dem10 - num01.new/dem01 + num00.new/dem00
+  }
+
   # do parallel completed
-  if (print.level > 0 & cores == 1) cat("\n")
+  if (print.level > 0 & cores1 == 1) cat("\n")
 
   time.06 <- proc.time()
   boot.time.sec <- round( (time.06-time.05)[3], 0)
@@ -1349,16 +1553,32 @@ didnpreg.default <- function(
     # cat.print(TTb.se)
     if (print.level > 0) {
       # cat("\nTTa sd =",formatC(TTa.se, digits = 4),"\n")
-      cat("TTb se =",formatC(TTb.se, digits = digits),"\n")
-      cat("\nBootstrapped 95% confidence interval: [",quantile(atet.boot, probs = c(.025)),",",quantile(atet.boot, probs = c(.975)),"]\n")
+      cat("\n")
+      # cat(paste0("TTb = ",formatC(TTb, digits = digits),"\n"))
+      cat("TTb bootstrapped standard error =",formatC(TTb.se, digits = digits),"\n")
+      qu1 <- quantile(atet.boot, probs = c((1-level/100)/2))
+      qu2 <- quantile(atet.boot, probs = c((1+level/100)/2))
+      atets.boot <- cbind(round(TTb, digits = digits),
+                          round(TTb.se, digits = digits),
+                          round(qu1, digits = digits),
+                          round(qu2, digits = digits))
+      colnames(atets.boot) <- c("Coef.", "SE ", "CIl", "CIu")
+
+      qu1 <-ifelse(qu1 > 999,
+                   formatC(qu1, digits=1, format="e"),
+                   formatC(qu1, digits=digits, format="f"))
+      qu2 <-ifelse(qu2 > 999,
+                   formatC(qu2, digits=1, format="e"),
+                   formatC(qu2, digits=digits, format="f"))
+      # cat("TTb bootstrapped ",level,"% confidence interval: [",qu1,", ",qu2,"]\n", sep = "")
     }
     atets <- cbind(round(TTb, digits = digits),
                    round(TTb.se, digits = digits),
                    round(TTb/TTb.se,digits = 2),
                    round(pnorm(abs(TTb/TTb.se), lower.tail = FALSE)*2, digits = digits),
-                   round(TTb-1.96*TTb.se, digits = digits),
-                   round(TTb+1.96*TTb.se, digits = digits))
-    rownames(atets) <- "ATET"
+                   round(TTb-qnorm((1+level/100)/2)*TTb.se, digits = digits),
+                   round(TTb+qnorm((1+level/100)/2)*TTb.se, digits = digits))
+    rownames(atets) <- rownames(atets.boot) <- "ATET (TTb)"
     colnames(atets) <- c("Coef.", "SE ", "z ",  "P>|z|", "CIl", "CIu")
     max.name.length <- max(nchar(row.names(atets)))
     mycutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1)
@@ -1368,25 +1588,73 @@ didnpreg.default <- function(
     TTa.se <- sd(atet.boot)
     # cat.print(TTa.se)
     if (print.level > 0) {
-      cat("\nTTa se =",formatC(TTa.se, digits = digits),"\n")
-      cat("\nBootstrapped 95% confidence interval: [",quantile(atet.boot, probs = c(.025)),",",quantile(atet.boot, probs = c(.975)),"]\n")
+      cat("\n")
+      # cat(paste0("TTa =\n ",formatC(TTa, digits = digits),"\n"))
+      cat("TTa bootstrapped standard error = ",formatC(TTa.se, digits = digits),"\n")
+      qu1 <- quantile(atet.boot, probs = c((1-level/100)/2))
+      qu2 <- quantile(atet.boot, probs = c((1+level/100)/2))
+      atets.boot <- cbind(round(TTa, digits = digits),
+                          round(TTa.se, digits = digits),
+                          round(qu1, digits = digits),
+                          round(qu2, digits = digits))
+      colnames(atets.boot) <- c("Coef.", "SE ", "CIl", "CIu")
+
+      qu1 <-ifelse(qu1 > 999,
+                   formatC(qu1, digits=1, format="e"),
+                   formatC(qu1, digits=digits, format="f"))
+      qu2 <-ifelse(qu2 > 999,
+                   formatC(qu2, digits=1, format="e"),
+                   formatC(qu2, digits=digits, format="f"))
+      # cat("\nTTa bootstrapped ",level,"% confidence interval:\n [",qu1,", ",qu2,"]\n", sep = "")
     }
     atets <- cbind(round(TTa, digits = digits),
                    round(TTa.se, digits = digits),
                    round(TTa/TTa.se,digits = 2),
                    round(pnorm(abs(TTa/TTa.se), lower.tail = FALSE)*2, digits = digits),
-                   round(TTa-1.96*TTa.se, digits = digits),
-                   round(TTa+1.96*TTa.se, digits = digits))
-    rownames(atets) <- "ATET"
+                   round(TTa-qnorm((1+level/100)/2)*TTa.se, digits = digits),
+                   round(TTa+qnorm((1+level/100)/2)*TTa.se, digits = digits))
+    rownames(atets) <- rownames(atets.boot) <- "ATET (TTa)"
     colnames(atets) <- c("Coef.", "SE ", "z ",  "P>|z|", "CIl", "CIu")
+  }
+
+  if (print.level > 0) {
+    cat("\nBootstrapped confidence interval:\n\n")
+
+    Cf <- cbind(
+      ifelse(atets.boot[,1, drop = FALSE]> 999,
+             formatC(atets.boot[,1, drop = FALSE], digits=1, format="e",width=10),
+             formatC(atets.boot[,1, drop = FALSE], digits=digits, format="f", width=10)),
+      ifelse(atets.boot[,2, drop = FALSE]>999,
+             formatC(atets.boot[,2, drop = FALSE], digits=1, format="e", width=10),
+             formatC(atets.boot[,2, drop = FALSE], digits=digits, format="f", width=10)),
+      ifelse(atets.boot[,3, drop = FALSE]> 999,
+             formatC(atets.boot[,3, drop = FALSE], digits=1, format="e", width=12),
+             formatC(atets.boot[,3, drop = FALSE], digits=digits, format="f", width=12, flag = "-")),
+      ifelse(atets.boot[,4, drop = FALSE]> 999,
+             formatC(atets.boot[,4, drop = FALSE], digits=1, format="e",width=12),
+             formatC(atets.boot[,4, drop = FALSE], digits=digits, format="f", width=12))
+    )
+
     max.name.length <- max(nchar(row.names(atets)))
     mycutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1)
     mysymbols = c("***", "**", "*", ".", " ")
     na.print = "NA"
+
+    row.names(Cf) <- formatC(row.names(Cf), width = max(nchar(row.names(Cf))), flag = "-")
+    cat("",rep(" ", max.name.length+6),"Coef.        SE  [",level,"% confidence interval]", sep = "")
+
+    # cat.print(Cf)
+    dimnames(Cf)[[2]] <- rep("", dim(Cf)[[2]])
+    print.default(Cf[1:1,,drop=FALSE], quote = FALSE, right = TRUE, na.print = na.print)
   }
 
-  if (print.level > 0) {
-    cat("\np-value and confidence interval assuming ATET is normally distributed:\n\n")
+    if (print.level > 0) {
+    if (do.TTb) {
+      cat("\n\np-value and confidence interval assuming ATET (TTb) is normally distributed:\n\n")
+    } else {
+      cat("\n\np-value and confidence interval assuming ATET (TTa) is normally distributed:\n\n")
+    }
+
 
     Cf <- cbind(
       ifelse(atets[,1, drop = FALSE]> 999,
@@ -1403,15 +1671,20 @@ didnpreg.default <- function(
              formatC(atets[,4, drop = FALSE], digits=digits, format="f", width=10)),
       # formatC(mysymbols[findInterval(x = atets[,4], vec = mycutpoints)], flag = "-"),
       ifelse(atets[,5, drop = FALSE]> 999,
-             formatC(atets[,5, drop = FALSE], digits=1, format="e", width=10),
-             formatC(atets[,5, drop = FALSE], digits=digits, format="f", width=10)),
+             formatC(atets[,5, drop = FALSE], digits=1, format="e", width=12),
+             formatC(atets[,5, drop = FALSE], digits=digits, format="f", width=12, flag = "-")),
       ifelse(atets[,6, drop = FALSE]> 999,
-             formatC(atets[,6, drop = FALSE], digits=1, format="e",width=10),
-             formatC(atets[,6, drop = FALSE], digits=digits, format="f", width=10))
+             formatC(atets[,6, drop = FALSE], digits=1, format="e",width=12),
+             formatC(atets[,6, drop = FALSE], digits=digits, format="f", width=12))
     )
 
+    max.name.length <- max(nchar(row.names(atets)))
+    mycutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1)
+    mysymbols = c("***", "**", "*", ".", " ")
+    na.print = "NA"
+
     row.names(Cf) <- formatC(row.names(Cf), width = max(nchar(row.names(Cf))), flag = "-")
-    cat("",rep(" ", max.name.length+6),"Coef.        SE       z       P>|z|  [95% confidence interval]", sep = "")
+    cat("",rep(" ", max.name.length+6),"Coef.        SE       z      P>|z|  [",level,"% confidence interval]", sep = "")
 
 
     # cat.print(Cf)
@@ -1441,6 +1714,10 @@ didnpreg.default <- function(
       sample10 = smpl10,
       sample01 = smpl01,
       sample00 = smpl00,
+      n11 = n11,
+      n10 = n10,
+      n01 = n01,
+      n00 = n00,
       regressor.type = q.type,
       bwmethod = bwmethod,
       bw.time = ifelse(bwmethod == "CV", CV.time.sec, 0),
@@ -1471,6 +1748,10 @@ didnpreg.default <- function(
       sample10 = smpl10,
       sample01 = smpl01,
       sample00 = smpl00,
+      n11 = n11,
+      n10 = n10,
+      n01 = n01,
+      n00 = n00,
       regressor.type = q.type,
       bwmethod = bwmethod,
       bw.time = ifelse(bwmethod == "CV", CV.time.sec, 0),

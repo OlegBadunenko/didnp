@@ -21,12 +21,11 @@
 #' @param outcome a vector, matrix, or data frame of length \eqn{NT}. The outcome can be a continuous or dummy variable.
 #' @param regressors a data frame with \eqn{NT} rows that contains regressors.
 #' A data frame class is required to identify the type/class of each regressor.
-#' @param id a vector, matrix, or data frame of length \eqn{NT} that identifies the unit of observation.
 #' @param time a vector, matrix, or data frame of length \eqn{NT} that specifies in which period \code{id} is observed.
 #' @param treatment a vector, matrix, or data frame of length \eqn{NT} with zeros for the control and ones for the treated observations.
 #' @param treatment_period a vector, matrix, or data frame of length \eqn{NT} with zeros for the period before treatment and ones for the period of treatment and after.
 #' @param weights NULL,
-#' @param boot.num 399,
+#' @param boot.num an single value specifying the number of bootstrap replications.  Default is 399.
 #' @param print.level the level of printing; larger number implies more output is printed. Default is 1. 0 suppresses all printing.
 #' @param cores Integer specifies the number of cores to be used for parallel computation.
 #' @param seed integer used for the random number generation for the replication purposes. Default is 17345168.
@@ -64,17 +63,23 @@
 #'    \code{sample00}
 #'    \tab A vector of TRUE/FALSE values identifying observations in control group just before the treatement
 #'    \cr \tab \cr
+#'    \code{n11}
+#'    \tab A number of treated observations right after the treatment
+#'    \cr \tab \cr
+#'    \code{n10}
+#'    \tab A number of treated observations just before the treatment
+#'    \cr \tab \cr
+#'    \code{n01}
+#'    \tab A number of observations in control group right after the treatment
+#'    \cr \tab \cr
+#'    \code{n00}
+#'    \tab A number of observations in control group just before the treatment
+#'    \cr \tab \cr
 #'    \code{regressor.type}
 #'    \tab A vector of length 3 with number of continuous, unordered categorical, and ordered categorical regressors.
 #'    \cr \tab \cr
-#'    \code{bwmethod}
-#'    \tab bandwidth type
-#'    \cr \tab \cr
 #'    \code{bw.time}
 #'    \tab Time in seconds it took to calculate bandwidths. For bandwidth type "opt" is 0.
-#'    \cr \tab \cr
-#'    \code{bws}
-#'    \tab Data frame with variable names, type of the regressor and bandwidths.
 #'    \cr \tab \cr
 #'    \code{boot.time}
 #'    \tab Time in seconds it took to bootstrap the standard errors.
@@ -93,39 +98,6 @@
 #'    \cr \tab \cr
 #'    \code{bw00}
 #'    \tab Bandwidths calculated for the sample of observations in control group just before the treatement
-#'    \cr \tab \cr
-#'    \code{do.TTb}
-#'    \tab TRUE/FALSE whether to perform TTb
-#'    \cr \tab \cr
-#'    \code{TTa.positions.in.TTb}
-#'    \tab Positions of TTa observations in TTb. Only if \code{do.TTb}
-#'    \cr \tab \cr
-#'    \code{TTa}
-#'    \tab the DiD estimator of the avarage unconditional TT
-#'    \cr \tab \cr
-#'    \code{TTa.i}
-#'    \tab the DiD estimators of the unconditional TT
-#'    \cr \tab \cr
-#'    \code{TTb}
-#'    \tab the DiD estimator of the avarage unconditional TT
-#'    \cr \tab \cr
-#'    \code{TTb.i}
-#'    \tab the DiD estimators of the unconditional TT
-#'    \cr \tab \cr
-#'    \code{TTa.se}
-#'    \tab the standard error of the DiD estimator of the avarage unconditional TT
-#'    \cr \tab \cr
-#'    \code{TTb.sd}
-#'    \tab the standard error of the DiD estimator of the avarage unconditional TT
-#'    \cr \tab \cr
-#'    \code{TTx}
-#'    \tab the DiD estimators of the conditional TT (also known as CATET)
-#'    \cr \tab \cr
-#'    \code{TTa.i.boot}
-#'    \tab Matrix of the size \eqn{n_{11} \times boot.num}
-#'    \cr \tab \cr
-#'    \code{TTb.i.boot}
-#'    \tab Matrix of the size \eqn{n_{1} \times boot.num}
 #'    \cr
 #' }
 #'
@@ -331,27 +303,28 @@ didnpbsctest.formula <- function(
   # cat.print(dim(X))
   # cat.print(head(X))
   # cat.print(class(X))
-  model.matrix(form1, lhs = 0, rhs = 2, data = mf)[,-1] -> id
-  if (length(id) != nt) stop("specificaion 'id' is inappropriate")
+  # model.matrix(form1, lhs = 0, rhs = 2, data = mf)[,-1] -> id
+  # if (length(id) != nt) stop("specificaion 'id' is inappropriate")
   # cat.print(class(id))
   # cat.print(head(id))
-  model.matrix(form1, lhs = 0, rhs = 3, data = mf)[,-1] -> time
+  model.matrix(form1, lhs = 0, rhs = 2, data = mf)[,-1] -> time
   if (length(time) != nt) stop("specificaion 'time' is inappropriate")
   # cat.print(class(time))
   # cat.print(head(time))
-  model.matrix(form1, lhs = 0, rhs = 4, data = mf)[,-1] -> treatment
-  if (length(treatment) != nt) stop("specificaion 'treatment' is inappropriate")
-  # cat.print(class(treatment))
-  # cat.print(head(treatment))
-  model.matrix(form1, lhs = 0, rhs = 5, data = mf)[,-1] -> treatment_period
+  model.matrix(form1, lhs = 0, rhs = 3, data = mf)[,-1] -> treated
+  if (length(treated) != nt) stop("specificaion 'treated' is inappropriate")
+  # cat.print(class(treated))
+  # cat.print(head(treated))
+  model.matrix(form1, lhs = 0, rhs = 4, data = mf)[,-1] -> treatment_period
   if (length(treatment_period) != nt) stop("specificaion 'treatment_period' is inappropriate")
   # cat.print(class(treatment_period))
   # cat.print(head(treatment_period))
+  # cat.print(table(treatment_period))
   # see if weights was specified
   if (length(form1)[2] == 5) {
     weights <-  rep(1, nt)
   } else {
-    model.matrix(form1, lhs = 0, rhs = 6, data = mf)[,-1] -> weights
+    model.matrix(form1, lhs = 0, rhs = 5, data = mf)[,-1] -> weights
     if (length(weights) != nt) stop("specificaion 'weights' is inappropriate")
   }
   # cat.print(class(weights))
@@ -377,9 +350,8 @@ didnpbsctest.formula <- function(
   tymch <- didnpbsctest(
     outcome=Y,
     regressors=X,
-    id=id,
     time=time,
-    treatment=treatment,
+    treated=treated,
     treatment_period=treatment_period,
     weights = weights,
     boot.num = boot.num,
@@ -404,9 +376,8 @@ didnpbsctest.formula <- function(
 didnpbsctest.default <- function(
     outcome,
     regressors,
-    id,
     time,
-    treatment,
+    treated,
     treatment_period,
     weights = NULL,
     boot.num = 399,
@@ -425,42 +396,28 @@ didnpbsctest.default <- function(
   if (missing(regressors)) stop("data.frame 'regressors' is missing")
   if ( !(class(regressors) %in% c("data.frame")) ) stop("wrong class of 'regressors': must be 'data.frame'")
 
-  if (missing(id)) stop("vector 'id' is missing")
+  # if (missing(id)) stop("vector 'id' is missing")
 
   if (missing(time)) stop("vector 'time' is missing")
   if ( !(class(time) %in% c("numeric")) ) stop("wrong class of 'time': must be 'numeric'")
 
-  if (missing(treatment)) stop("vector 'treatment' is missing")
-  if ( !(class(treatment) %in% c("numeric")) ) stop("wrong class of 'treatment': must be 'numeric'")
-  table(treatment) -> treatment_values
-  if (length(treatment_values) != 2 | names(treatment_values)[1] != "0" | names(treatment_values)[2] != "1") stop("vector 'treatment' must have exactly 2 values, 0 and 1")
+  if (missing(treated)) stop("vector 'treated' is missing")
+  if ( !(class(treated) %in% c("numeric")) ) stop("wrong class of 'treated': must be 'numeric'")
+  table(treated) -> treatment_values
+  if (length(treatment_values) != 2 | names(treatment_values)[1] != "0" | names(treatment_values)[2] != "1") stop("vector 'treated' must have exactly 2 values, 0 and 1")
 
   if (missing(treatment_period)) stop("vector 'treatment_period' is missing")
   if ( !(class(treatment_period) %in% c("numeric")) ) stop("wrong class of 'treatment_period': must be 'numeric'")
   table(treatment_period) -> treatment_period_values
   if (length(treatment_period_values) != 2 | names(treatment_period_values)[1] != "0" | names(treatment_period_values)[2] != "1") stop("vector 'treatment_period' must have exactly 2 values, 0 and 1")
 
-  # if ( !(bwmethod %in% c("opt", "CV")) ) stop("'bwmethod' can be either 'opt' or 'CV'")
-
-  # ## handle TTx ----
-  #
-  # if ( !(TTx %in% c("TTa", "TTb")) ) stop("'TTx' other than TTa or TTb not implemented yet")
-  #
-  # if (TTx == "TTa") {
-  #   TTb <- FALSE
-  # } else {
-  #   TTb <- TRUE
-  # }
-  # do.TTb <- TTb
-
 
   ## check dimensions ----
 
   nt.o <- length(outcome)
   nt.x <- nrow(regressors)
-  nt.id <- length(id)
   nt.time <- length(time)
-  nt.tr <- length(treatment)
+  nt.tr <- length(treated)
   nt.tr.p <- length(treatment_period)
   if (is.null(weights)) {
     weights <- rep(1, n.o)
@@ -468,9 +425,8 @@ didnpbsctest.default <- function(
   nt.w <- length(weights)
 
   if(nt.o != nt.x) stop("vector 'outcome' and data.frame 'regressors' have different number of observations")
-  if(nt.o != nt.id) stop("vector 'outcome' and vector 'id' have different number of observations")
   if(nt.o != nt.time) stop("vector 'outcome' and vector 'time' have different number of observations")
-  if(nt.o != nt.tr) stop("vector 'outcome' and vector 'treatment' have different number of observations")
+  if(nt.o != nt.tr) stop("vector 'outcome' and vector 'treated' have different number of observations")
   if(nt.o != nt.tr.p) stop("vector 'outcome' and vector 'treatment_period' have different number of observations")
   if(nt.o != nt.w) stop("vector 'outcome' and vector 'weights' have different number of observations")
 
@@ -480,9 +436,8 @@ didnpbsctest.default <- function(
     data.frame(
       weights,
       treatment_period,
-      treatment,
+      treated,
       time,
-      id,
       outcome,
       regressors
     )
@@ -497,11 +452,11 @@ didnpbsctest.default <- function(
 
   d0[,1] -> w
   d0[,2] -> treatment_period
-  d0[,3] -> d # treatment
+  d0[,3] -> d # treated
   d0[,4] -> it.time # time
-  d0[,5] -> it.id # id
-  d0[,6] -> y # outcome
-  d0[ , -c(1:6), drop = FALSE] -> x # regressors
+  # d0[,5] -> it.id # id
+  d0[,5] -> y # outcome
+  d0[ , -c(1:5), drop = FALSE] -> x # regressors
   k.x <- ncol(x)
 
 
@@ -513,42 +468,72 @@ didnpbsctest.default <- function(
   time.min <- min( it.time )
   time.max <- max( it.time )
   if( time.treatment - time.min < 2 ) warning (
-    paste0("Data starts in ",time.min,", while treatment is in ",time.treatment)
+    paste0("Data starts in ",time.min,", while the treatment is in ",time.treatment)
   )
   if( time.max - time.treatment < 2 ) warning (
-    paste0("Data ends in ",time.max,", while treatment is in ",time.treatment)
+    paste0("Data ends in ",time.max,", while the treatment is in ",time.treatment)
   )
+  # t <- it.time - time.treatment
+  # t <- treatment_period
+  # cat.print(table(t))
+  # cat.print(table(t, d))
+  # t <- it.time
+  # cat.print(table(t))
   t <- it.time - time.treatment
   # cat.print(table(t))
 
+  # cat.print(sum(t==-1))
+  # cat.print(sum(t==0))
+  # cat.print(sum(t==1))
+  # return(1)
+
+  time.treatment <- min( it.time[treatment_period == 1] ) - 1
+  # cat.print(time.treatment)
+  ta <- it.time - time.treatment
+  # cat.print(table(ta))
+
   ## variable type ----
 
-  q.type <- matrix(0,nrow=3,ncol=1)
-  q.typeY <- character(k.x)
-  q.typeYnum <- double(k.x)
-  q.levels <- rep(1, k.x)
+  q.type <- matrix( 0, nrow = 3, ncol = 1 ) # count type of variables
+  q.typeY <- character(k.x) # character names
+  q.typeYnum <- double(k.x) # type of each variable
+  q.levels <- rep(1, k.x) # number of levels of each variable; 1 for continuous
 
   for (i in 1:k.x){
 
-    if (is.ordered(x[[i]])==TRUE){
+    if (is.ordered(x[,i])==TRUE){
 
       x[,i] <- droplevels(x[,i])
+
+      rf <- table(droplevels(x[,i]))
+      if( length(rf) == 1) {
+        stop("Variable ", colnames(x)[i], " has no variation\n")
+      }
 
       q.type[3] <- q.type[3] + 1
       q.typeY[i] <- "ordered"
       q.typeYnum[i] <- 3
-      q.levels[i] <- length( levels( x[[i]] ) ) - 1
+      q.levels[i] <- length( levels( x[,i] ) ) - 1
 
-    } else if (is.factor(x[[i]])==TRUE) {
+    } else if (is.factor(x[,i])==TRUE) {
 
       x[,i] <- droplevels(x[,i])
+
+      rf <- table(droplevels(x[,i]))
+      if( length(rf) == 1) {
+        stop("Variable ", colnames(x)[i], " has no variation\n")
+      }
 
       q.type[2] <- q.type[2] + 1
       q.typeY[i] <- "factor"
       q.typeYnum[i] <- 2
-      q.levels[i] <- length( levels( x[[i]] ) ) - 1
+      q.levels[i] <- length( levels( x[,i] ) ) - 1
 
     } else {
+
+      if( sd(x[,i]) == 0) {
+        stop("Variable ", colnames(x)[i], " has no variation\n")
+      }
 
       q.type[1] <- q.type[1] + 1
       q.typeY[i] <- "continuous"
@@ -557,7 +542,7 @@ didnpbsctest.default <- function(
       ## divide each continuous x by its standard deviation
       ## it is only a mean to an end
       ## it will not change the conclusion of the test
-      x[[i]] <- as.vector(x[[i]]/sd(x[[i]]))
+      x[,i] <- as.vector(x[,i]/sd(x[,i]))
 
     }
 
@@ -569,37 +554,10 @@ didnpbsctest.default <- function(
     cat("Number of Observations is ", nt.o, "\n")
   }
 
-  ## print info about regressors ----
-
-  if (print.level > 0) {
-
-    if (q.type[1] > 0) {
-      cat("Number of Continuous Regressors is             ", q.type[1], "\n")
-    }
-
-    if (q.type[1] > 0 & q.type[1] <= 3){
-      cat("There are 3 or fewer continuous regressors\n")
-    }
-    if (q.type[1] > 3) {
-      cat("There are more than 3 continuous regressors\n")
-    }
-
-
-    if (q.type[2] > 0) {
-      cat("Number of Unordered Categorical Regressors is  ", q.type[2], "\n")
-    }
-
-    if (q.type[3] > 0) {
-      cat("Number of Ordered Categorical Regressors is    ", q.type[3], "\n")
-    }
-
-    cat("\n")
-
-  }
-
   ## separating the data by time and treatment status
 
-  # subsamples
+  ## subsamples ------
+
   smpl1  <- d == 1
   smpl11 <- d == 1 & t == 1
   smpl10 <- d == 1 & t == 0
@@ -607,7 +565,13 @@ didnpbsctest.default <- function(
   smpl00 <- d == 0 & t == 0
 
   smpl1less <- d == 1 & t < 0
+  # cat.print(sum(smpl1less))
   smpl0less <- d == 0 & t < 0
+  # cat.print(sum(smpl0less))
+
+  if(sum(smpl0less) == 0){
+    stop("No data before the treatment. At least one year of data before treatment is required.")
+  }
 
   # pooled for the bootstrap
   smpl1pool <- d == 1 & t <= 0
@@ -643,8 +607,10 @@ didnpbsctest.default <- function(
 
   n11 <- sum(smpl11)
   n10 <- sum(smpl10)
+  n1less <- sum(smpl1less)
   n01 <- sum(smpl01)
   n00 <- sum(smpl00)
+  n0less <- sum(smpl0less)
 
   n1less <- sum(smpl1less)
   n0less <- sum(smpl0less)
@@ -677,14 +643,74 @@ didnpbsctest.default <- function(
   wy1pool <- y1pool*w1pool
   wy0pool <- y0pool*w0pool
 
-#   if (TTb) {
-#     # prepare to retrieve TTa from TTb
-#     # init
-#     tym1 <- as.numeric(rep(NA,nt.o))
-#     # fill only subsample
-#     tym1[smpl1] <- 1:n1
-#     tym1[smpl11] -> TTa.positions.in.TTb
-#   }
+
+  if (print.level > 0) {
+    cat("\n")
+    cat("Number of observations in treated group right after the treatment       (N_ 1, 1) =" ,n11, "\n")
+    cat("Number of observations in treated group just before the treatment       (N_ 1, 0) =" ,n10, "\n")
+    cat("Number of observations in treated group one period before the treatment (N_ 1,-1) =" ,sum(d == 1 & t == -1), "\n")
+    cat("Number of observations in control group right after the treatment       (N_ 0, 1) =" ,n01, "\n")
+    cat("Number of observations in control group just before the treatment       (N_ 0, 0) =" ,n00, "\n")
+    cat("Number of observations in control group one period before the treatment (N_ 0,-1) =" ,sum(d == 0 & t == -1), "\n")
+  }
+
+  # sanity checks ----
+
+  if(!is.finite(n11) || n11 == 0){
+    stop("No observations in treated group right after the treatment")
+  }
+  if(!is.finite(n10) || n10 == 0){
+    stop("No observations in treated group just before the treatment")
+  }
+
+  if(!is.finite(n01) || n01 == 0){
+    stop("No observations in control group right after the treatment")
+  }
+  if(!is.finite(n00) || n00 == 0){
+    stop("No observations in control group just before the treatment")
+  }
+
+
+  if(!is.finite(sum(d == 1 & t == -1)) || sum(d == 1 & t == -1) == 0){
+    stop("No observations in treated group one period before the treatment")
+  }
+  if(!is.finite(sum(d == 0 & t == -1)) || sum(d == 0 & t == -1) == 0){
+    stop("No observations in control group one period before the treatment")
+  }
+
+
+  n1 <- nrow(xx1)
+
+  ## print info about regressors ----
+
+  if (print.level > 0) {
+
+    cat("\n")
+
+    # if (q.type[1] > 0) {
+    cat("Number of Continuous Regressors            =" ,q.type[1], "\n")
+    # }
+
+    if (print.level > 2) {
+      if (q.type[1] >= 0 & q.type[1] <= 3){
+        cat("There are 3 or fewer continuous regressors\n")
+      }
+      if (q.type[1] > 3) {
+        cat("There are more than 3 continuous regressors\n")
+      }
+    }
+
+    # if (q.type[2] > 0) {
+    cat("Number of Unordered Categorical Regressors =" ,q.type[2], "\n")
+    # }
+
+    # if (q.type[3] > 0) {
+    cat("Number of Ordered Categorical Regressors   =" ,q.type[3], "\n")
+    # }
+
+    cat("\n")
+
+  }
 
 
   ## plug-in bandwidths
@@ -826,7 +852,8 @@ didnpbsctest.default <- function(
 
 
   # print("dem1less")
-  # dem1less_ <- np::npksum(txdat=xx1less,tydat=w1less,exdat=xx10,bws=rot.bw1less)$ksum
+  # cat.print(head(xx1less))
+  # dem1less_ <- np::npksum(txdat=xx1less,tydat=as.matrix(w1less),exdat=(xx10),bws=rot.bw1less)$ksum
   dem1less <- .npksumYXnew(
     Nthreds = cores,
     ydat=w1less, xdat=as.matrix(xx1less), xeval=as.matrix(xx10), bw=rot.bw1less,
@@ -856,6 +883,12 @@ didnpbsctest.default <- function(
 
 
   bsc.stat <- (1/n10)*sum(((num10/dem10) - (num1less/dem1less) - (num00/dem00) + (num0less/dem0less))^2)
+
+  # cat.print(
+  #   data.frame(
+  #     num10, dem10, num1less, dem1less, num00, dem00, num0less, dem0less
+  #   )[1:10,]
+  # )
 
   if (print.level > 0) {
     cat(paste0("BSC = ",formatC(bsc.stat, digits = 10),"\n"))
@@ -1130,23 +1163,26 @@ didnpbsctest.default <- function(
   # do parallel
 
   # doParallel::registerDoParallel(cores = parallel::detectCores()/4)
-  doParallel::registerDoParallel(cores = cores)
+  # doParallel::registerDoParallel(cores = cores)
 
   # if (print.level > 0 & cores == 1)
   # {
   #   pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
   # }
 
-  mcoptions <- list(set.seed = TRUE)
+  # mcoptions <- list(set.seed = TRUE)
 
   if (print.level > 0) {
-    cat(paste0("\nThe main Loop of the Bootstrapping started\n"))
+    cat(paste0("\nThe main loop of the bootstrapping started\n"))
   }
 
   cores1 <- 1
 
-  bsc.boot <-
-    foreach::foreach(j = 1:boot.num, .options.multicore = mcoptions, .combine = "c", .verbose = FALSE) %dopar% {
+  bsc.boot <- numeric(boot.num)
+  for(j in 1:boot.num){
+
+  # bsc.boot <-
+  #   foreach::foreach(j = 1:boot.num, .options.multicore = mcoptions, .combine = "c", .verbose = FALSE) %dopar% {
 
       set.seed(seeds[j])
 
@@ -1194,12 +1230,7 @@ didnpbsctest.default <- function(
       )
       # cat.print( data.frame(num0less.new_, num0less.new, num0less.new_ - num0less.new)[1:10,] )
 
-
-      if (print.level > 0 & cores == 1)
-      {
-        pb <- utils::txtProgressBar(min = 0, max = boot.num, style = 3)
-      }
-      if (print.level > 0 & cores == 1 & j == 1)
+      if (print.level > 0 & cores1 == 1 & j == 1)
       {
         time.06 <- proc.time()
         boot.time.sec <- round( boot.num*(time.06-time.05)[3], 0)
@@ -1208,9 +1239,9 @@ didnpbsctest.default <- function(
         pb <- utils::txtProgressBar(min = 1, max = boot.num, style = 3)
       }
 
-      if (print.level > 0 & cores == 1 & j > 1) utils::setTxtProgressBar(pb, j)
+      if (print.level > 0 & cores1 == 1 & j > 1) utils::setTxtProgressBar(pb, j)
 
-      (1/n10)*sum(((num10.new/dem10) - (num1less.new/dem1less) - (num00.new/dem00) + (num0less.new/dem0less))^2)
+      bsc.boot[j] <- (1/n10)*sum(((num10.new/dem10) - (num1less.new/dem1less) - (num00.new/dem00) + (num0less.new/dem0less))^2)
 
     }
 
@@ -1222,7 +1253,7 @@ didnpbsctest.default <- function(
   names(boot.time.sec) <- "sec"
 
   if (print.level >= 1){
-    .timing(boot.time.sec, "Bootstrapping the statistic completed in ")
+    .timing(boot.time.sec, "\nBootstrapping the statistic completed in ")
     # cat("___________________________________________________\n")
   }
 
@@ -1233,9 +1264,9 @@ didnpbsctest.default <- function(
   p.value <- 1-(rank.stat[1]/(boot.num+1))
 
   if (print.level > 0) {
-    cat("\nBSC stat =",formatC(bsc.stat, digits = digits),"")
-    cat("\nBSC se   =",formatC(bsc.sd, digits = digits),"")
-    cat("\n p-value =",formatC(p.value, digits = digits),"\n")
+    cat("\nBSC statistic                   =",formatC(bsc.stat, digits = digits),"")
+    cat("\nBSC bootstrapped standard error =",formatC(bsc.sd, digits = digits),"")
+    cat("\nBootstrapped p-value            =",formatC(p.value, digits = digits),"\n")
   }
 
 
