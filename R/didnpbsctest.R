@@ -289,7 +289,7 @@ didnpbsctest.formula <- function(
   # cat.print(length(form1))
   # cat.print(length(form1)[2])
 
-  if (length(form1)[2] < 5) stop("specificaions are inappropriate")
+  if (length(form1)[2] < 4) stop("specificaions are inappropriate")
 
   # Y <- model.matrix(form1, data = mf, lhs = 1)
   Y <- Formula::model.part(form1, data = mf, lhs = 1, drop = TRUE)
@@ -311,17 +311,20 @@ didnpbsctest.formula <- function(
   if (length(time) != nt) stop("specificaion 'time' is inappropriate")
   # cat.print(class(time))
   # cat.print(head(time))
+  # cat.print(table(time))
   model.matrix(form1, lhs = 0, rhs = 3, data = mf)[,-1] -> treated
   if (length(treated) != nt) stop("specificaion 'treated' is inappropriate")
   # cat.print(class(treated))
   # cat.print(head(treated))
+  # cat.print(table(treated))
+  # cat.print(table(time,treated))
   model.matrix(form1, lhs = 0, rhs = 4, data = mf)[,-1] -> treatment_period
   if (length(treatment_period) != nt) stop("specificaion 'treatment_period' is inappropriate")
   # cat.print(class(treatment_period))
   # cat.print(head(treatment_period))
   # cat.print(table(treatment_period))
   # see if weights was specified
-  if (length(form1)[2] == 5) {
+  if (length(form1)[2] == 4) {
     weights <-  rep(1, nt)
   } else {
     model.matrix(form1, lhs = 0, rhs = 5, data = mf)[,-1] -> weights
@@ -1262,6 +1265,8 @@ didnpbsctest.default <- function(
   ## Calculate p-value
   rank.stat <- rank(c(bsc.stat,bsc.boot))
   p.value <- 1-(rank.stat[1]/(boot.num+1))
+
+  cat.print(p.value)
 
   if (print.level > 0) {
     cat("\nBSC statistic                   =",formatC(bsc.stat, digits = digits),"")

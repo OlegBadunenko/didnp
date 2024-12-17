@@ -331,13 +331,14 @@ didnpreg.formula <- function(
   esample.nu <- as.numeric(rownames(X))
   esample <- data.order %in% esample.nu
 
+  # cat.print(table(esample))
   # cat("12\n")
 
   # cat.print(form1)
   # cat.print(length(form1))
   # cat.print(length(form1)[2])
 
-  if (length(form1)[2] < 5) stop("specificaions are inappropriate")
+  if (length(form1)[2] < 4) stop("specificaions are inappropriate")
 
   # Y <- model.matrix(form1, data = mf, lhs = 1)
   Y <- Formula::model.part(form1, data = mf, lhs = 1, drop = TRUE)
@@ -359,17 +360,20 @@ didnpreg.formula <- function(
   if (length(time) != nt) stop("specificaion 'time' is inappropriate")
   # cat.print(class(time))
   # cat.print(head(time))
+  # cat.print(table(time))
   model.matrix(form1, lhs = 0, rhs = 3, data = mf)[,-1] -> treated
   if (length(treated) != nt) stop("specificaion 'treated' is inappropriate")
   # cat.print(class(treated))
   # cat.print(head(treated))
+  # cat.print(table(treated))
+  # cat.print(table(time,treated))
   model.matrix(form1, lhs = 0, rhs = 4, data = mf)[,-1] -> treatment_period
   if (length(treatment_period) != nt) stop("specificaion 'treatment_period' is inappropriate")
   # cat.print(class(treatment_period))
   # cat.print(head(treatment_period))
   # cat.print(table(treatment_period))
   # see if weights was specified
-  if (length(form1)[2] == 5) {
+  if (length(form1)[2] == 4) {
     weights <-  rep(1, nt)
   } else {
     model.matrix(form1, lhs = 0, rhs = 5, data = mf)[,-1] -> weights
@@ -413,10 +417,13 @@ didnpreg.formula <- function(
     seed = seed,
     ...)
 
-  # tymch[["esample"]] <- esample
-  tymch <- c(tymch, esample = list(esample))   # Add element to list
+  # https://www.programmingr.com/fast-r-append-list/
+  tymch[["esample"]] <- esample
+  # tymch <- c(tymch, esample = list(esample))   # Add element to list
   # cat("15\n")
-
+  # cat.print(table(esample))
+  # cat.print(table(tymch[["esample"]]))
+  # cat.print(table(tymch$esample))
 
   class(tymch) <- c("didnpreg", "didnp")
   return(tymch)
@@ -535,7 +542,7 @@ didnpreg.default <- function(
   d0[ , -c(1:5), drop = FALSE] -> x # regressors
   k.x <- ncol(x)
 
-  ## handle treatment ----
+  ## handle treatment period ----
 
   time.treatment <- min( it.time[treatment_period == 1]  - 1)
   # cat.print(table(it.time))
@@ -770,121 +777,242 @@ didnpreg.default <- function(
 
   ### CV  ----
 
-  if (bwmethod == "CV") {
+  if(is.null(bws)) {
+    if (bwmethod == "CV") {
+      if (print.level > 0) {
+        cat(paste0("Calculating cross-validated bandwidths\n"))
+
+        #### print info about bw ----
+
+        if (q.type[1] > 0) {
+          cat("Kernel Type for Continuous Regressors is               Gaussian\n")
+        }
+        if (q.type[2] > 0) {
+          cat("Kernel Type for Unordered Categorical Regressors is    Aitchison and Aitken\n")
+        }
+        if (q.type[3] > 0) {
+          cat("Kernel Type for Ordered Categorical is                 Li and Racine\n")
+        }
+      }
+
+      ## plug-in bandwidths (used for starting values in LSCV)
+      ## Silverman (1986) for cont (make it a function of q 1.06, 1.00, ....)
+      ## Chu, Henderson and Parmeter (2015) for discrete
+      ## bandwidths will be scaled by sample size for the other status (d=0, t=0)
+      rot.bw00 <- matrix(0,nrow=k.x,ncol=1)
+
+      # cat.print(dim(xx00))
+      # cat.print(table(d,t))
+
+      for (i in 1:k.x) {
+
+        # cat.print(i)
+
+        if (is.ordered(xx00[,i])==TRUE){
+
+          ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
+          tym <- table(droplevels(xx00[,i]))
+          rf <- tym[tym>0]/length(xx00[,i])
+          # rf <- table(xx00[,i])/length(xx00[,i])
+          rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+          # cat.print(rf)
+          # cat.print(rot.bw00[i])
+
+        } else if (is.factor(xx00[,i])==TRUE) {
+
+          ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
+          tym <- table(droplevels(xx00[,i]))
+          rf <- tym[tym>0]/length(xx00[,i])
+          # rf <- table(xx00[,i])/length(xx00[,i])
+          rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+          # cat.print(rf)
+          # cat.print(rot.bw00[i])
+
+        } else {
+
+          ## note no sd(x) because we scaled them already
+          rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1])) # adjust 1.06 to values of the Gaussian row on Page 70 Table 3.3
+          # cat.print(rot.bw00[i])
+
+        }
+
+      }
+
+      ## setting upper and lower bounds for bandwidths
+      ## need them to be 5 for the continuous variables and 1 for the discrete variables
+      lower <- rep(0,ncol(x))
+      upper <- rep(1,ncol(x))
+      for (ii in 1:k.x) {
+        upper[ii] <- ifelse(is.factor(x[,ii]),1,5)
+      }
+
+      bw.start <- rot.bw00
+
+      # cat.print(rot.bw00)
+
+      # do it only on the treated in the treatment period: "11"
+
+      time.05 <- proc.time()
+
+      # bw.optim <- minqa::bobyqa(bw.start,lcls.lscv,lower,upper,y=y11,x=xx11,w=w11)
+
+      # tym11 <- lcls.lscv0(h=bw.start,y=y11,x=xx11,w=w11)
+      # tym12 <- lcls.lscv(h=bw.start,cores=cores,
+      #                    y=y11, wy=wy11, w=w11, x=as.matrix(xx11),
+      #                    xtype=q.typeYnum, nlevels=q.levels, n=n11, k=k.x)
+      # cat.print(c(tym11,tym12))
+
+      # return(1)
+
+      bw.optim <- minqa::bobyqa(
+        bw.start, lcls.lscv, lower, upper,
+        cores = cores, y = y11, wy = wy11, w = w11, x = as.matrix(xx11),
+        xtype = q.typeYnum, nlevels = q.levels, n = n11, k = k.x)
+
+
+      # cat.print(bw.start)
+      # cat.print(bw.optim)
+
+      time.06 <- proc.time()
+      CV.time.sec <- round( (time.06-time.05)[3], 0)
+      names(CV.time.sec) <- "sec"
+
+      if (print.level > 0){
+        .timing(CV.time.sec, "Calculating cross-validated bandwidths completed in ")
+        # cat("___________________________________________________\n")
+      }
+
+      # bw.optim$par
+      # bw.optim$fval
+      # bw.optim$feval
+      # bw.optim$ierr
+
+      bw11 <- bw.optim$par
+      # if (print.level > 1) {
+      #   cat(paste0("Calculating cross-validated bandwidths completed\n"))
+      # }
+
+      ## take these cross-validated bandwidths and calculate the scale factors, then get the remaining bandwidths
+      sf <- rep(1,k.x)
+      bw10 <- sf
+      bw01 <- sf
+      bw00 <- sf
+
+      for (ii in 1:k.x){
+        sf[ii] <-
+          ifelse(
+            is.factor(x[,ii]),
+            bw11[ii]*(n11^(2/(4+q.type[1]))),
+            bw11[ii]*(n11^(1/(4+q.type[1])))
+          )
+        bw10[ii] <-
+          ifelse(
+            is.factor(x[,ii]),
+            sf[ii]*(n10^(-2/(4+q.type[1]))),
+            sf[ii]*(n10^(-1/(4+q.type[1])))
+          )
+        bw01[ii] <-
+          ifelse(
+            is.factor(x[,ii]),
+            sf[ii]*(n01^(-2/(4+q.type[1]))),
+            sf[ii]*(n01^(-1/(4+q.type[1])))
+          )
+        bw00[ii] <-
+          ifelse(
+            is.factor(x[, ii]),
+            sf[ii] * (n00 ^ (-2 / ( 4 + q.type[1] ))),
+            sf[ii] * (n00 ^ (-1 / ( 4 + q.type[1] )))
+          )
+      }
+    } else {
+      ### plug-in ----
+      if (print.level > 0){
+        cat("Bandwidths are chosen via the plug-in method\n")
+      }
+      # bw11 <- rot.bw00
+
+      ## plug-in bandwidths
+      ## Silverman (1986) for cont (make it a function of q 1.06, 1.00, ....)
+      ## Chu, Henderson and Parmeter (2015) for discrete
+      rot.bw00 <- rot.bw01 <- rot.bw10 <- rot.bw11 <-  matrix(0,nrow=k.x,ncol=1)
+
+      for (i in 1:k.x){
+
+        # cat.print(i)
+
+        # if (is.ordered(xx00[,i])==TRUE){
+        if ( q.typeYnum[i] == 3 ){
+
+          ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
+          # cat.print(levels(xx00[,i]))
+          rf <- table(droplevels(xx00[,i]))/length(xx00[,i])
+          # cat.print(rf)
+          rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+          # cat.print(rot.bw00[i])
+          rf <- table(droplevels(xx01[,i]))/length(xx01[,i])
+          rot.bw01[i] <- (1/(1 + (n01*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+          rf <- table(droplevels(xx10[,i]))/length(xx10[,i])
+          rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+          rf <- table(droplevels(xx11[,i]))/length(xx11[,i])
+          rot.bw11[i] <- (1/(1 + (n11*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+
+          # } else if (is.factor(xx00[,i])==TRUE) {
+        } else if ( q.typeYnum[i] == 2 ) {
+
+          ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
+          rf <- table(droplevels(xx00[,i]))/length(xx00[,i])
+          # cat.print(rf)
+          if( length(rf) == 1) {
+            stop("Variable ", colnames(x)[i], " has no variation\n")
+          }
+          rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+          # cat.print(rot.bw00[i])
+          rf <- table(droplevels(xx01[,i]))/length(xx01[,i])
+          rot.bw01[i] <- (1/(1 + (n01*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+          rf <- table(droplevels(xx10[,i]))/length(xx10[,i])
+          rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+          rf <- table(droplevels(xx11[,i]))/length(xx11[,i])
+          rot.bw11[i] <- (1/(1 + (n11*sum((1-rf)^2/(sum(rf*(1-rf)))))))
+
+        } else {
+
+          if( sd(xx00[,i]) == 0) {
+            cat("Variable ", colnames(x)[i], " has no variation\n")
+          }
+
+          ## note: no sd(x) because we scaled them already
+          rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1]))
+          # cat.print(rot.bw00[i] )
+          rot.bw01[i] <- 1.06*n01^(-1/(4+q.type[1]))
+          rot.bw10[i] <- 1.06*n10^(-1/(4+q.type[1]))
+          rot.bw11[i] <- 1.06*n11^(-1/(4+q.type[1]))
+
+        }
+
+      } ## i
+
+      # print(rot.bw11)
+
+      ## ROT bandwidths instead of LSCV
+      bw11 <- rot.bw11
+      bw10 <- rot.bw10
+      bw01 <- rot.bw01
+      bw00 <- rot.bw00
+
+    }
+  } else {
     if (print.level > 0) {
-      cat(paste0("Calculating cross-validated bandwidths\n"))
-
-      #### print info about bw ----
-
-      if (q.type[1] > 0) {
-        cat("Kernel Type for Continuous Regressors is               Gaussian\n")
-      }
-      if (q.type[2] > 0) {
-        cat("Kernel Type for Unordered Categorical Regressors is    Aitchison and Aitken\n")
-      }
-      if (q.type[3] > 0) {
-        cat("Kernel Type for Ordered Categorical is                 Li and Racine\n")
-      }
+      cat("\n The bandwidths are provided.\n")
+      cat("\n Make sure the bandwidths are chosen using the 'didnpreg' command.\n")
     }
 
-    ## plug-in bandwidths (used for starting values in LSCV)
-    ## Silverman (1986) for cont (make it a function of q 1.06, 1.00, ....)
-    ## Chu, Henderson and Parmeter (2015) for discrete
-    ## bandwidths will be scaled by sample size for the other status (d=0, t=0)
-    rot.bw00 <- matrix(0,nrow=k.x,ncol=1)
-
-    # cat.print(dim(xx00))
-    # cat.print(table(d,t))
-
-    for (i in 1:k.x) {
-
-      # cat.print(i)
-
-      if (is.ordered(xx00[,i])==TRUE){
-
-        ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-        tym <- table(droplevels(xx00[,i]))
-        rf <- tym[tym>0]/length(xx00[,i])
-        # rf <- table(xx00[,i])/length(xx00[,i])
-        rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-        # cat.print(rf)
-        # cat.print(rot.bw00[i])
-
-      } else if (is.factor(xx00[,i])==TRUE) {
-
-        ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-        tym <- table(droplevels(xx00[,i]))
-        rf <- tym[tym>0]/length(xx00[,i])
-        # rf <- table(xx00[,i])/length(xx00[,i])
-        rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-        # cat.print(rf)
-        # cat.print(rot.bw00[i])
-
-      } else {
-
-        ## note no sd(x) because we scaled them already
-        rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1])) # adjust 1.06 to values of the Gaussian row on Page 70 Table 3.3
-        # cat.print(rot.bw00[i])
-
-      }
-
+    if(length(bws) != k.x){
+      stop("The length of 'bws' is not equal to the number of regressors")
     }
 
-    ## setting upper and lower bounds for bandwidths
-    ## need them to be 5 for the continuous variables and 1 for the discrete variables
-    lower <- rep(0,ncol(x))
-    upper <- rep(1,ncol(x))
-    for (ii in 1:k.x) {
-      upper[ii] <- ifelse(is.factor(x[,ii]),1,5)
-    }
+    bw11 <- as.vector(as.matrix(bws))
 
-    bw.start <- rot.bw00
-
-    # cat.print(rot.bw00)
-
-    # do it only on the treated in the treatment period: "11"
-
-    time.05 <- proc.time()
-
-    # bw.optim <- minqa::bobyqa(bw.start,lcls.lscv,lower,upper,y=y11,x=xx11,w=w11)
-
-    # tym11 <- lcls.lscv0(h=bw.start,y=y11,x=xx11,w=w11)
-    # tym12 <- lcls.lscv(h=bw.start,cores=cores,
-    #                    y=y11, wy=wy11, w=w11, x=as.matrix(xx11),
-    #                    xtype=q.typeYnum, nlevels=q.levels, n=n11, k=k.x)
-    # cat.print(c(tym11,tym12))
-
-    # return(1)
-
-    bw.optim <- minqa::bobyqa(
-      bw.start, lcls.lscv, lower, upper,
-      cores = cores, y = y11, wy = wy11, w = w11, x = as.matrix(xx11),
-      xtype = q.typeYnum, nlevels = q.levels, n = n11, k = k.x)
-
-
-    # cat.print(bw.start)
-    # cat.print(bw.optim)
-
-    time.06 <- proc.time()
-    CV.time.sec <- round( (time.06-time.05)[3], 0)
-    names(CV.time.sec) <- "sec"
-
-    if (print.level > 0){
-      .timing(CV.time.sec, "Calculating cross-validated bandwidths completed in ")
-      # cat("___________________________________________________\n")
-    }
-
-    # bw.optim$par
-    # bw.optim$fval
-    # bw.optim$feval
-    # bw.optim$ierr
-
-    bw11 <- bw.optim$par
-    # if (print.level > 1) {
-    #   cat(paste0("Calculating cross-validated bandwidths completed\n"))
-    # }
-
-    ## take these cross-validated bandwidths and calculate the scale factors, then get the remaining bandwidths
+    ## take these bandwidths and calculate the scale factors, then get the remaining bandwidths
     sf <- rep(1,k.x)
     bw10 <- sf
     bw01 <- sf
@@ -916,81 +1044,6 @@ didnpreg.default <- function(
           sf[ii] * (n00 ^ (-1 / ( 4 + q.type[1] )))
         )
     }
-  } else {
-    ### plug-in ----
-    if (print.level > 0){
-      cat("Bandwidths are chosen via the plug-in method\n")
-    }
-    # bw11 <- rot.bw00
-
-    ## plug-in bandwidths
-    ## Silverman (1986) for cont (make it a function of q 1.06, 1.00, ....)
-    ## Chu, Henderson and Parmeter (2015) for discrete
-    rot.bw00 <- rot.bw01 <- rot.bw10 <- rot.bw11 <-  matrix(0,nrow=k.x,ncol=1)
-
-    for (i in 1:k.x){
-
-      # cat.print(i)
-
-      # if (is.ordered(xx00[,i])==TRUE){
-      if ( q.typeYnum[i] == 3 ){
-
-        ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-        # cat.print(levels(xx00[,i]))
-        rf <- table(droplevels(xx00[,i]))/length(xx00[,i])
-        # cat.print(rf)
-        rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-        # cat.print(rot.bw00[i])
-        rf <- table(droplevels(xx01[,i]))/length(xx01[,i])
-        rot.bw01[i] <- (1/(1 + (n01*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-        rf <- table(droplevels(xx10[,i]))/length(xx10[,i])
-        rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-        rf <- table(droplevels(xx11[,i]))/length(xx11[,i])
-        rot.bw11[i] <- (1/(1 + (n11*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-
-        # } else if (is.factor(xx00[,i])==TRUE) {
-      } else if ( q.typeYnum[i] == 2 ) {
-
-        ## First equation on page 8 in CHP (2015) - calculating relative frequencies for plug-in bandwidth
-        rf <- table(droplevels(xx00[,i]))/length(xx00[,i])
-        # cat.print(rf)
-        if( length(rf) == 1) {
-          stop("Variable ", colnames(x)[i], " has no variation\n")
-        }
-        rot.bw00[i] <- (1/(1 + (n00*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-        # cat.print(rot.bw00[i])
-        rf <- table(droplevels(xx01[,i]))/length(xx01[,i])
-        rot.bw01[i] <- (1/(1 + (n01*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-        rf <- table(droplevels(xx10[,i]))/length(xx10[,i])
-        rot.bw10[i] <- (1/(1 + (n10*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-        rf <- table(droplevels(xx11[,i]))/length(xx11[,i])
-        rot.bw11[i] <- (1/(1 + (n11*sum((1-rf)^2/(sum(rf*(1-rf)))))))
-
-      } else {
-
-        if( sd(xx00[,i]) == 0) {
-          cat("Variable ", colnames(x)[i], " has no variation\n")
-        }
-
-        ## note: no sd(x) because we scaled them already
-        rot.bw00[i] <- 1.06*n00^(-1/(4+q.type[1]))
-        # cat.print(rot.bw00[i] )
-        rot.bw01[i] <- 1.06*n01^(-1/(4+q.type[1]))
-        rot.bw10[i] <- 1.06*n10^(-1/(4+q.type[1]))
-        rot.bw11[i] <- 1.06*n11^(-1/(4+q.type[1]))
-
-      }
-
-    } ## i
-
-    # print(rot.bw11)
-
-    ## ROT bandwidths instead of LSCV
-    bw11 <- rot.bw11
-    bw10 <- rot.bw10
-    bw01 <- rot.bw01
-    bw00 <- rot.bw00
-
   }
 
   # return(1)
@@ -1219,7 +1272,7 @@ didnpreg.default <- function(
     # cat.print(mean(TTa.i, na.rm = TRUE))
 
     if (print.level > 0) {
-      cat(paste0("TTa = ",formatC(TTa, digits = digits),", N (TTa; treated in t = 1 or N_11) = ",n11,"\n"))
+      cat(paste0("TTa = ",formatC(TTa, digits = digits),", N (TTa; treated in the first period or N_ 1, 1) = ",n11,"\n"))
     }
 
     # cat.print(TTa)

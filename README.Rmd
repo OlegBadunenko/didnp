@@ -47,6 +47,8 @@ The **didnp** package contains tools for computing average treatment effect para
 
 The **didnp** package implements the framework developed in
 
+Daniel J. Henderson and Stefan Sperlich (2023), "A Complete Framework for Model-Free Difference-in-Differences Estimation", Foundations and Trends® in Econometrics: Vol. 12: No. 3, pp 232-323. http://dx.doi.org/10.1561/0800000046
+
 * 
 
 
@@ -69,38 +71,50 @@ devtools::install_github("OlegBadunenko/didnp")
 
 > The following is a simplified example ...,  which comes from [that](https://elsevier.com/).
 
-Data set is shared by [Kuka et al, 2020](https://doi.org/10.1257/pol.20180352). Here we showcase the functionality of the package by using a subset, which is available in the package and can be loaded by
+CHANGE: Data set is shared by [Kuka et al, 2020](https://doi.org/10.1257/pol.20180352). Here we showcase the functionality of the package by using a subset, which is available in the package and can be loaded by
 
 ```{r data, eval = TRUE}
   library(didnp)
   library(ggplot2)
-  data(DACAsub, package = "didnp")
-  head(DACAsub)
+  data(unemp, package = "didnp")
+  head(unemp)
 ```
 
 The description of the dataset can be found by typing
 
 ```{r datahelp, eval = FALSE}
-  ?DACAsub
+  ?unemp
+  table(unemp$age)
+```
+
+Because there is a gap in the 'year', we create artificial 'period' variable that does not have a gap
+
+```{r sub, eval=TRUE}
+year_min <- min(unemp$year)
+unemp$period <- ifelse(
+  unemp$year < 2012,
+  unemp$year - year_min + 1,
+  unemp$year - year_min)
+table(unemp$period)
+table(unemp$period, unemp$year)
+table(unemp$period, unemp$treatment_period)
 ```
 
 Although this can be done on the fly, the subsample can be prepared beforehand:
 
 ```{r sub, eval=TRUE}
 # get the subsample
-DACAsub$sub_a1418_all <- mysmpl <- 
-  DACAsub$a1418==1 & !is.na(DACAsub$a1418)
-table(DACAsub$sub_a1418_all)
+unemp$mysmpl <- unemp$age >= 25
+table(unemp$mysmpl)
 
-# generate 'treatment_period'
-DACAsub$treatment_period <- ifelse( DACAsub[,"year"] > 2011, 1, 0)
+# describe 'treatment_period'
+table(unemp$treatment_period)
 ```
 
 > Define the formula that we will use:
 
 ```{r formula, eval = TRUE}
-form1 <- inschool ~ fem + race + var.bpl + state + age + yrimmig + 
-  ageimmig | inschool | year | elig | treatment_period | perwt
+form1 <- y ~ unemp + sex + statefip + school + age + yrimmig + educ | period | eligible | treatment_period
 ```
 
 To obtain standard errors and perform testing,
@@ -116,17 +130,17 @@ B <- 99
 
 To test if there is a violation of the bias stability condition use command **didnptest**
 
-```{r model1test, eval=TRUE}
+```{r model1test, eval = TRUE}
 tym1test <- didnpbsctest(
   form1,
-  data = DACAsub,
+  data = unemp,
   subset = mysmpl,
-  boot.num = 99,
+  boot.num = B,
   print.level = 2,
   cores = 16)
 ```
 
-We don't find evidence against the null hypothesis that the bias stability condition holds.
+COMMENT: We do find evidence against the null hypothesis that the bias stability condition holds.
 
 ### Estimation
 
@@ -142,7 +156,7 @@ Suppress output by setting `print.level = 0`. The default value is 1.
 # suppress output
 tym1a <- didnpreg(
   form1,
-  data = DACAsub,
+  data = unemp,
   subset = mysmpl,
   bwmethod = "opt",
   boot.num = B,
@@ -160,16 +174,16 @@ summary(tym1a)
 rm(tym1a)
 ```
 
-Estimating $TT_b$ will take longer. The bandwidths is cross-validated.
+Estimating $TT_b$ will take longer. The bandwidths are cross-validated.
 
 ```{r model1b, eval=TRUE}
 # Show output as the estimation goes
 tym1b <- didnpreg(
   form1,
-  data = DACAsub,
+  data = unemp,
   subset = mysmpl,
   bwmethod = "CV",
-  boot.num = B,
+  boot.num = 9,
   TTx = "TTb",
   print.level = 2,
   digits = 8,
@@ -180,33 +194,34 @@ tym1b <- didnpreg(
 
 To plot the heterogenous treatment effects, use the **didnpplot** command. Define three variables by and over which the treatment effects will be plotted:
 
-```{r by_over, eval=TRUE}
-DACAsub[tym1b$esample, "race"] -> race
-DACAsub[tym1b$esample, "fem"]  -> sex
-as.numeric(DACAsub[tym1b$esample, "age"]) -> age
+```{r by_over, eval = TRUE}
+table(unemp$educ)
+# Create 3 categories:
+ifelse(unemp$educ <= 3, "2-3 years", ifelse(unemp$educ <= 7, "6-7 years", "8-11 years")) -> unemp$edu
+factor(unemp[tym1b$esample, "edu"]) -> edu
+table(edu)
+unemp[tym1b$esample, "sex"] -> sex
+as.numeric(unemp[tym1b$esample, "age"]) -> age
 ```
 
-Here `age` is quasi-continuous. It will have only 4 values (in fact fewer than the Race variable), but we use it to showcase the functionality.
+Here `unemp` is continuous.
 
 First, use one categorical `by` variable:
 
-```{r gr_race, eval=TRUE}
-tym1b_gr_race <- didnpplot(
+```{r gr_, eval=TRUE}
+tym1b_gr_edu <- didnpplot(
   obj = tym1b,
   level = 95,
-  by = race[tym1b$sample1],
-  xlab = "Race",
-  ylab = "ATET",
-  by.labels.values = data.frame(
-    old = c(1,2,3,4,5),
-    new = c("Hispanic", "White", "Black", "Asian", "Other")
-  ))
+  by = edu[tym1b$sample1],
+  xlab = "Education",
+  ylab = "ATET"
+  )
 
-tym1b_gr_race$data.a
-tym1b_gr_race$data.b
+tym1b_gr_edu$data.a
+tym1b_gr_edu$data.b
 
-tym1b_gr_race$plot.a
-tym1b_gr_race$plot.b
+tym1b_gr_edu$plot.a
+tym1b_gr_edu$plot.b
 ```
 
 Here objects `data.a` and `data.b` contain data that is used to produce `plot.a` and `plot.b`. The graphs are `ggplot` objects and can be amended further.
@@ -220,7 +235,7 @@ tym1b_gr_sex <- didnpplot(
   by = sex[tym1b$sample1],
   xlab = "Sex",
   ylab = "ATET",
-  by.labels.values = data.frame(c(1,0), c("Female", "Male"))
+  by.labels.values = data.frame(c(1,2), c("Female", "Male"))
 )
 
 tym1b_gr_sex$data.a
@@ -233,19 +248,19 @@ tym1b_gr_sex$plot.b
 The **didnpplot** command will recognize if `by` is continuous variable, split it into given number of intervals `n.intervals` and plot the treatment effects by the split variable.
 
 ```{r gr_age, eval=TRUE}
-tym1b_gr_age <- didnpplot(
+tym1b_gr_unemp <- didnpplot(
   obj = tym1b,
   level = 95,
-  by = age[tym1b$sample1],
+  by = unemp$unemp[tym1b$esample][tym1b$sample1],
   n.intervals = 10,
-  xlab = "Age"
+  xlab = "Unemployment"
 )
 
-tym1b_gr_age$data.a
-tym1b_gr_age$data.b
+tym1b_gr_unemp$data.a
+tym1b_gr_unemp$data.b
 
-tym1b_gr_age$plot.a
-tym1b_gr_age$plot.b
+tym1b_gr_unemp$plot.a
+tym1b_gr_unemp$plot.b
 ```
 
 Ameding ggplot object is easy. For example adding a 0 horizontal line is

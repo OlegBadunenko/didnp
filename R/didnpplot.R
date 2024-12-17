@@ -93,7 +93,7 @@ didnpplot <- function(
     type = "hte",
     level = 95,
     by = NULL,
-    n.intervals = 10,
+    n.intervals = NULL,
     over = NULL,
     xlab = "",
     ylab = "ATET",
@@ -223,6 +223,8 @@ didnpplot <- function(
 
         by2 <- by
         by2.levels <- by.levels
+
+        by.labels.values.supplied <- FALSE
 
       } else {
 
@@ -744,13 +746,19 @@ didnpplot <- function(
       # 2. 'by' is a continuous ----
       print("2. 'by' is a continuous")
 
-      my.by <- by
+      keep.continuous <- is.null(n.intervals)
 
-      by <- base::cut(my.by, n.intervals, dig.lab = 1, ordered_result = TRUE)
+      if(!keep.continuous){
 
-      by.levels <- levels(by) # why sort?
+        my.by <- by
 
-      n.levels <-  length(by.levels)
+        by <- base::cut(my.by, n.intervals, dig.lab = 1, ordered_result = TRUE)
+
+        by.levels <- levels(by) # why sort?
+
+        n.levels <-  length(by.levels)
+
+      }
 
       if (do.TTb) {
 
@@ -770,6 +778,7 @@ didnpplot <- function(
           # cat.print(by[1:20])
           # cat.print(length(by))
 
+          if(!keep.continuous){
 
           atet <- atet.sd <- myCount <- numeric(n.levels)
 
@@ -789,7 +798,19 @@ didnpplot <- function(
             )
           d1b <- d1b[complete.cases(d1b),]
 
-          # cat.print(d1b)
+          } else {
+
+            cat.print(obj$TTb.i[1:20])
+            cat.print(apply(obj$TTb.i.boot, MARGIN = 1, FUN = sd)[1:20])
+            d1b <-
+              data.frame(
+                atet = obj$TTb.i,
+                atet.sd = apply(obj$TTb.i.boot, MARGIN = 1, FUN = sd),
+                by = by
+              )
+          }
+
+          cat.print(head(d1b, 30))
 
           plot.b <- ggplot(d1b, aes(x = by, y = atet, group = 1)) +
             geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
@@ -799,8 +820,12 @@ didnpplot <- function(
             theme_bw() +
             theme(legend.position = "none", text = element_text(size = text_size))
 
+          plot.b
+
           ## 2.1.1.2 TTa ----
           print("2.1.1.2 TTa")
+
+          # return(plot.b)
 
           # cat.print(length(obj$TTa.positions.in.TTb))
           # cat.print(length(by))

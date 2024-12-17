@@ -24,6 +24,8 @@ specifying a model.
 
 The **didnp** package implements the framework developed in
 
+Daniel J. Henderson and Stefan Sperlich (2023), "A Complete Framework for Model-Free Difference-in-Differences Estimation", Foundations and Trends® in Econometrics: Vol. 12: No. 3, pp 232-323. http://dx.doi.org/10.1561/0800000046
+
 - 
 
 ## Installation
