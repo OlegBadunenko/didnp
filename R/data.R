@@ -44,4 +44,4 @@
 #'   \item{treatment_period}{Birth region (Birthplace)}
 #'   \item{eligible}{Eligible for treatment}
 #' }
-"Unemp"
+"Unempl"
