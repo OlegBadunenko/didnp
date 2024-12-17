@@ -9,7 +9,7 @@ didnpplot(
   type = "hte",
   level = 95,
   by = NULL,
-  n.intervals = 10,
+  n.intervals = NULL,
   over = NULL,
   xlab = "",
   ylab = "ATET",

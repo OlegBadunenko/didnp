@@ -26,11 +26,11 @@
 #' @source \url{https://doi.org/10.1257/pol.20180352}.
 "DACAsub"
 
-#' Two Subset of the dataset aboutthe Deferred Action for Childhood Arrivals (DACA) program
+#' Two Subset of the dataset about the Deferred Action for Childhood Arrivals (DACA) program
 #'
 #' Two A dataset about Deferred Action for Childhood Arrivals (DACA) program containing 330106 observations
 #'
-#' @format Two A data frame with 17379 rows and 11 columns:
+#' @format A data frame with 17379 rows and 11 columns:
 #' \describe{
 #'   \item{FT}{2}
 #'   \item{unemp}{2}
@@ -44,4 +44,4 @@
 #'   \item{treatment_period}{Birth region (Birthplace)}
 #'   \item{eligible}{Eligible for treatment}
 #' }
-"unemp"
+"Unemp"
