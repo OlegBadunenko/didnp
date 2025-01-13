@@ -9,7 +9,7 @@ didnpplot(
   type = "hte",
   level = 95,
   by = NULL,
-  n.intervals = NULL,
+  by.continuous.scale = NULL,
   over = NULL,
   xlab = "",
   ylab = "ATET",
@@ -19,7 +19,8 @@ didnpplot(
   line_width = 2,
   by.labels.values = NULL,
   over.labels.values = NULL,
-  text_size = 17
+  text_size = 17,
+  print.level = 1
 )
 }
 \arguments{
@@ -29,7 +30,7 @@ didnpplot(
 
 \item{by}{categorical or continuous.}
 
-\item{n.intervals}{number of intervals for the numeric "by" to be split into. Default is 10.}
+\item{by.continuous.scale}{The scale of a continuous variable can be set to three values. (1) Setting it to NULL implies that each unique value in the ‘by’ variable will be treated separately. (2) If you set it to a numeric vector of length 1 or a scalar, it will split the range of the continuous ‘by’ variable into intervals of the specified length. (3) If you set it to a numeric vector, it will split the continuous ‘by’ variable into intervals defined by the specified vector. The default value is NULL.}
 
 \item{over}{necessarily categorical.}
 
@@ -41,9 +42,12 @@ didnpplot(
 
 \item{line_width}{of ATET for the numeric "by". Default is 2.}
 
+\item{by.labels.values}{For the categorical “by” parameter, the dataframe should have two columns. The first column should contain unique values for the 'by' parameter, while the second column should contain corresponding values that would be displayed on a graph. By default, 'by.labels.values' is set to NULL, which means that the unique values from the 'by' parameter will be used.
+#' @param over.labels.values For the categorical “over” parameter, the dataframe should have two columns. The first column should contain unique values for the 'over' parameter, while the second column should contain corresponding values that would be displayed on a graph. By default, 'over.labels.values' is set to NULL, which means that the unique values from the 'over' parameter will be used.}
+
 \item{text_size}{for ggplot object. Default is 17.}
 
-\item{labels.values}{for the categorical "by", the dataframe with two columns. The first column contains unique values of the "by", while the second column contains corresponding values that would appear on a graph. Default is NULL, implying that the unique values of the "by" will be used.}
+\item{print.level}{The amount of printed output can be set to 0, 1, or 2. When set to 0, nothing is printed. When set to 1, only the structure of the work is printed. When set to 2, both the structure and the additional working are printed. The default value is 1.}
 }
 \value{
 \code{didnpplot} returns a dataframe containing containing the following columns:
