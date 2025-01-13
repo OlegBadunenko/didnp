@@ -1212,11 +1212,17 @@ didnpplot <- function(
 
           } else {
 
+            # This is to make sure the labels on the x-asix are ok
+            d1b2 <- d1b[,c('by','bySorted')]
+            d1b2 <- d1b2[!duplicated(d1b2[,2]),]
+            d1b2 <- d1b2[order(d1b2[,2]),]
+            if(print.level >= 2) cat.print(d1b2)
+
             plot.b <- ggplot(d1b, aes(x = bySorted, y = atet, color = over, group = over)) +
               geom_line(linewidth = line_width) +
               geom_point(size = point_size, shape = 16, color = "black") +
               labs(x = xlab, y = ylab) +
-              scale_x_discrete(label = d1b$by) +
+              scale_x_discrete(label = d1b2$by) +
               geom_ribbon(aes(ymin = atet - 2*atet.sd,
                               ymax = atet + 2*atet.sd,
                               fill = over), alpha = 0.3) +
@@ -1409,11 +1415,16 @@ didnpplot <- function(
 
           } else {
 
+            d1a2 <- d1a[,c('by','bySorted')]
+            d1a2 <- d1a2[!duplicated(d1a2[,2]),]
+            d1a2 <- d1a2[order(d1a2[,2]),]
+            if(print.level >= 2) cat.print(d1a2)
+
             plot.a <- ggplot(d1a, aes(x = bySorted, y = atet, color = over, group = over)) +
               geom_line(linewidth = line_width) +
               geom_point(size = point_size, shape = 16, color = "black") +
               labs(x = xlab, y = ylab) +
-              scale_x_discrete(label = d1a$by) +
+              scale_x_discrete(label = d1a2$by) +
               geom_ribbon(aes(ymin = atet - 2*atet.sd,
                               ymax = atet + 2*atet.sd,
                               fill = over), alpha = 0.3) +
