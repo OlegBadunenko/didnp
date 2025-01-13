@@ -9,7 +9,8 @@
 #' @param obj an object of class "didnp".
 #' @param type type of the plot. Default is 'hte'
 #' @param by categorical or continuous.
-#' @param n.intervals number of intervals for the numeric "by" to be split into. Default is 10.
+#' @param by.continuous.scale the scale of the a continuous variable. Three values are acceptable. (1) NULL implies each unique value in 'by'. (2) A numeric vector of length 1 or scalar will split the range of the continuous 'by' into by.continuous.scale intervals. (3) A numeric vector will split the continuous 'by' into intervals defined by the by.continuous.scale Default is NULL.
+#' @param n.intervals number of intervals for the continuous 'by' to be split into. Default is 10.
 #' @param over necessarily categorical.
 #' @param xlab Label for horizontal axis. Default is "".
 #' @param ylab Label for vertical axis. Default is "ATET".
@@ -93,7 +94,7 @@ didnpplot <- function(
     type = "hte",
     level = 95,
     by = NULL,
-    n.intervals = NULL,
+    by.continuous.scale = NULL,
     over = NULL,
     xlab = "",
     ylab = "ATET",
@@ -105,7 +106,7 @@ didnpplot <- function(
     over.labels.values = NULL,
     text_size = 17){
 
-  if(sum(class(obj) == "didnpreg") != 1) stop ("Run 'didnpreg' first", call. = FALSE)
+  if(sum(class(obj) == "didnpreg") != 1) stop ("Run 'didnpreg' before calling 'didnpreg'", call. = FALSE)
 
   if (obj$TTx == "TTa") {
     TTb <- FALSE
@@ -132,10 +133,10 @@ didnpplot <- function(
 
     if (is.null(over)) {
 
-      ## single "by" ----
+      ## only 'by' ----
 
       if (do.TTb) {
-        # do two plots: for TTa and TTb
+        # do two plots: for TTa + TTb
         if (length(by) != length(obj$TTb.i)) stop ("The length of 'by' must be equal to the length of 'TTb.i'", call. = FALSE)
 
         # ateti.b <- obj$TTb.i.boot
@@ -151,10 +152,10 @@ didnpplot <- function(
 
     } else {
 
-      ## double "by" ----
+      ## 'by' + 'over' ----
 
       if (do.TTb) {
-        # do two plots: for TTa and TTb
+        # do two plots: for TTa + TTb
         if (length(by) != length(obj$TTb.i)) stop ("The length of 'by' must be equal to the length of 'TTb.i'", call. = FALSE)
         if (length(over) != length(obj$TTb.i)) stop ("The length of 'over' must be equal to the length of 'TTb.i'", call. = FALSE)
 
@@ -170,19 +171,25 @@ didnpplot <- function(
 
     if ( sum(is.na(by)) ) stop ("'by' contains missing values", call. = FALSE)
 
-    # graph ----
-
     ## handle "over" ----
 
     if (!is.null(over)) {
 
-      if ( class(over) != "factor" ) stop("Inappropriate class of 'over'; must be a 'factor'", call. = FALSE)
+      # give a vector of length 2, so I use
+      # sum(class(over) == "factor") == 0
+      # instead of
+      # class(over) != "factor"
+
+
+      if ( sum(class(over) == "factor") == 0 ) stop("Inappropriate class of 'over'; must be a 'factor'", call. = FALSE)
       if ( sum(is.na(over)) ) stop ("'over' contains missing values", call. = FALSE)
 
       over.levels <- levels(over) # why sort?
       n.over.levels <- length(over.levels)
 
       if (is.null(over.labels.values)) {
+
+        over.labels.values.supplied <- FALSE
 
         over2 <- over
         over2.levels <- over.levels
@@ -200,7 +207,7 @@ didnpplot <- function(
 
         colnames(over.labels.values) <- c("old", "new")
         over2 <- merge.data.frame(
-          data.frame(order = 1:length(over), old = over),
+          data.frame(order = 10+1:length(over), old = over),
           over.labels.values)
 
         over2 <- factor( over2[order(over2$order), 3] )
@@ -208,13 +215,26 @@ didnpplot <- function(
 
       }
 
+      print(over2.levels)
+
+      over.over.levels <- data.frame(over = over2.levels, overSorted = 10+1:length(over2.levels))
+      # print(over.over.levels)
+
       # n.over.levels <- length(over2.levels)
     }
     # will work with over2
 
-    # 1. 'by' is a factor ----
+    # graph ----
 
-    if (class(by) == "factor"){
+    # 1. 'by' is factor ----
+
+    # print(class(by))
+    # give a vector of length 2, so I use
+    # sum(class(by) == "factor") >= 1
+    # instead of
+    # class(by) == "factor"
+
+    if (sum(class(by) == "factor") >= 1){
 
       by.levels <- unique(by) # why sort?
       n.levels <-  length(by.levels)
@@ -251,12 +271,12 @@ didnpplot <- function(
 
       if (do.TTb) {
 
-        ## 1.1 TTa and TTb ----
-        print("1.1 TTa and TTb")
+        ## 1.1 TTa + TTb ----
+        print("1.1 TTa + TTb")
 
         if (is.null(over)) {
 
-          # 1.1.1 single "by" ----
+          # 1.1.1 only 'by' ----
 
           ## 1.1.1.1 TTb ----
           print("1.1.1.1 TTb")
@@ -354,7 +374,7 @@ didnpplot <- function(
 
         } else {
 
-          # 1.1.2 double "by" ----
+          # 1.1.2 'by' + 'over' ----
           print("1.1.2 double 'by'")
 
           ## TTb ----
@@ -396,6 +416,17 @@ didnpplot <- function(
               over = over10
             )
           d1b <- d1b[complete.cases(d1b),]
+
+
+          d1b <- merge(d1b, over.over.levels)
+          # cat.print(d1b$by)
+          # cat.print(is.ordered(d1b$by))
+          # cat.print(levels(d1b$by))
+          # if(!keep.continuous)
+          d1b <- d1b[complete.cases(d1b),]
+          d1b <- d1b[order(d1b$overSorted),]
+
+          print(d1b)
 
           if ( by.labels.values.supplied & over.labels.values.supplied ) {
 
@@ -445,8 +476,10 @@ didnpplot <- function(
 
           }
 
+          print(d1b)
 
-          plot.b <- ggplot(d1b, aes(fill = over, y = atet, x = by)) +
+
+          plot.b <- ggplot(d1b, aes(fill = factor(over, levels = over2.levels), y = atet, x = by)) +
             geom_bar(position = position_dodge(width = 0.8), stat = "identity") +
             geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), width= .2, position = position_dodge(0.8)) +
             labs(x = xlab, y = ylab) +
@@ -551,7 +584,7 @@ didnpplot <- function(
 
           }
 
-          plot.a <- ggplot(d1a, aes(fill = over, y = atet, x = by)) +
+          plot.a <- ggplot(d1a, aes(fill = factor(over, levels = over2.levels), y = atet, x = by)) +
             geom_bar(position = position_dodge(width = 0.8), stat = "identity") +
             # viridis::scale_fill_viridis(discrete = TRUE, option = "A") +
             geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), width= .2, position = position_dodge(0.8)) +
@@ -575,7 +608,7 @@ didnpplot <- function(
 
         if (is.null(over)) {
 
-          # 1.2.1 single "by" ----
+          # 1.2.1 only 'by' ----
 
           atet <- atet.sd <- myCount <- numeric(n.levels)
 
@@ -622,9 +655,9 @@ didnpplot <- function(
 
         } else {
 
-          # 1.2.2 double "by" ----
+          # 1.2.2 'by' + 'over' ----
 
-          # cat(" factor double 'by'\n")
+          # cat(" factor 'by' + 'over'\n")
 
           n.by.levels <-  n.levels
           atet <- atet.sd <- bY <- oY <- myCount <- numeric(n.by.levels*n.over.levels)
@@ -719,7 +752,7 @@ didnpplot <- function(
 
           }
 
-          plot.a <- ggplot(d1a, aes(fill = over, y = atet, x = by)) +
+          plot.a <- ggplot(d1a, aes(fill = factor(over, levels = over2.levels), y = atet, x = by)) +
             geom_bar(position = position_dodge(width = 0.8), stat = "identity") +
             # viridis::scale_fill_viridis(discrete = TRUE, option = "A") +
             geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), width= .2, position = position_dodge(0.8)) +
@@ -743,50 +776,107 @@ didnpplot <- function(
 
     } else if (class(by) == "numeric"){
 
-      # 2. 'by' is a continuous ----
-      print("2. 'by' is a continuous")
+      # 2. 'by' is continuous ----
+      print("2. 'by' is continuous")
 
-      keep.continuous <- is.null(n.intervals)
+      my.by0 <- my.by <- by
 
-      if(!keep.continuous){
 
-        my.by <- by
+      if(is.null(by.continuous.scale)){
+        print("Scale of the continuous 'by' is its range")
 
-        by <- base::cut(my.by, n.intervals, dig.lab = 1, ordered_result = TRUE)
+        keep.continuous <- TRUE
 
-        by.levels <- levels(by) # why sort?
+        by.levels <- sort( unique(by) ) # why sort?
 
-        n.levels <-  length(by.levels)
+        n.by.levels <-  length(by.levels)
 
+      } else if (class(by.continuous.scale) == "numeric") {
+
+        keep.continuous <- FALSE
+
+        if(length(by.continuous.scale) == 1){
+          print("Scale of the continuous 'by' is determined by the number of intervals 'by.continuous.scale'")
+
+          by <- base::cut(my.by, by.continuous.scale, ordered_result = TRUE)#, dig.lab = 1)
+          # print(by)
+          by.levels <- levels(by) # why sort?
+          # print(by.levels)
+
+          n.by.levels <-  length(by.levels)
+
+        } else {
+          # check if the given 'by.continuous.scale' is within the range of 'by'
+          inside <- (min(by) < by.continuous.scale) & (max(by) > by.continuous.scale)
+          if(sum( inside ) > 1){
+            print("Scale of the continuous 'by' is determined by the vector in 'by.continuous.scale'")
+
+            by.continuous.scale.work <-
+              unique(  c(min(by), sort(by.continuous.scale[inside]), max(by)) )
+
+            # print(summary(by))
+            # print(by.continuous.scale)
+            # print(inside)
+            # print(by.continuous.scale.work)
+
+            by <- base::cut(my.by, breaks = by.continuous.scale.work, include.lowest = TRUE, ordered_result = TRUE)#, dig.lab = 1)
+
+            by.levels <- levels(by) # why sort?
+
+            n.by.levels <-  length(by.levels)
+
+          } else {
+            stop("Values of 'by.continuous.scale' are outside the range of 'by'", call. = FALSE)
+          }
+        }
+      } else {
+        stop("The argument 'by.continuous.scale' should be numeric", call. = FALSE)
+      }
+
+      # to avoid incorrect sorting of levels in 'ggplot'
+      by.levels.sorted <- as.character(10+1:n.by.levels)
+      by.by.sorted <- data.frame(by = by.levels, bySorted = by.levels.sorted)
+      # print(by.by.sorted)
+      if(n.by.levels > 10){
+        myAngle = 90
+        myVjust = 0.5
+        myHjust = 1
+      } else {
+        myAngle = NULL
+        myVjust = NULL
+        myHjust = NULL
       }
 
       if (do.TTb) {
 
-        ## 2.1 TTa and TTb ----
-        print("2.1 TTa and TTb")
+        ## 2.1 TTa + TTb ----
+        print("2.1 TTa + TTb")
 
         # cat("TTb begin\n")
 
         if (is.null(over)) {
 
-          # 2.1.1 single "by" ----
-          print("2.1.1 single 'by'")
+          # 2.1.1 only 'by' ----
+          print("2.1.1 only 'by'")
 
-          ## 2.1.1.1 TTb ----
+            ## 2.1.1.1 TTb ----
           print("2.1.1.1 TTb")
 
           # cat.print(by[1:20])
           # cat.print(length(by))
 
-          if(!keep.continuous){
+          atet <- atet.sd <- myCount <- numeric(n.by.levels)
 
-          atet <- atet.sd <- myCount <- numeric(n.levels)
-
-          for(i in 1:n.levels){
+          for(i in 1:n.by.levels){
             sele <- by == by.levels[i]
             myCount[i] <- sum(sele)
-            atet[i] <- mean(obj$TTb.i[sele])
-            atet.sd[i] <- sd(colMeans(obj$TTb.i.boot[sele,]))
+            if(myCount[i] == 1){
+              atet[i] <- obj$TTb.i[sele]
+              atet.sd[i] <- sd(obj$TTb.i.boot[sele,])
+            } else {
+              atet[i] <- mean(obj$TTb.i[sele])
+              atet.sd[i] <- sd(colMeans(obj$TTb.i.boot[sele,]))
+            }
           }
 
           d1b <-
@@ -796,31 +886,41 @@ didnpplot <- function(
               count = myCount,
               by = by.levels
             )
+          levels(d1b$by) <- by.levels
+          d1b <- merge(d1b, by.by.sorted)
+          # cat.print(d1b$by)
+          # cat.print(is.ordered(d1b$by))
+          # cat.print(levels(d1b$by))
+          # if(!keep.continuous)
           d1b <- d1b[complete.cases(d1b),]
+          d1b <- d1b[order(d1b$bySorted),]
+          # print(head(d1b))
+
+          if(keep.continuous){
+
+            plot.b <- ggplot(d1b, aes(x = by, y = atet, group = 1)) +
+              geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
+              geom_line(linewidth = line_width) +
+              geom_point(size = point_size, shape = 16, color = "black") +
+              labs(x = xlab, y = ylab) +
+              theme_bw() +
+              theme(legend.position = "none", text = element_text(size = text_size))
 
           } else {
 
-            cat.print(obj$TTb.i[1:20])
-            cat.print(apply(obj$TTb.i.boot, MARGIN = 1, FUN = sd)[1:20])
-            d1b <-
-              data.frame(
-                atet = obj$TTb.i,
-                atet.sd = apply(obj$TTb.i.boot, MARGIN = 1, FUN = sd),
-                by = by
-              )
+            print(by.levels)
+            plot.b <- ggplot(d1b, aes(x = bySorted, y = atet, group = 1)) +
+              geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
+              geom_line(linewidth = line_width) +
+              geom_point(size = point_size, shape = 16, color = "black") +
+              labs(x = xlab, y = ylab) +
+              scale_x_discrete(label = d1b$by) +
+              theme_bw() +
+              theme(legend.position = "none", text = element_text(size = text_size), axis.text.x = element_text(angle = myAngle, vjust = myVjust, hjust=myHjust))
+
           }
 
-          cat.print(head(d1b, 30))
-
-          plot.b <- ggplot(d1b, aes(x = by, y = atet, group = 1)) +
-            geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
-            geom_line(linewidth = line_width) +
-            geom_point(size = point_size, shape = 16, color = "black") +
-            labs(x = xlab, y = ylab) +
-            theme_bw() +
-            theme(legend.position = "none", text = element_text(size = text_size))
-
-          plot.b
+          # plot.b
 
           ## 2.1.1.2 TTa ----
           print("2.1.1.2 TTa")
@@ -829,17 +929,87 @@ didnpplot <- function(
 
           # cat.print(length(obj$TTa.positions.in.TTb))
           # cat.print(length(by))
+          # my.by0 is the original 'by'
+          by <- my.by0[obj$TTa.positions.in.TTb]
+          by -> my.by
+          # cat.print(length(my.by))
+          # cat.print(length(by))
 
-          by.a <- by[obj$TTa.positions.in.TTb]
+          if(is.null(by.continuous.scale)){
+            # print("Scale of the continuous 'by' is its range")
 
-          atet <- atet.sd <- myCount <- numeric(n.levels)
+            keep.continuous <- TRUE
 
-          for(i in 1:n.levels){
-            sele <- by.a == by.levels[i]
-            myCount[i] <- sum(sele)
-            atet[i] <- mean(obj$TTa.i[sele])
-            atet.sd[i] <- sd(colMeans(obj$TTa.i.boot[sele,]))
+            by.levels <- sort( unique(by) ) # why sort?
+
+            n.by.levels <-  length(by.levels)
+
+          } else if (class(by.continuous.scale) == "numeric") {
+
+            keep.continuous <- FALSE
+
+            if(length(by.continuous.scale) == 1){
+              # print("Scale of the continuous 'by' is determined by the number of intervals in 'by.continuous.scale'")
+
+              by <- base::cut(my.by, by.continuous.scale, ordered_result = TRUE)#, dig.lab = 1)
+
+              by.levels <- levels(by) # why sort?
+
+              n.by.levels <-  length(by.levels)
+
+            } else {
+              # check if the given 'by.continuous.scale' is within the range of 'by'
+              inside <- (min(by) < by.continuous.scale) & (max(by) > by.continuous.scale)
+              if(sum( inside ) > 1){
+                # print("Scale of the continuous 'by' is determined by the vector in 'by.continuous.scale'")
+
+                by.continuous.scale.work <-
+                  unique( sort( c(min(by), sort(by.continuous.scale[inside]), max(by)) ))
+
+                by <- base::cut(my.by, breaks = by.continuous.scale.work, include.lowest = TRUE, ordered_result = TRUE)#, dig.lab = 1)
+
+                by.levels <- levels(by) # why sort?
+
+                n.by.levels <-  length(by.levels)
+
+              } else {
+                stop("Values of 'by.continuous.scale' are outside the range of 'by'", call. = FALSE)
+              }
+            }
+          } else {
+            stop("The argument 'by.continuous.scale' should be numeric", call. = FALSE)
           }
+
+          # to avoid incorrect sorting of levels in 'ggplot'
+          by.levels.sorted <- as.character(10+1:n.by.levels)
+          by.by.sorted <- data.frame(by = by.levels, bySorted = by.levels.sorted)
+          # print(by.by.sorted)
+          if(n.by.levels > 10){
+            myAngle = 90
+            myVjust = 0.5
+            myHjust = 1
+          } else {
+            myAngle = NULL
+            myVjust = NULL
+            myHjust = NULL
+          }
+
+
+          atet <- atet.sd <- myCount <- numeric(n.by.levels)
+
+
+          for(i in 1:n.by.levels){
+            sele <- by == by.levels[i]
+            myCount[i] <- sum(sele)
+            if(myCount[i] == 1){
+              atet[i] <- obj$TTa.i[sele]
+              atet.sd[i] <- sd(obj$TTa.i.boot[sele,])
+            } else {
+              atet[i] <- mean(obj$TTa.i[sele])
+              atet.sd[i] <- sd(colMeans(obj$TTa.i.boot[sele,]))
+            }
+          }
+
 
           d1a <-
             data.frame(
@@ -848,28 +1018,53 @@ didnpplot <- function(
               count = myCount,
               by = by.levels
             )
+          # d1a <- d1a[complete.cases(d1a),]
+
+          d1a <- merge(d1a, by.by.sorted)
+          # cat.print(d1b$by)
+          # cat.print(is.ordered(d1b$by))
+          # cat.print(levels(d1b$by))
           d1a <- d1a[complete.cases(d1a),]
+          d1a <- d1a[order(d1a$bySorted),]
+          # print(head(d1a))
 
+          if(keep.continuous){
 
-          plot.a <- ggplot(d1a, aes(x = by, y = atet, group = 1)) +
-            geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
-            geom_line(linewidth = line_width) +
-            geom_point(size = point_size, shape = 16, color = "black") +
-            labs(x = xlab, y = ylab) +
-            theme_bw() +
-            theme(legend.position = "none", text = element_text(size = text_size))
+            plot.a <- ggplot(d1a, aes(x = by, y = atet, group = 1)) +
+              geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
+              geom_line(linewidth = line_width) +
+              geom_point(size = point_size, shape = 16, color = "black") +
+              labs(x = xlab, y = ylab) +
+              theme_bw() +
+              theme(legend.position = "none", text = element_text(size = text_size))
+
+          } else {
+
+            plot.a <- ggplot(d1a, aes(x = bySorted, y = atet, group = 1)) +
+              geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
+              geom_line(linewidth = line_width) +
+              geom_point(size = point_size, shape = 16, color = "black") +
+              labs(x = xlab, y = ylab) +
+              scale_x_discrete(label = d1a$by) +
+              theme_bw() +
+              theme(legend.position = "none", text = element_text(size = text_size), axis.text.x = element_text(angle = myAngle, vjust = myVjust, hjust=myHjust))
+          }
 
         } else {
 
-          # 2.1.2 double "by" ----
+          # 2.1.2 'by' + 'over' ----
+          print("2.1.2 'by' + 'over'")
 
           ## 2.1.2.1 TTb ----
           print("2.1.2.1 TTb")
 
 
-          n.by.levels <-  n.levels
+          # n.by.levels <-  n.levels
           atet <- atet.sd <- myCount <- numeric(n.by.levels*n.over.levels)
           by10 <- over10 <-  character(n.by.levels*n.over.levels)
+          if(keep.continuous){
+            by10 <- numeric(n.by.levels*n.over.levels)
+          }
 
           for (b in 1:n.by.levels) {
             for (o in 1:n.over.levels) {
@@ -899,8 +1094,15 @@ didnpplot <- function(
               by = by10,
               over = over10
             )
-          # cat.print(d1b)
+          levels(d1b$by) <- by.levels
+          d1b <- merge(d1b, by.by.sorted)
+          # cat.print(d1b$by)
+          # cat.print(is.ordered(d1b$by))
+          # cat.print(levels(d1b$by))
+          # if(!keep.continuous)
           d1b <- d1b[complete.cases(d1b),]
+          d1b <- d1b[order(d1b$bySorted),]
+          # print(head(d1b))
 
           if ( over.labels.values.supplied ) {
 
@@ -917,28 +1119,119 @@ didnpplot <- function(
             colnames(d1b)[over.index] <- "overold"
             colnames(d1b)[over2.index] <- "over"
             # cat.print(head(d1b,2))
-            d1b <- d1b[, c("atet", "atet.sd", "count", "by", "over", "overold")]
+            d1b <- d1b[, c("atet", "atet.sd", "count", "by", "over", "overold", "bySorted")]
+            d1b <- d1b[order(d1b$bySorted),]
             # cat.print(head(d1b,2))
-
           }
 
           # cat.print(d1b)
 
-          plot.b <- ggplot(d1b,aes(x = by, y = atet, color = over, group = over)) +
-            geom_line(linewidth = line_width) +
-            geom_point(size = point_size, shape = 16, color = "black") +
-            labs(x = xlab, y = ylab) +
-            geom_ribbon(aes(ymin = atet - 2*atet.sd,
-                            ymax = atet + 2*atet.sd,
-                            fill = over), alpha = 0.3) +
-            guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
-            theme_bw() +
-            theme(legend.position = "right", text = element_text(size = text_size))
+          # print(class(d1b$by))
+
+          if(keep.continuous){
+
+            plot.b <- ggplot(d1b, aes(x = by, y = atet, color = over, group = over)) +
+              geom_line(linewidth = line_width) +
+              geom_point(size = point_size, shape = 16, color = "black") +
+              labs(x = xlab, y = ylab) +
+              geom_ribbon(aes(ymin = atet - 2*atet.sd,
+                              ymax = atet + 2*atet.sd,
+                              fill = over), alpha = 0.3) +
+              guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
+              theme_bw() +
+              theme(legend.position = "right", text = element_text(size = text_size))
+
+          } else {
+
+            plot.b <- ggplot(d1b, aes(x = bySorted, y = atet, color = over, group = over)) +
+              geom_line(linewidth = line_width) +
+              geom_point(size = point_size, shape = 16, color = "black") +
+              labs(x = xlab, y = ylab) +
+              scale_x_discrete(label = d1b$by) +
+              geom_ribbon(aes(ymin = atet - 2*atet.sd,
+                              ymax = atet + 2*atet.sd,
+                              fill = over), alpha = 0.3) +
+              guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
+              theme_bw() +
+              theme(legend.position = "right", text = element_text(size = text_size), axis.text.x = element_text(angle = myAngle, vjust = myVjust, hjust=myHjust))
+
+          }
+
 
           ## 2.1.2.2 TTa ----
           print("2.1.2.2 TTa")
 
-          by.a <- droplevels ( by[obj$TTa.positions.in.TTb] )
+          # cat.print(length(obj$TTa.positions.in.TTb))
+          # cat.print(length(by))
+          # my.by0 is the original 'by'
+          by <- my.by0[obj$TTa.positions.in.TTb]
+          by -> my.by
+          # cat.print(length(my.by))
+          # cat.print(length(by))
+
+          if(is.null(by.continuous.scale)){
+            # print("Scale of the continuous 'by' is its range")
+
+            keep.continuous <- TRUE
+
+            by.levels <- sort( unique(by) ) # why sort?
+
+            n.by.levels <-  length(by.levels)
+
+          } else if (class(by.continuous.scale) == "numeric") {
+
+            keep.continuous <- FALSE
+
+            if(length(by.continuous.scale) == 1){
+              # print("Scale of the continuous 'by' is determined by the number of intervals in 'by.continuous.scale'")
+
+              by <- base::cut(my.by, by.continuous.scale, ordered_result = TRUE)#, dig.lab = 1)
+
+              by.levels <- levels(by) # why sort?
+
+              n.by.levels <-  length(by.levels)
+
+            } else {
+              # check if the given 'by.continuous.scale' is within the range of 'by'
+              inside <- (min(by) < by.continuous.scale) & (max(by) > by.continuous.scale)
+              if(sum( inside ) > 1){
+                # print("Scale of the continuous 'by' is determined by the vector in 'by.continuous.scale'")
+
+                by.continuous.scale.work <-
+                  unique( sort( c(min(by), sort(by.continuous.scale[inside]), max(by)) ))
+
+                by <- base::cut(my.by, breaks = by.continuous.scale.work, include.lowest = TRUE, ordered_result = TRUE)#, dig.lab = 1)
+
+                by.levels <- levels(by) # why sort?
+
+                n.by.levels <-  length(by.levels)
+
+              } else {
+                stop("Values of 'by.continuous.scale' are outside the range of 'by'", call. = FALSE)
+              }
+            }
+          } else {
+            stop("The argument 'by.continuous.scale' should be numeric", call. = FALSE)
+          }
+
+          # to avoid incorrect sorting of levels in 'ggplot'
+          by.levels.sorted <- as.character(10+1:n.by.levels)
+          by.by.sorted <- data.frame(by = by.levels, bySorted = by.levels.sorted)
+          # print(by.by.sorted)
+          if(n.by.levels > 10){
+            myAngle = 90
+            myVjust = 0.5
+            myHjust = 1
+          } else {
+            myAngle = NULL
+            myVjust = NULL
+            myHjust = NULL
+          }
+
+          # by <- my.by0[obj$TTa.positions.in.TTb]
+          # by -> my.by
+
+          # # by.a <- droplevels ( by[obj$TTa.positions.in.TTb] )
           over <- droplevels( over[obj$TTa.positions.in.TTb] )
 
           # cat.print(length(obj$TTa.positions.in.TTb))
@@ -949,23 +1242,26 @@ didnpplot <- function(
           # cat.print(levels(by.a))
           # cat.print(levels(droplevels(by.a)))
 
-          by.levels <- levels(by.a)
-          over.levels <- levels(over)
+          # by.levels <- levels(by)
 
           # cat.print(by.levels)
           # cat.print(over.levels)
 
-          n.levels <-  length(by.levels)
+          # n.levels <-  length(by.levels)
+          over.levels <- levels(over)
           n.over.levels <-  length(over.levels)
 
 
-          n.by.levels <-  n.levels
+          # n.by.levels <-  n.levels
           atet <- atet.sd <- bY <- oY <- myCount <- numeric(n.by.levels*n.over.levels)
           by10 <- over10 <-  character(n.by.levels*n.over.levels)
+          if(keep.continuous){
+            by10 <- numeric(n.by.levels*n.over.levels)
+          }
 
           for (b in 1:n.by.levels) {
             for (o in 1:n.over.levels) {
-              sele <- by.a == by.levels[b] & over == over.levels[o]
+              sele <- by == by.levels[b] & over == over.levels[o]
               # cat.print(table(sele))
               # cat.print(length(sele))
               # cat.print(dim(obj$TTa.i.boot))
@@ -1004,6 +1300,15 @@ didnpplot <- function(
           # cat.print(d1)
           d1a <- d1a[complete.cases(d1a),]
 
+          d1a <- merge(d1a, by.by.sorted)
+          # cat.print(d1b$by)
+          # cat.print(is.ordered(d1b$by))
+          # cat.print(levels(d1b$by))
+          # if(!keep.continuous)
+          d1a <- d1a[complete.cases(d1a),]
+          d1a <- d1a[order(d1a$bySorted),]
+          # print(head(d1a))
+
           if ( over.labels.values.supplied ) {
 
             colnames(over.labels.values) <- c("over", "over2")
@@ -1014,22 +1319,42 @@ didnpplot <- function(
             # rename
             colnames(d1a)[over.index] <- "overold"
             colnames(d1a)[over2.index] <- "over"
-            d1a <- d1a[, c("atet", "atet.sd", "count", "by", "over", "overold")]
-
+            d1a <- d1a[, c("atet", "atet.sd", "count", "by", "over", "overold", "bySorted")]
+            d1a <- d1a[order(d1a$bySorted),]
           }
 
           # cat.print(d1)
 
-          plot.a <- ggplot(d1a, aes(x = by, y = atet, color = over, group = over)) +
-            geom_line(linewidth = line_width) +
-            geom_point(size = point_size, shape = 16, color = "black") +
-            labs(x = xlab, y = ylab) +
-            geom_ribbon(aes(ymin = atet - 2*atet.sd,
-                            ymax = atet + 2*atet.sd,
-                            fill = over), alpha = 0.3) +
-            guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
-            theme_bw() +
-            theme(legend.position = "right", text = element_text(size = text_size))
+          if(keep.continuous){
+
+            plot.a <- ggplot(d1a, aes(x = by, y = atet, color = over, group = over)) +
+              geom_line(linewidth = line_width) +
+              geom_point(size = point_size, shape = 16, color = "black") +
+              labs(x = xlab, y = ylab) +
+              geom_ribbon(aes(ymin = atet - 2*atet.sd,
+                              ymax = atet + 2*atet.sd,
+                              fill = over), alpha = 0.3) +
+              guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
+              theme_bw() +
+              theme(legend.position = "right", text = element_text(size = text_size))
+
+          } else {
+
+            plot.a <- ggplot(d1a, aes(x = bySorted, y = atet, color = over, group = over)) +
+              geom_line(linewidth = line_width) +
+              geom_point(size = point_size, shape = 16, color = "black") +
+              labs(x = xlab, y = ylab) +
+              scale_x_discrete(label = d1a$by) +
+              geom_ribbon(aes(ymin = atet - 2*atet.sd,
+                              ymax = atet + 2*atet.sd,
+                              fill = over), alpha = 0.3) +
+              guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
+              theme_bw() +
+              theme(legend.position = "right", text = element_text(size = text_size), axis.text.x = element_text(angle = myAngle, vjust = myVjust, hjust=myHjust))
+
+          }
+
+
 
         }
 
@@ -1045,8 +1370,8 @@ didnpplot <- function(
 
         if (is.null(over)) {
 
-          # 2.2.1 single "by" ----
-          print("2.2.1 single 'by'")
+          # 2.2.1 only 'by' ----
+          print("2.2.1 only 'by'")
 
           atet <- atet.sd <- myCount <- numeric(n.levels)
 
@@ -1076,8 +1401,8 @@ didnpplot <- function(
 
         } else {
 
-          # 2.2.2 double "by" ----
-          print("2.2.2 double 'by'")
+          # 2.2.2 'by' + 'over' ----
+          print("2.2.2 'by' + 'over'")
 
           n.by.levels <-  n.levels
           atet <- atet.sd <- bY <- oY <- myCount <- numeric(n.by.levels*n.over.levels)
