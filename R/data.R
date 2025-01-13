@@ -34,7 +34,7 @@
 #' \describe{
 #'   \item{FT}{2}
 #'   \item{unemp}{2}
-#'   \item{sex}{Female}
+#'   \item{sex}{1 - Male, 2 - Female}
 #'   \item{statefip}{State}
 #'   \item{school}{Post treatment period: a dummy variable that equals 1 on or after 2012}
 #'   \item{age}{Age}
