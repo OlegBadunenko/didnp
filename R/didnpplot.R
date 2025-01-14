@@ -15,8 +15,9 @@
 #' @param ylab Label for vertical axis. Default is "ATET".
 #' @param point_size of ATET. Default is 3.
 #' @param line_width of ATET for the numeric "by". Default is 2.
+#' @param add.zero.line add a solid horizontal line at 0. Default is TRUE.
 #' @param by.labels.values For the categorical “by” parameter, the dataframe should have two columns. The first column should contain unique values for the 'by' parameter, while the second column should contain corresponding values that would be displayed on a graph. By default, 'by.labels.values' is set to NULL, which means that the unique values from the 'by' parameter will be used.
-#' #' @param over.labels.values For the categorical “over” parameter, the dataframe should have two columns. The first column should contain unique values for the 'over' parameter, while the second column should contain corresponding values that would be displayed on a graph. By default, 'over.labels.values' is set to NULL, which means that the unique values from the 'over' parameter will be used.
+#' @param over.labels.values For the categorical “over” parameter, the dataframe should have two columns. The first column should contain unique values for the 'over' parameter, while the second column should contain corresponding values that would be displayed on a graph. By default, 'over.labels.values' is set to NULL, which means that the unique values from the 'over' parameter will be used.
 #' @param text_size for ggplot object. Default is 17.
 #' @param print.level The amount of printed output can be set to 0, 1, or 2. When set to 0, nothing is printed. When set to 1, only the structure of the work is printed. When set to 2, both the structure and the additional working are printed. The default value is 1.
 #'
@@ -103,6 +104,7 @@ didnpplot <- function(
     over.ci.lab = "Conf.Int.",
     point_size = 3,
     line_width = 2,
+    add.zero.line = TRUE,
     by.labels.values = NULL,
     over.labels.values = NULL,
     text_size = 17,
@@ -971,6 +973,7 @@ didnpplot <- function(
               geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
               geom_line(linewidth = line_width) +
               geom_point(size = point_size, shape = 16, color = "black") +
+              geom_hline(yintercept = 0) +
               labs(x = xlab, y = ylab) +
               theme_bw() +
               theme(legend.position = "none", text = element_text(size = text_size))
@@ -982,6 +985,7 @@ didnpplot <- function(
               geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
               geom_line(linewidth = line_width) +
               geom_point(size = point_size, shape = 16, color = "black") +
+              geom_hline(yintercept = 0) +
               labs(x = xlab, y = ylab) +
               scale_x_discrete(label = d1b$by) +
               theme_bw() +
@@ -1103,6 +1107,7 @@ didnpplot <- function(
               geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
               geom_line(linewidth = line_width) +
               geom_point(size = point_size, shape = 16, color = "black") +
+              geom_hline(yintercept = 0) +
               labs(x = xlab, y = ylab) +
               theme_bw() +
               theme(legend.position = "none", text = element_text(size = text_size))
@@ -1113,6 +1118,7 @@ didnpplot <- function(
               geom_ribbon(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), alpha = 0.3) +
               geom_line(linewidth = line_width) +
               geom_point(size = point_size, shape = 16, color = "black") +
+              geom_hline(yintercept = 0) +
               labs(x = xlab, y = ylab) +
               scale_x_discrete(label = d1a$by) +
               theme_bw() +
@@ -1203,6 +1209,7 @@ didnpplot <- function(
               geom_line(linewidth = line_width) +
               geom_point(size = point_size, shape = 16, color = "black") +
               labs(x = xlab, y = ylab) +
+              geom_hline(yintercept = 0) +
               geom_ribbon(aes(ymin = atet - 2*atet.sd,
                               ymax = atet + 2*atet.sd,
                               fill = over), alpha = 0.3) +
@@ -1223,6 +1230,7 @@ didnpplot <- function(
               geom_point(size = point_size, shape = 16, color = "black") +
               labs(x = xlab, y = ylab) +
               scale_x_discrete(label = d1b2$by) +
+              geom_hline(yintercept = 0) +
               geom_ribbon(aes(ymin = atet - 2*atet.sd,
                               ymax = atet + 2*atet.sd,
                               fill = over), alpha = 0.3) +
@@ -1406,6 +1414,7 @@ didnpplot <- function(
               geom_line(linewidth = line_width) +
               geom_point(size = point_size, shape = 16, color = "black") +
               labs(x = xlab, y = ylab) +
+              geom_hline(yintercept = 0) +
               geom_ribbon(aes(ymin = atet - 2*atet.sd,
                               ymax = atet + 2*atet.sd,
                               fill = over), alpha = 0.3) +
@@ -1424,6 +1433,7 @@ didnpplot <- function(
               geom_line(linewidth = line_width) +
               geom_point(size = point_size, shape = 16, color = "black") +
               labs(x = xlab, y = ylab) +
+              geom_hline(yintercept = 0) +
               scale_x_discrete(label = d1a2$by) +
               geom_ribbon(aes(ymin = atet - 2*atet.sd,
                               ymax = atet + 2*atet.sd,
