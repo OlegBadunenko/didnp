@@ -34,8 +34,5 @@
 #' @importFrom Formula Formula
 #' @importFrom Formula model.part
 #' @importFrom ggplot2 ggplot
-#' @import doParallel
-#' @import parallel
-#' @import foreach
 NULL
 
