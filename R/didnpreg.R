@@ -579,7 +579,7 @@ didnpreg.default <- function(
 
   for (i in 1:k.x){
 
-    if (is.ordered(x[,i])==TRUE){
+    if (is.ordered(x[,i]) == TRUE){
 
       x[,i] <- droplevels(x[,i])
 
@@ -593,7 +593,7 @@ didnpreg.default <- function(
       q.typeYnum[i] <- 3
       q.levels[i] <- length( levels( x[,i] ) ) - 1
 
-    } else if (is.factor(x[,i])==TRUE) {
+    } else if (is.factor(x[,i]) == TRUE) {
 
       x[,i] <- droplevels(x[,i])
 
@@ -629,7 +629,7 @@ didnpreg.default <- function(
   ## print info about the data ----
 
   if (print.level > 0) {
-    cat("Number of Observations =", nt.o, "\n")
+    cat("Number of observations =", nt.o, "\n")
   }
 
   ## separating the data by time and treatment status
@@ -639,10 +639,10 @@ didnpreg.default <- function(
   if(do.TTb){
 
     smpl1  <- d == 1
-    smpl11 <- d == 1 & t == 1
-    smpl10 <- d == 1 & t == 0
-    smpl01 <- d == 0 & t == 1
-    smpl00 <- d == 0 & t == 0
+    smpl11 <- d == 1 & t >= 1
+    smpl10 <- d == 1 & t <= 0
+    smpl01 <- d == 0 & t >= 1
+    smpl00 <- d == 0 & t <= 0
 
   } else {
 
@@ -651,10 +651,10 @@ didnpreg.default <- function(
     }
 
     smpl1  <- d == 1
-    smpl11 <- d == 1 & ta == 1
-    smpl10 <- d == 1 & ta == 0
-    smpl01 <- d == 0 & ta == 1
-    smpl00 <- d == 0 & ta == 0
+    smpl11 <- d == 1 & ta >= 1
+    smpl10 <- d == 1 & ta <= 0
+    smpl01 <- d == 0 & ta >= 1
+    smpl00 <- d == 0 & ta <= 0
 
   }
 
@@ -706,10 +706,10 @@ didnpreg.default <- function(
 
   if (print.level > 0) {
     cat("\n")
-    cat("Number of observations in treated group right after the treatment (N_ 1, 1) =" ,n11, "\n")
-    cat("Number of observations in treated group just before the treatment (N_ 1, 0) =" ,n10, "\n")
-    cat("Number of observations in control group right after the treatment (N_ 0, 1) =" ,n01, "\n")
-    cat("Number of observations in control group just before the treatment (N_ 0, 0) =" ,n00, "\n")
+    cat("Number of observations in treated group after  the treatment (N_ 1, 1) =" ,n11, "\n")
+    cat("Number of observations in treated group before the treatment (N_ 1, 0) =" ,n10, "\n")
+    cat("Number of observations in control group after  the treatment (N_ 0, 1) =" ,n01, "\n")
+    cat("Number of observations in control group before the treatment (N_ 0, 0) =" ,n00, "\n")
   }
 
   # sanity checks ----
@@ -1249,7 +1249,9 @@ didnpreg.default <- function(
 
   if (do.TTb) {
     TTb.i <- as.vector(num11/dem11 - num10/dem10 - num01/dem01 + num00/dem00)
+    # cat.print(length(TTb.i))
     TTa.i <- TTb.i[TTa.positions.in.TTb]
+    # cat.print(length(TTa.i))
     TTa <- mean(TTa.i)
     TTb <- mean(TTb.i)
 
