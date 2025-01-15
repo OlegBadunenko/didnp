@@ -4,3 +4,7 @@
 .Ruserdata
 .DS_Store
 docs
+didnp.Rproj
+.Rdata
+.httr-oauth
+.quarto

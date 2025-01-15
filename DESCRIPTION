@@ -22,6 +22,10 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
+Imports:
+  Formula,
+  ggplot2,
+  minqa
 VignetteBuilder: knitr
 Depends: 
     R (>= 3.5)
