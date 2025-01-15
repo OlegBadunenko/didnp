@@ -1,4 +1,25 @@
 url: https://olegbadunenko.github.io/didnp/
 template:
-  bootstrap: 5
+  params:
+    bootswatch: spacelab
+authors:
+  Oleg Badunenko:
+    href: https://OlegBadunenko.github.io/
+  Daniel J. Henderson:
+    href: https://dhenderson.people.ua.edu/
+  Stefan Sperlich:
+    href: https://www.unige.ch/gsem/en/research/faculty/all/stefan-sperlich/
+navbar:
+  title: didnp
+  left:
+  - text: All functions
+    href: reference/index.html
+  - text: News/Changelog
+    href: news/index.html
+home:
+  links:
+  - text: Source Code
+    href: https://github.com/OlegBadunenko/didnp
+development:
+  mode: unreleased
 
