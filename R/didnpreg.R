@@ -28,8 +28,7 @@
 #' @param bws a bandwidth specification. A vector of bandwidths of length corresponding to the number of regressors.
 #' @param bwmethod bandwidth type. 2 options can be specified. "opt" is the default option, the  plug-in is rule of thumb for continuous and basic for categorical. "CV" will calculate cross-validated bandwidths.
 #' @param boot.num an single value specifying the number of bootstrap replications.  Default is 399.
-#' @param TTx Conditional Treatment Effect on the Treated. Default is FALSE.
-#' @param TTb Unconditional Treatment Effect on the Treated. TTb estimates by averaging over *all* treated. TTa estimates by averaging over treated one time period after the treatment. Depending on the sample, calcularing TTb may take some time. Default is FALSE.
+#' @param TTx Can take values 'TTa' or 'TTb'. 'TTa' is for estimating the Treatment Effect on the Treated by averaging over treated *after* the treatment. 'TTb' is the Unconditional Treatment Effect on the Treated. TTb estimates by averaging over *all* (before and after) treated. Depending on the sample, calcularing TTb may take some time. Default is 'TTb'.
 #' @param print.level the level of printing; larger number implies more output is printed. Default is 1. 0 suppresses all printing.
 #' @param cores Integer specifies the number of cores to be used for parallel computation.
 #' @param seed integer used for the random number generation for the replication purposes. Default is 17345168.

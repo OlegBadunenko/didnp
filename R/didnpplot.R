@@ -8,16 +8,18 @@
 #'
 #' @param obj an object of class "didnp".
 #' @param type type of the plot. Default is 'hte'
-#' @param by categorical or continuous.
-#' @param by.continuous.scale The scale of a continuous variable can be set to three values. (1) Setting it to NULL implies that each unique value in the ‘by’ variable will be treated separately. (2) If you set it to a numeric vector of length 1 or a scalar, it will split the range of the continuous ‘by’ variable into intervals of the specified length. (3) If you set it to a numeric vector, it will split the continuous ‘by’ variable into intervals defined by the specified vector. The default value is NULL.
-#' @param over necessarily categorical.
+#' @param by The categorical or continuous variable used in the regression analysis should be specified. The length of the vector should be equal to \code{n1 = n10 + n11} if the option \code{TTx = "TTb"} was selected when running \link{didnpreg}, or \code{n11} if the option \code{TTx = "TTa"} was chosen.
+#' @param by.continuous.scale The scale of a continuous variable can be set to three values. (1) Setting it to NULL implies that each unique value in the ‘by’ variable will be treated separately. (2) If you set it to a numeric vector of length 1 or a scalar, it will split the range of the continuous ‘by’ variable into the number of intervals specified by `by.continuous.scale`. (3) If you set it to a numeric vector, it will split the continuous ‘by’ variable into intervals defined by the specified vector. The default value is NULL.
+#' @param over The categorical variable used in the regression analysis should be specified. The length of the vector should be equal to \code{n1 = n10 + n11} if the option \code{TTx = "TTb"} was selected when running \link{didnpreg}, or \code{n11} if the option \code{TTx = "TTa"} was chosen.
 #' @param xlab Label for horizontal axis. Default is "".
 #' @param ylab Label for vertical axis. Default is "ATET".
+#' @param over.lab Label for the legend. The default is "ATET over".
+#' @param over.ci.lab Label for the legend. The default is  "Conf.Int.".
 #' @param point_size of ATET. Default is 3.
 #' @param line_width of ATET for the numeric "by". Default is 2.
 #' @param add.zero.line add a solid horizontal line at 0. Default is TRUE.
-#' @param by.labels.values For the categorical “by” parameter, the dataframe should have two columns. The first column should contain unique values for the 'by' parameter, while the second column should contain corresponding values that would be displayed on a graph. By default, 'by.labels.values' is set to NULL, which means that the unique values from the 'by' parameter will be used.
-#' @param over.labels.values For the categorical “over” parameter, the dataframe should have two columns. The first column should contain unique values for the 'over' parameter, while the second column should contain corresponding values that would be displayed on a graph. By default, 'over.labels.values' is set to NULL, which means that the unique values from the 'over' parameter will be used.
+#' @param by.labels.values For the categorical 'by" variable, the dataframe should have two columns. The first column should contain unique values for the 'by' variable, while the second column should contain corresponding values that would be displayed on a graph. By default, 'by.labels.values' is set to NULL, which means that the unique values from the 'by' variable will be used.
+#' @param over.labels.values For the categorical 'over' variable, the dataframe should have two columns. The first column should contain unique values for the 'over' variable, while the second column should contain corresponding values that would be displayed on a graph. By default, 'over.labels.values' is set to NULL, which means that the unique values from the 'over' variable will be used.
 #' @param text_size for ggplot object. Default is 17.
 #' @param print.level The amount of printed output can be set to 0, 1, or 2. When set to 0, nothing is printed. When set to 1, only the structure of the work is printed. When set to 2, both the structure and the additional working are printed. The default value is 1.
 #'

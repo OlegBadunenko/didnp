@@ -17,6 +17,7 @@ didnpplot(
   over.ci.lab = "Conf.Int.",
   point_size = 3,
   line_width = 2,
+  add.zero.line = TRUE,
   by.labels.values = NULL,
   over.labels.values = NULL,
   text_size = 17,
@@ -28,22 +29,29 @@ didnpplot(
 
 \item{type}{type of the plot. Default is 'hte'}
 
-\item{by}{categorical or continuous.}
+\item{by}{The categorical or continuous variable used in the regression analysis should be specified. The length of the vector should be equal to \code{n1 = n10 + n11} if the option \code{TTx = "TTb"} was selected when running \link{didnpreg}, or \code{n11} if the option \code{TTx = "TTa"} was chosen.}
 
 \item{by.continuous.scale}{The scale of a continuous variable can be set to three values. (1) Setting it to NULL implies that each unique value in the ‘by’ variable will be treated separately. (2) If you set it to a numeric vector of length 1 or a scalar, it will split the range of the continuous ‘by’ variable into intervals of the specified length. (3) If you set it to a numeric vector, it will split the continuous ‘by’ variable into intervals defined by the specified vector. The default value is NULL.}
 
-\item{over}{necessarily categorical.}
+\item{over}{The categorical variable used in the regression analysis should be specified. The length of the vector should be equal to \code{n1 = n10 + n11} if the option \code{TTx = "TTb"} was selected when running \link{didnpreg}, or \code{n11} if the option \code{TTx = "TTa"} was chosen.}
 
 \item{xlab}{Label for horizontal axis. Default is "".}
 
 \item{ylab}{Label for vertical axis. Default is "ATET".}
 
+\item{over.lab}{Label for the legend. The default is "ATET over".}
+
+\item{over.ci.lab}{Label for the legend. The default is  "Conf.Int.".}
+
 \item{point_size}{of ATET. Default is 3.}
 
 \item{line_width}{of ATET for the numeric "by". Default is 2.}
 
-\item{by.labels.values}{For the categorical “by” parameter, the dataframe should have two columns. The first column should contain unique values for the 'by' parameter, while the second column should contain corresponding values that would be displayed on a graph. By default, 'by.labels.values' is set to NULL, which means that the unique values from the 'by' parameter will be used.
-#' @param over.labels.values For the categorical “over” parameter, the dataframe should have two columns. The first column should contain unique values for the 'over' parameter, while the second column should contain corresponding values that would be displayed on a graph. By default, 'over.labels.values' is set to NULL, which means that the unique values from the 'over' parameter will be used.}
+\item{add.zero.line}{add a solid horizontal line at 0. Default is TRUE.}
+
+\item{by.labels.values}{For the categorical 'by" variable, the dataframe should have two columns. The first column should contain unique values for the 'by' variable, while the second column should contain corresponding values that would be displayed on a graph. By default, 'by.labels.values' is set to NULL, which means that the unique values from the 'by' variable will be used.}
+
+\item{over.labels.values}{For the categorical 'over' variable, the dataframe should have two columns. The first column should contain unique values for the 'over' variable, while the second column should contain corresponding values that would be displayed on a graph. By default, 'over.labels.values' is set to NULL, which means that the unique values from the 'over' variable will be used.}
 
 \item{text_size}{for ggplot object. Default is 17.}
 

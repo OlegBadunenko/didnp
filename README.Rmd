@@ -49,18 +49,16 @@ The **didnp** package implements the framework developed in
 
 Daniel J. Henderson and Stefan Sperlich (2023), "A Complete Framework for Model-Free Difference-in-Differences Estimation", Foundations and Trends® in Econometrics: Vol. 12: No. 3, pp 232-323. http://dx.doi.org/10.1561/0800000046
 
-* 
-
 
 ## Installation
 
-You can install **didnp** from CRAN with:
+The package **didnp** can be install from CRAN by typing:
 
 ```{r eval=FALSE}
 install.packages("didnp", dependencies = TRUE)
 ```
 
-or get the latest version from github with:
+or get the latest version from github by typing:
 
 ```{r gh-installation, eval = FALSE}
 if ( !require("devtools") ) install.packages("devtools"); library(devtools)
@@ -69,80 +67,170 @@ devtools::install_github("OlegBadunenko/didnp")
 
 ## Illustration
 
-> The following is a simplified example ...,  which comes from [that](https://elsevier.com/).
-
-CHANGE: Data set is shared by [Kuka et al, 2020](https://doi.org/10.1257/pol.20180352). Here we showcase the functionality of the package by using a subset, which is available in the package and can be loaded by
+> The subset of the data from [IPUMS](https://ipums.org) is used to illustrate the functionality of the package. The data are available in the package and can be loaded by
 
 ```{r data, eval = TRUE}
   library(didnp)
-  library(ggplot2)
-  data(unemp, package = "didnp")
-  head(unemp)
+  library(tidyverse)
+  data(Unempl, package = "didnp")
+  head(Unempl)
 ```
 
 The description of the dataset can be found by typing
 
 ```{r datahelp, eval = FALSE}
-  ?unemp
-  table(unemp$age)
+  ?Unempl
+  table(Unempl$age)
 ```
 
-Because there is a gap in the 'year', we create artificial 'period' variable that does not have a gap
+The variable 'ELIGIBLE' is actually treated. Only those who were eligible before 2012 can be treated. In 2013 and beyond, eligible individuals are treated. Conversely, in 2011 and earlier, they are eligible to be treated starting from 2013.
 
-```{r sub, eval=TRUE}
-year_min <- min(unemp$year)
-unemp$period <- ifelse(
-  unemp$year < 2012,
-  unemp$year - year_min + 1,
-  unemp$year - year_min)
-table(unemp$period)
-table(unemp$period, unemp$year)
-table(unemp$period, unemp$treatment_period)
+```{r treated, eval = TRUE}
+table(Unempl$YEAR, Unempl$ELIGIBLE)
+```
+
+For convenience, a data said with a smaller number of variables is created
+
+```{r smallLetters, eval = TRUE}
+d2 <- data.frame(
+  y = as.numeric(Unempl$FT),
+  year = Unempl$YEAR,
+  unemp = Unempl$UNEMP,
+  sex = factor(Unempl$SEX),
+  age = ordered(Unempl$AGE),
+  yrimmig = ordered(Unempl$YRIMMIG),
+  educ = ordered(Unempl$EDUC),
+  treatment_period = as.numeric(Unempl$AFTER),
+  treated = as.numeric(Unempl$ELIGIBLE)
+)
+```
+
+There is a gap in the 'year'
+
+```{r gapYear, eval = TRUE}
+table(d2$year)
+```
+
+Year 2012 is missing. This is when the treatment occurred. A variable 't' is generated, where
+
+ | Year | t | 
+ | :---  |  -: | 
+ | 2008 | -3 | 
+ | 2009 | -2 | 
+ | 2010 | -1 | 
+ | 2011 | 0 | 
+ | 2013 | 1 | 
+ | 2014 | 2 | 
+ | 2015 | 3 | 
+ | 2016 | 4 | 
+
+An artificial variable 'period' that does not have a gap is generated, where
+
+ | Year | period | 
+ | :---  |  -: | 
+ | 2008 | 1 | 
+ | 2009 | 2 | 
+ | 2010 | 3 | 
+ | 2011 | 4 | 
+ | 2013 | 5 | 
+ | 2014 | 6 | 
+ | 2015 | 7 | 
+ | 2016 | 8 | 
+
+To make the same more homogeneous and smaller for illustrative purposes, the subsample of the data with the following conditions is created:
+
+1. yrimmig >= 1982 & yrimmig <= 1994
+2. educ >= 6 & educ <= 11
+
+
+```{r period, eval=TRUE}
+year_min <- min(Unempl$YEAR)
+
+d0 <- d2 %>%
+  filter(yrimmig >= 1982 & yrimmig <= 1994) |>
+  filter(educ >= 6 & educ <= 11) |>
+  mutate(
+    yrimmig = droplevels(yrimmig),
+    educ = droplevels(educ),
+    age = droplevels(age)
+    ) |>
+    mutate(period = dplyr::if_else(year < 2012,
+      year - year_min + 1,
+      year - year_min),
+      t = period - min(period[treatment_period == 1]-1))
+table(d0$period)
+```
+
+> Here is a basic description of the data
+
+Treated over time
+```{r Treated_t, eval=TRUE}
+table(d0$year, d0$treated)
+table(d0$t, d0$treated)
+```
+
+Recoded variable 't'
+
+```{r tYear, eval=TRUE}
+table(d0$t, d0$year)
+```
+
+Treated by the year of immigration
+```{r TreatedYrimmig, eval=TRUE}
+table(d0$yrimmig, d0$treated)
+```
+
+Treated by education
+```{r TreatedEduc, eval=TRUE}
+table(d0$educ, d0$treated)
+```
+
+Treated by age
+```{r TreatedAge, eval=TRUE}
+table(d0$treated, d0$age)
 ```
 
 Although this can be done on the fly, the subsample can be prepared beforehand:
 
 ```{r sub, eval=TRUE}
 # get the subsample
-unemp$mysmpl <- unemp$age >= 25
-table(unemp$mysmpl)
-
-# describe 'treatment_period'
-table(unemp$treatment_period)
+d0 <- d0 %>%
+  mutate(smpl = year >= 2010 & year <= 2014)
+table(d0$smpl)
 ```
 
 > Define the formula that we will use:
 
 ```{r formula, eval = TRUE}
-form1 <- y ~ unemp + sex + statefip + school + age + yrimmig + educ | period | eligible | treatment_period
+form1 <- y ~ age + educ + sex + unemp | period | treated | treatment_period
 ```
 
-To obtain standard errors and perform testing,
+To obtain standard errors and perform testing in this *illustration*,
 
-> we will use a few number of bootstrap replicaitons here, but we advise to set `boot.num = 399` or larger. 
+> we will use a few number of bootstrap replicaitons here, but we advise to set `boot.num = 399` or larger in an application. 
 
 
 ```{r boot, eval = TRUE}
-B <- 99
+B <- 9
 ```
 
-### Testing
+## Testing
 
 To test if there is a violation of the bias stability condition use command **didnptest**
 
 ```{r model1test, eval = TRUE}
 tym1test <- didnpbsctest(
   form1,
-  data = unemp,
-  subset = mysmpl,
+  data = d0,
+  subset = smpl,
   boot.num = B,
   print.level = 2,
-  cores = 16)
+  cores = 10)
 ```
 
-COMMENT: We do find evidence against the null hypothesis that the bias stability condition holds.
+*Interpretation*: We do find evidence against the null hypothesis that the bias stability condition holds. The desired *p*-value should be much larger than the 0.1 level.
 
-### Estimation
+## Estimation
 
 To estimate the average treatment effects, we use the **didnpreg** function.  The **didnpreg** function allows using matrices. The manual explains how to use matrix syntax (type `?didnpreg`). 
 
@@ -156,14 +244,14 @@ Suppress output by setting `print.level = 0`. The default value is 1.
 # suppress output
 tym1a <- didnpreg(
   form1,
-  data = unemp,
-  subset = mysmpl,
+  data = d0,
+  subset = smpl,
   bwmethod = "opt",
   boot.num = B,
   TTx = "TTa",
   print.level = 2,
   digits = 8,
-  cores = 16)
+  cores = 10)
 ```
 
 **didnpreg** returns a class **didnp** object.  This object contains estimates of the average treatment effects and their standard errors.  To see these, we can call the **summary** function.
@@ -180,193 +268,345 @@ Estimating $TT_b$ will take longer. The bandwidths are cross-validated.
 # Show output as the estimation goes
 tym1b <- didnpreg(
   form1,
-  data = unemp,
-  subset = mysmpl,
+  data = d0,
+  subset = smpl,
   bwmethod = "CV",
-  boot.num = 9,
+  boot.num = B,
   TTx = "TTb",
   print.level = 2,
-  digits = 8,
-  cores = 16)
+  digits = 4,
+  cores = 10)
 ```
 
-### Plotting Heterogenous Treatment Effects
+### Understanding samples
 
-To plot the heterogenous treatment effects, use the **didnpplot** command. Define three variables by and over which the treatment effects will be plotted:
+> To work with the results for the plot, **didnpreg** produces binary variables indicating different samples.
 
-```{r by_over, eval = TRUE}
-table(unemp$educ)
-# Create 3 categories:
-ifelse(unemp$educ <= 3, "2-3 years", ifelse(unemp$educ <= 7, "6-7 years", "8-11 years")) -> unemp$edu
-factor(unemp[tym1b$esample, "edu"]) -> edu
-table(edu)
-unemp[tym1b$esample, "sex"] -> sex
-as.numeric(unemp[tym1b$esample, "age"]) -> age
+The estimation sample is captured by the *esample* value, which is equal to 1 if this observation was used in the estimation and 0 otherwise:
+```{r esample, eval=TRUE}
+table(
+  d0$year[tym1b$esample],
+  d0$treated[tym1b$esample]
+)
 ```
 
-Here `unemp` is continuous.
 
-First, use one categorical `by` variable:
+The value *sample1* indicates **all treated** (before and after treatment) observations in the estimation sample *esample*. To subset the treated observations in the original dataset, double subsetting is required.
+```{r esamplesample1, eval=TRUE}
+table(
+  d0$year[tym1b$esample][tym1b$sample1],
+  d0$treated[tym1b$esample][tym1b$sample1]
+)
+```
 
-```{r gr_, eval=TRUE}
-tym1b_gr_edu <- didnpplot(
+The value *sample11* indicates the **treated** observations in the post-treatment period in the estimation sample *esample*. To subset the treated observations in the original dataset, double subsetting is required.
+```{r esamplesample11, eval=TRUE}
+table(
+  d0$year[tym1b$esample][tym1b$sample11],
+  d0$treated[tym1b$esample][tym1b$sample11]
+)
+# or the same in case TTx = "TTa" was used by the 'didnpreg' command
+table(
+  d0$year[tym1b$esample][tym1b$sample1][tym1b$TTa.positions.in.TTb],
+  d0$treated[tym1b$esample][tym1b$sample1][tym1b$TTa.positions.in.TTb]
+)
+```
+
+The values of the individual TEs can be put to the dataset using double subsetting for TTb
+```{r esamplesample1data, eval=TRUE}
+d0$TTbi[tym1b$esample][tym1b$sample1] <- tym1b$TTb.i
+d0 %>%
+  group_by(year) %>%
+  summarize(mean = mean(TTbi, na.rm = TRUE))
+```
+
+or TTa
+
+```{r esamplesample11data, eval=TRUE}
+d0$TTai[tym1b$esample][tym1b$sample11] <- tym1b$TTa.i
+d0 %>%
+  group_by(year) %>%
+  summarize(mean = mean(TTai, na.rm = TRUE))
+```
+
+> Just a remainder that TTa calculates the ATET in the post-treatment period, while TTb calculated the ATET in both prior and post-treatment periods.
+
+## Plotting Heterogenous Treatment Effects
+
+To plot the heterogenous treatment effects, use the **didnpplot** command. 
+
+> The heterogenous treatment effects can be plotted **by** either continuous or categorical variable. They can also also be plotted **by** either continuous or categorical variable **over** another categorical variable.
+
+### 'by': factor
+
+#### education
+
+The heterogenous treatment effects are plotted for each level of education, since the 'education' is categorical variable.
+
+```{r tym1b_gr_educ, eval=TRUE}
+tym1b_gr_educ <- didnpplot(
   obj = tym1b,
   level = 95,
-  by = edu[tym1b$sample1],
+  by = d0$educ[tym1b$esample][tym1b$sample1],
   xlab = "Education",
   ylab = "ATET"
-  )
-
-tym1b_gr_edu$data.a
-tym1b_gr_edu$data.b
-
-tym1b_gr_edu$plot.a
-tym1b_gr_edu$plot.b
+)
+# A
+tym1b_gr_educ$data.a
+tym1b_gr_educ$plot.a
+# B
+tym1b_gr_educ$data.b
+tym1b_gr_educ$plot.b
+# ggsave(paste0("atet_ci_education.pdf"), width = 15, height = 10, units = c("cm"))
 ```
 
 Here objects `data.a` and `data.b` contain data that is used to produce `plot.a` and `plot.b`. The graphs are `ggplot` objects and can be amended further.
 
-Another example is the graph with treatment effects by sex. Note the sample object `tym1b` is used:
+#### time
 
-```{r gr_sex, eval=TRUE}
+The heterogenous treatment effects over time show that the effect is significant in the second year after the treatment.
+
+```{r tym1b_gr_time, eval=TRUE}
+tym1b_gr_time <- didnpplot(
+  obj = tym1b,
+  level = 95,
+  by = factor(d0$t)[tym1b$esample][tym1b$sample1],
+  xlab = "Time",
+  ylab = "ATET"
+)
+# A
+tym1b_gr_time$data.a
+tym1b_gr_time$plot.a
+# B
+tym1b_gr_time$data.b
+tym1b_gr_time$plot.b
+# ggsave(paste0("atet_ci_time.pdf"), width = 15, height = 10, units = c("cm"))
+```
+
+#### sex
+
+Another example is the graph with the heterogenous treatment effects by sex:
+
+```{r tym1b_gr_sex, eval=TRUE}
 tym1b_gr_sex <- didnpplot(
   obj = tym1b,
   level = 95,
-  by = sex[tym1b$sample1],
+  by = d0$sex[tym1b$esample][tym1b$sample1],
   xlab = "Sex",
   ylab = "ATET",
-  by.labels.values = data.frame(c(1,2), c("Female", "Male"))
+  by.labels.values = data.frame(c("1","2"), c("Male", "Female"))
 )
-
+# A
 tym1b_gr_sex$data.a
-tym1b_gr_sex$data.b
-
 tym1b_gr_sex$plot.a
+# B
+tym1b_gr_sex$data.b
 tym1b_gr_sex$plot.b
+# ggsave(paste0("atet_ci_sex.pdf"), width = 15, height = 10, units = c("cm"))
 ```
 
-The **didnpplot** command will recognize if `by` is continuous variable, split it into given number of intervals `n.intervals` and plot the treatment effects by the split variable.
+### 'by' continuous: unemp
 
-```{r gr_age, eval=TRUE}
-tym1b_gr_unemp <- didnpplot(
+When the 'by' variable is continuous the **didnpplot** offers three ways of plotting the heterogeneous treatment effects.
+
+#### Scale of the continuous 'by' is its range
+
+If `by.continuous.scale` is not specified, **didnpplot** will use each unique value in the 'by' variable to produce the plot, which can be pretty rugged.
+
+```{r tym1b_gr_unemp_each_value, eval=TRUE}
+tym1b_gr_unemp_each_value <- didnpplot(
   obj = tym1b,
   level = 95,
-  by = unemp$unemp[tym1b$esample][tym1b$sample1],
-  n.intervals = 10,
-  xlab = "Unemployment"
+  by = d0$unemp[tym1b$esample][tym1b$sample1],
+  xlab = "Unemployment",
+  ylab = "ATET",
+  add.zero.line = FALSE
 )
-
-tym1b_gr_unemp$data.a
-tym1b_gr_unemp$data.b
-
-tym1b_gr_unemp$plot.a
-tym1b_gr_unemp$plot.b
+# A
+head(tym1b_gr_unemp_each_value$data.a, 10)
+tym1b_gr_unemp_each_value$plot.a
+# B
+head(tym1b_gr_unemp_each_value$data.b, 10)
+tym1b_gr_unemp_each_value$plot.b
+# ggsave(paste0("atet_ci_unemp_numeric.pdf"), width = 15, height = 10, units = c("cm"))
 ```
 
-Ameding ggplot object is easy. For example adding a 0 horizontal line is
+#### Scale of the continuous 'by' intervals
 
-```{r gr_age2, eval=TRUE}
-tym1b_gr_age$plot.a +
-  geom_hline(yintercept = 0)
-```
+Setting `by.continuous.scale` to a single number, instructs **didnpplot** to split the range of the continuous ‘by’ variable into the number of intervals specified by `by.continuous.scale` and plot ATET by intervals.
 
-> Anternatively, one can use the `data.a` and `data.b` objects to plot from scratch.
-
-The treatment effects can be visualized by and over. Variable `by` can be both categorical and continuous, while `over` must be categorical. For example, to plot treatment effects by age over race, specify the `over` option:
-
-```{r gr_age_race, eval=TRUE}
-tym1b_gr_age_race <- didnpplot(
-  obj = tym1b,
-  level = 90,
-  by = age[tym1b$sample1],
-  n.intervals = 7,
-  over = race[tym1b$sample1],
-  xlab = "Age",
-  ylab = "ATET",
-  point_size = 2,
-  over.labels.values = data.frame(
-    old = c(1,2,3,4,5),
-    new = c("Hispanic", "White", "Black", "Asian", "Other")
-  ),
-  text_size = 15)
-
-tym1b_gr_age_race$data.a
-tym1b_gr_age_race$plot.a
-
-tym1b_gr_age_race$data.b
-tym1b_gr_age_race$plot.b
-```
-
-Note that the graph shows the **90%** confidence interval. 
-
-> Alternatively use the data from the object `tym1b_gr_age_race`
-
-to produce another type of graph:
-
-```{r gr_age_race2, eval=TRUE}
-crit.value <- 2
-pd <- position_dodge(0.1) # move them .05 to the left and right
-d1 <- tym1b_gr_age_race$data.b
-d1$Race <- d1$over
-ggplot(d1, aes(x = by, y = atet, color = Race, group = Race)) +
-  geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), color = "black", width = .1, position = pd) +
-  geom_line(position = pd) +
-  geom_point(position = pd, size = 3, shape = 21, fill = "white") +
-  xlab("Age") +
-  ylab("ATET") +
-  theme_bw() +
-  theme(legend.position = "right", text = element_text(size = 17))
-```
-
-The next plot shows treatment effects by age over sex:
-
-```{r gr_age_sex, eval=TRUE}
-tym1b_gr_age_sex <- didnpplot(
-  obj = tym1b,
-  level = 90,
-  by = age[tym1b$sample1],
-  n.intervals = 7,
-  over = sex[tym1b$sample1],
-  xlab = "Age",
-  ylab = "ATET",
-  over.lab = "Sex",
-  point_size = 2,
-  over.labels.values = data.frame(c(1,0), c("Female", "Male")),
-  text_size = 15)
-
-tym1b_gr_age_sex$data.a
-tym1b_gr_age_sex$plot.a
-
-tym1b_gr_age_sex$data.b
-tym1b_gr_age_sex$plot.b
-```
-
-Finally, both `by` and `over` are both categorical:
-
-```{r gr_sex_race, eval=TRUE}
-tym1b_gr_sex_race <- didnpplot(
+```{r tym1b_gr_unemp_n_intervals, eval=TRUE}
+tym1b_gr_unemp_n_intervals <- didnpplot(
   obj = tym1b,
   level = 95,
-  by = sex[tym1b$sample1],
-  over = race[tym1b$sample1],
+  by = d0$unemp[tym1b$esample][tym1b$sample1],
+  by.continuous.scale = 10,
+  xlab = "Unemployment",
+  ylab = "ATET",
+  by.labels.values = data.frame(c("1","2"), c("Male", "Female"))
+)
+# A
+tym1b_gr_unemp_n_intervals$data.a
+tym1b_gr_unemp_n_intervals$plot.a
+# B
+tym1b_gr_unemp_n_intervals$data.b
+tym1b_gr_unemp_n_intervals$plot.b
+# ggsave(paste0("atet_ci_unemp_intervals.pdf"), width = 15, height = 10, units = c("cm"))
+```
+
+#### Scale of the continuous 'by' a vector
+
+Setting `by.continuous.scale` to a single number, instructs **didnpplot** to split the range of the continuous ‘by’ variable into intervals defined by the specified vector and plot ATET by intervals.
+
+```{r tym1b_gr_unemp_vector_breaks, eval=TRUE}
+tym1b_gr_unemp_vector_breaks <- didnpplot(
+  obj = tym1b,
+  level = 95,
+  by = d0$unemp[tym1b$esample][tym1b$sample1],
+  by.continuous.scale = c(2, 3, 4, 5, 7, 9, 12),
+  xlab = "Unemployment",
+  ylab = "ATET",
+  by.labels.values = data.frame(c("1","2"), c("Male", "Female"))
+)
+# A
+tym1b_gr_unemp_vector_breaks$data.a
+tym1b_gr_unemp_vector_breaks$plot.a
+# B
+tym1b_gr_unemp_vector_breaks$data.b
+tym1b_gr_unemp_vector_breaks$plot.b
+# ggsave(paste0("atet_ci_unemp_breaks.pdf"), width = 15, height = 10, units = c("cm"))
+```
+
+### 'by': factor + 'over
+
+> The heterogeneous treatment effects can be plotted by **either** continuous or categorical variable over a **categorical** variable.
+
+#### 'by': sex; 'over' is time
+
+This is an example with treatment effects by sex over time.
+
+```{r tym1b_gr_sex_time, eval=TRUE}
+tym1b_gr_sex_time <- didnpplot(
+  obj = tym1b,
+  level = 95,
+  by = d0$sex[tym1b$esample][tym1b$sample1],
+  over = as.factor( d0$t[tym1b$esample][tym1b$sample1]),
+  # over = d0$educ[tym1b$esample][tym1b$sample1],
   xlab = "Sex",
   ylab = "ATET",
-  over.lab = "Race",
-  point_size = 3,
-  by.labels.values = data.frame(c(1,0), c("Female", "Male")),
-  over.labels.values = data.frame(
-    old = c(1,2,3,4,5),
-    new = c("Hispanic", "White", "Black", "Asian", "Other")
-  ),
-  text_size = 17)
-
-tym1b_gr_sex_race$data.a
-tym1b_gr_sex_race$plot.a
-
-tym1b_gr_sex_race$data.b
-tym1b_gr_sex_race$plot.b
+  by.labels.values = data.frame(c("1","2"), c("Male", "Female"))
+)
+# A
+tym1b_gr_sex_time$data.a
+tym1b_gr_sex_time$plot.a
+# B
+tym1b_gr_sex_time$data.b
+tym1b_gr_sex_time$plot.b
+# ggsave(paste0("atet_ci_sex_time.pdf"), width = 15, height = 10, units = c("cm"))
 ```
 
-## Additional Resources
+#### 'by': time; 'over' is sex
 
-That 
+This is an example with treatment effects by time over sex, reversing the order of the previous graph. 
+
+```{r tym1b_gr_time_sex, eval=TRUE}
+tym1b_gr_time_sex <- didnpplot(
+  obj = tym1b,
+  level = 95,
+  over = d0$sex[tym1b$esample][tym1b$sample1],
+  by = as.factor( d0$t[tym1b$esample][tym1b$sample1]),
+  # over = d0$educ[tym1b$esample][tym1b$sample1],
+  xlab = "Time",
+  ylab = "ATET",
+  over.labels.values = data.frame(c("1","2"), c("Male", "Female"))
+)
+# A
+tym1b_gr_time_sex$data.a
+tym1b_gr_time_sex$plot.a
+# B
+tym1b_gr_time_sex$data.b
+tym1b_gr_time_sex$plot.b
+# ggsave(paste0("atet_ci_time_sex.pdf"), width = 15, height = 10, units = c("cm"))
+```
+
+### 'by' continuous: unemp + 'over'
+
+The following examples use continuous 'by' variable to plot the heterogeneous treatment facts over sex.
+
+#### Scale of the continuous 'by' is its range
+
+`by.continuous.scale` is not specified or `NULL`.
+
+```{r tym1b_gr_unemp_each_value_sex, eval=TRUE}
+tym1b_gr_unemp_each_value_sex <- didnpplot(
+  obj = tym1b,
+  level = 95,
+  by = d0$unemp[tym1b$esample][tym1b$sample1],
+  over = d0$sex[tym1b$esample][tym1b$sample1],
+  xlab = "Unemployment",
+  ylab = "ATET",
+  over.labels.values = data.frame(c("1","2"), c("Male", "Female"))
+)
+# A
+head(tym1b_gr_unemp_each_value_sex$data.a)
+tym1b_gr_unemp_each_value_sex$plot.a
+# B
+head(tym1b_gr_unemp_each_value_sex$data.b)
+tym1b_gr_unemp_each_value_sex$plot.b
+# ggsave(paste0("atet_ci_unemp_sex_numeric.pdf"), width = 15, height = 10, units = c("cm"))
+```
+
+#### Scale of the continuous 'by' intervals
+
+`by.continuous.scale` is a scalar.
+
+```{r tym1b_gr_unemp_intervals_sex, eval=TRUE}
+tym1b_gr_unemp_intervals_sex <- didnpplot(
+  obj = tym1b,
+  level = 95,
+  by = d0$unemp[tym1b$esample][tym1b$sample1],
+  by.continuous.scale = 15,
+  over = d0$sex[tym1b$esample][tym1b$sample1],
+  xlab = "Unemployment",
+  ylab = "ATET",
+  over.labels.values = data.frame(c("1","2"), c("Male", "Female"))
+)
+# A
+tym1b_gr_unemp_intervals_sex$data.a
+tym1b_gr_unemp_intervals_sex$plot.a
+# B
+tym1b_gr_unemp_intervals_sex$data.b
+tym1b_gr_unemp_intervals_sex$plot.b
+# ggsave(paste0("atet_ci_unemp_sex_intervals.pdf"), width = 15, height = 10, units = c("cm"))
+```
+
+#### Scale of the continuous 'by' a vector
+
+`by.continuous.scale` is a vector. Note even if the user provides an interval wider than the range of the continuous 'by' variable **didnpplot** will take care of that and define the plausible range for plotting. In this example, `print.level = 2` option is used to show the working of the  **didnpplot** command.
+
+
+```{r tym1b_gr_unemp_breaks_sex, eval=TRUE}
+tym1b_gr_unemp_breaks_sex <- didnpplot(
+  obj = tym1b,
+  level = 95,
+  by = d0$unemp[tym1b$esample][tym1b$sample1],
+  by.continuous.scale = seq(0, 15, 1), #c(2, 5, 7, 9, 12),
+  over = d0$sex[tym1b$esample][tym1b$sample1],
+  xlab = "Unemployment",
+  ylab = "ATET",
+  over.labels.values = data.frame(c("1","2"), c("Male", "Female")),
+  print.level = 2
+)
+# A
+tym1b_gr_unemp_breaks_sex$data.a
+tym1b_gr_unemp_breaks_sex$plot.a
+# B
+tym1b_gr_unemp_breaks_sex$data.b
+tym1b_gr_unemp_breaks_sex$plot.b
+# ggsave(paste0("atet_ci_unemp_sex_breaks.pdf"), width = 15, height = 10, units = c("cm"))
+```
+
+
+
+
+
