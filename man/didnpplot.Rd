@@ -31,7 +31,7 @@ didnpplot(
 
 \item{by}{The categorical or continuous variable used in the regression analysis should be specified. The length of the vector should be equal to \code{n1 = n10 + n11} if the option \code{TTx = "TTb"} was selected when running \link{didnpreg}, or \code{n11} if the option \code{TTx = "TTa"} was chosen.}
 
-\item{by.continuous.scale}{The scale of a continuous variable can be set to three values. (1) Setting it to NULL implies that each unique value in the ‘by’ variable will be treated separately. (2) If you set it to a numeric vector of length 1 or a scalar, it will split the range of the continuous ‘by’ variable into intervals of the specified length. (3) If you set it to a numeric vector, it will split the continuous ‘by’ variable into intervals defined by the specified vector. The default value is NULL.}
+\item{by.continuous.scale}{The scale of a continuous variable can be set to three values. (1) Setting it to NULL implies that each unique value in the ‘by’ variable will be treated separately. (2) If you set it to a numeric vector of length 1 or a scalar, it will split the range of the continuous ‘by’ variable into the number of intervals specified by \code{by.continuous.scale}. (3) If you set it to a numeric vector, it will split the continuous ‘by’ variable into intervals defined by the specified vector. The default value is NULL.}
 
 \item{over}{The categorical variable used in the regression analysis should be specified. The length of the vector should be equal to \code{n1 = n10 + n11} if the option \code{TTx = "TTb"} was selected when running \link{didnpreg}, or \code{n11} if the option \code{TTx = "TTa"} was chosen.}
 
