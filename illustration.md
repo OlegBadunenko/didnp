@@ -909,7 +909,7 @@ tym1b_gr_unemp_vector_breaks$plot.b
 
 > The heterogeneous treatment effects can be plotted by **either** continuous or categorical variable over a **categorical** variable.
 
-### ‘by’: sex; ‘over’ is time
+#### ‘by’: sex; ‘over’ is time
 
 This is an example with treatment effects by sex over time.
 
@@ -960,7 +960,7 @@ tym1b_gr_sex_time$plot.b
 # ggsave(paste0("atet_ci_sex_time.pdf"), width = 15, height = 10, units = c("cm"))
 ```
 
-### ‘by’: time; ‘over’ is sex
+#### ‘by’: time; ‘over’ is sex
 
 This is an example with treatment effects by time over sex, reversing the order of the previous graph.
 
@@ -1353,6 +1353,6 @@ tym1b_gr_unemp_breaks_sex$plot.b
 # ggsave(paste0("atet_ci_unemp_sex_breaks.pdf"), width = 15, height = 10, units = c("cm"))
 ```
 
-### Additional Resources
+## Additional Resources
 
 To be added

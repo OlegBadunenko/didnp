@@ -13,7 +13,7 @@ authors:
 navbar:
   title: didnp
   left:
-  - text: "User Guide / Illustration"
+  - text: "User Guide/Illustration"
     href: illustration.html
   - text: All functions manuals
     href: reference/index.html

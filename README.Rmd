@@ -67,6 +67,8 @@ devtools::install_github("OlegBadunenko/didnp")
 
 ## Illustration
 
+## Data
+
 > The subset of the data from [IPUMS](https://ipums.org) is used to illustrate the functionality of the package. The data are available in the package and can be loaded by
 
 ```{r data, eval = TRUE}
