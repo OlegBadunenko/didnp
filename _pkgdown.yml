@@ -13,10 +13,18 @@ authors:
 navbar:
   title: didnp
   left:
-  - text: All functions
+  - text: "User Guide / Illustration"
+    href: illustration.html
+  - text: All functions manuals
     href: reference/index.html
   - text: News/Changelog
     href: news/index.html
+articles:
+  - title: User Guide / Illustration
+    desc: >
+      The article guides through the code and illustrates the functionality of the package.
+    contents:
+    - illustration
 home:
   links:
   - text: Source Code
