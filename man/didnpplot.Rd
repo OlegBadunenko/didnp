@@ -15,8 +15,9 @@ didnpplot(
   ylab = "ATET",
   over.lab = "ATET over",
   over.ci.lab = "Conf.Int.",
-  point_size = 3,
-  line_width = 2,
+  point.size = 3,
+  line.width = 2,
+  xaxis.angle = 0,
   add.zero.line = TRUE,
   by.labels.values = NULL,
   over.labels.values = NULL,
@@ -43,9 +44,11 @@ didnpplot(
 
 \item{over.ci.lab}{Label for the legend. The default is  "Conf.Int.".}
 
-\item{point_size}{of ATET. Default is 3.}
+\item{point.size}{of ATET. Default is 3.}
 
-\item{line_width}{of ATET for the numeric "by". Default is 2.}
+\item{line.width}{of ATET for the numeric "by". Default is 2.}
+
+\item{xaxis.angle}{The angle of the axis. Default is 0.}
 
 \item{add.zero.line}{add a solid horizontal line at 0. Default is TRUE.}
 
