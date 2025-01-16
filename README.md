@@ -720,10 +720,13 @@ amended further.
 The heterogenous treatment effects over time show that the effect is
 significant in the second year after the treatment.
 
+> Note that the graph shows the **90%** confidence interval bygiving the
+> option `level = 90`.
+
 ``` r
 tym1b_gr_time <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = factor(d0$t)[tym1b$esample][tym1b$sample1],
   xlab = "Time",
   ylab = "ATET"
@@ -808,8 +811,9 @@ tym1b_gr_sex$plot.b
 
 ### ‘by’ continuous: unemp
 
-When the ‘by’ variable is continuous the **didnpplot** offers three ways
-of plotting the heterogeneous treatment effects.
+When the ‘by’ variable is continuous (the **didnpplot** command will
+recognize if `by` is a continuous variable) the **didnpplot** offers
+three ways of plotting the heterogeneous treatment effects.
 
 #### Scale of the continuous ‘by’ is its range
 
@@ -872,6 +876,18 @@ tym1b_gr_unemp_each_value$plot.b
 ``` r
 # ggsave(paste0("atet_ci_unemp_numeric.pdf"), width = 15, height = 10, units = c("cm"))
 ```
+
+Ameding ggplot object is easy. For example adding a 0 horizontal line is
+
+``` r
+tym1b_gr_unemp_each_value$plot.a +
+  geom_hline(yintercept = 0)
+```
+
+![](man/figures/README-gr_age2-1.png)<!-- -->
+
+> Anternatively, one can use the `data.a` and `data.b` objects to plot
+> from scratch.
 
 #### Scale of the continuous ‘by’ intervals
 
@@ -1098,6 +1114,27 @@ tym1b_gr_time_sex$plot.b
 ``` r
 # ggsave(paste0("atet_ci_time_sex.pdf"), width = 15, height = 10, units = c("cm"))
 ```
+
+> Alternatively use the data from the object `tym1b_gr_time_sex`
+
+to produce another type of graph:
+
+``` r
+crit.value <- 2
+pd <- position_dodge(0.1) # move them .05 to the left and right
+d1 <- tym1b_gr_time_sex$data.b
+d1$Sex <- d1$over
+ggplot(d1, aes(x = by, y = atet, color = Sex, group = Sex)) +
+  geom_errorbar(aes(ymin = atet - crit.value*atet.sd, ymax = atet + crit.value*atet.sd), color = "black", width = .1, position = pd) +
+  geom_line(position = pd) +
+  geom_point(position = pd, size = 3, shape = 21, fill = "white") +
+  xlab("Time") +
+  ylab("ATET") +
+  theme_bw() +
+  theme(legend.position = "right", text = element_text(size = 17))
+```
+
+![](man/figures/README-gr_age_race2-1.png)<!-- -->
 
 ### ‘by’ continuous: unemp + ‘over’
 
@@ -1424,3 +1461,7 @@ tym1b_gr_unemp_breaks_sex$plot.b
 ``` r
 # ggsave(paste0("atet_ci_unemp_sex_breaks.pdf"), width = 15, height = 10, units = c("cm"))
 ```
+
+## Additional Resources
+
+To be added
