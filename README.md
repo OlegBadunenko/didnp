@@ -24,13 +24,13 @@ checks](https://badges.cranchecks.info/summary/npsf.svg)](https://cran.r-project
 <!-- badges: end -->
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-The **didnp** package contains tools for computing average treatment
+The `didnp` package contains tools for computing average treatment
 effect parameters in a Difference-in-Differences setup without
 specifying a model.
 
 ## The framework
 
-The **didnp** package implements the framework developed in
+The `didnp` package implements the framework developed in
 
 Daniel J. Henderson and Stefan Sperlich (2023), “A Complete Framework
 for Model-Free Difference-in-Differences Estimation”, Foundations and
@@ -39,7 +39,7 @@ Trends® in Econometrics: Vol. 12: No. 3, pp 232-323.
 
 ## Installation
 
-The package **didnp** can be install from CRAN by typing:
+The package `didnp` can be install from CRAN by typing:
 
 ``` r
 install.packages("didnp", dependencies = TRUE)
@@ -54,7 +54,10 @@ devtools::install_github("OlegBadunenko/didnp")
 
 ## Illustration and Uses
 
-This [article](https://olegbadunenko.github.io/didnp/illustration.html) guides through the code and illustrates the functionality of the package using 
+This [article](https://olegbadunenko.github.io/didnp/illustration.html)
+guides through the code and illustrates the functionality of the package
+using
 
+> The subset of the data from [IPUMS](https://ipums.org) available in
+> the package.
 
-> The subset of the data from [IPUMS](https://ipums.org)  available in the package.

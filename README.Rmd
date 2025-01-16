@@ -40,19 +40,19 @@ cat(
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-The **didnp** package contains tools for computing average treatment effect parameters in a Difference-in-Differences setup without specifying a model.  
+The `didnp` package contains tools for computing average treatment effect parameters in a Difference-in-Differences setup without specifying a model.  
 
 
 ## The framework
 
-The **didnp** package implements the framework developed in
+The `didnp` package implements the framework developed in
 
 Daniel J. Henderson and Stefan Sperlich (2023), "A Complete Framework for Model-Free Difference-in-Differences Estimation", Foundations and Trends® in Econometrics: Vol. 12: No. 3, pp 232-323. http://dx.doi.org/10.1561/0800000046
 
 
 ## Installation
 
-The package **didnp** can be install from CRAN by typing:
+The package `didnp` can be install from CRAN by typing:
 
 ```{r eval=FALSE}
 install.packages("didnp", dependencies = TRUE)
@@ -65,7 +65,14 @@ if ( !require("devtools") ) install.packages("devtools"); library(devtools)
 devtools::install_github("OlegBadunenko/didnp")
 ```
 
-## Illustration
+## Illustration and Uses
+
+This [article](https://olegbadunenko.github.io/didnp/illustration.html) guides through the code and illustrates the functionality of the package using 
+
+
+> The subset of the data from [IPUMS](https://ipums.org)  available in the package.
+
+# Illustration
 
 ## Data
 
@@ -85,7 +92,7 @@ The description of the dataset can be found by typing
   table(Unempl$age)
 ```
 
-The variable 'ELIGIBLE' is actually treated. Only those who were eligible before 2012 can be treated. In 2013 and beyond, eligible individuals are treated. Conversely, in 2011 and earlier, they are eligible to be treated starting from 2013.
+The variable `ELIGIBLE` is actually treated. Only those who were eligible before 2012 can be treated. In 2013 and beyond, eligible individuals are treated. Conversely, in 2011 and earlier, they are eligible to be treated starting from 2013.
 
 ```{r treated, eval = TRUE}
 table(Unempl$YEAR, Unempl$ELIGIBLE)
@@ -107,7 +114,7 @@ d2 <- data.frame(
 )
 ```
 
-There is a gap in the 'year'
+There is a gap in the `year`
 
 ```{r gapYear, eval = TRUE}
 table(d2$year)
@@ -126,7 +133,7 @@ Year 2012 is missing. This is when the treatment occurred. A variable 't' is gen
  | 2015 | 3 | 
  | 2016 | 4 | 
 
-An artificial variable 'period' that does not have a gap is generated, where
+An artificial variable `period` that does not have a gap is generated, where
 
  | Year | period | 
  | :---  |  -: | 
@@ -141,8 +148,8 @@ An artificial variable 'period' that does not have a gap is generated, where
 
 To make the same more homogeneous and smaller for illustrative purposes, the subsample of the data with the following conditions is created:
 
-1. yrimmig >= 1982 & yrimmig <= 1994
-2. educ >= 6 & educ <= 11
+1. `yrimmig >= 1982 & yrimmig <= 1994`
+2. `educ >= 6 & educ <= 11`
 
 
 ```{r period, eval=TRUE}
@@ -171,7 +178,7 @@ table(d0$year, d0$treated)
 table(d0$t, d0$treated)
 ```
 
-Recoded variable 't'
+Recoded variable `t`
 
 ```{r tYear, eval=TRUE}
 table(d0$t, d0$year)
@@ -213,12 +220,12 @@ To obtain standard errors and perform testing in this *illustration*,
 
 
 ```{r boot, eval = TRUE}
-B <- 9
+B <- 99
 ```
 
 ## Testing
 
-To test if there is a violation of the bias stability condition use command **didnptest**
+To test if there is a violation of the bias stability condition use command `didnptest`
 
 ```{r model1test, eval = TRUE}
 tym1test <- didnpbsctest(
@@ -234,7 +241,7 @@ tym1test <- didnpbsctest(
 
 ## Estimation
 
-To estimate the average treatment effects, we use the **didnpreg** function.  The **didnpreg** function allows using matrices. The manual explains how to use matrix syntax (type `?didnpreg`). 
+To estimate the average treatment effects, we use the `didnpreg` function.  The `didnpreg` function allows using matrices. The manual explains how to use matrix syntax (type `?didnpreg`). 
 
 To speed up the estimation
 
@@ -256,7 +263,7 @@ tym1a <- didnpreg(
   cores = 10)
 ```
 
-**didnpreg** returns a class **didnp** object.  This object contains estimates of the average treatment effects and their standard errors.  To see these, we can call the **summary** function.
+`didnpreg` returns a class `didnp` object.  This object contains estimates of the average treatment effects and their standard errors.  To see these, we can call the `summary` function.
 
 ```{r model1asumm, eval=TRUE}
 # Print the summary of estimation
@@ -280,11 +287,11 @@ tym1b <- didnpreg(
   cores = 10)
 ```
 
-### Understanding samples
+### Understanding [sub]samples
 
-> To work with the results for the plot, **didnpreg** produces binary variables indicating different samples.
+> To work with the results for the plot, `didnpreg` produces binary variables indicating different samples.
 
-The estimation sample is captured by the *esample* value, which is equal to 1 if this observation was used in the estimation and 0 otherwise:
+The estimation sample is captured by the `esample` value, which is equal to 1 if this observation was used in the estimation and 0 otherwise:
 ```{r esample, eval=TRUE}
 table(
   d0$year[tym1b$esample],
@@ -293,7 +300,7 @@ table(
 ```
 
 
-The value *sample1* indicates **all treated** (before and after treatment) observations in the estimation sample *esample*. To subset the treated observations in the original dataset, double subsetting is required.
+The value `sample1` indicates *all treated* (before and after treatment) observations in the estimation sample `esample`. To subset the treated observations in the original dataset, double subsetting is required.
 ```{r esamplesample1, eval=TRUE}
 table(
   d0$year[tym1b$esample][tym1b$sample1],
@@ -301,7 +308,7 @@ table(
 )
 ```
 
-The value *sample11* indicates the **treated** observations in the post-treatment period in the estimation sample *esample*. To subset the treated observations in the original dataset, double subsetting is required.
+The value `sample11` indicates the *treated* observations in the post-treatment period in the estimation sample `esample`. To subset the treated observations in the original dataset, double subsetting is required.
 ```{r esamplesample11, eval=TRUE}
 table(
   d0$year[tym1b$esample][tym1b$sample11],
@@ -335,15 +342,15 @@ d0 %>%
 
 ## Plotting Heterogenous Treatment Effects
 
-To plot the heterogenous treatment effects, use the **didnpplot** command. 
+To plot the heterogenous treatment effects, use the `didnpplot` command. 
 
-> The heterogenous treatment effects can be plotted **by** either continuous or categorical variable. They can also also be plotted **by** either continuous or categorical variable **over** another categorical variable.
+> The heterogenous treatment effects can be plotted `by` either continuous or categorical variable. They can also also be plotted `by` either continuous or categorical variable `over` another categorical variable.
 
 ### 'by': factor
 
 #### education
 
-The heterogenous treatment effects are plotted for each level of education, since the 'education' is categorical variable.
+The heterogenous treatment effects are plotted for each level of education, since the `education` is a categorical variable.
 
 ```{r tym1b_gr_educ, eval=TRUE}
 tym1b_gr_educ <- didnpplot(
@@ -368,7 +375,7 @@ Here objects `data.a` and `data.b` contain data that is used to produce `plot.a`
 
 The heterogenous treatment effects over time show that the effect is significant in the second year after the treatment.
 
-> Note that the graph shows the **90%** confidence interval bygiving the option `level = 90`.
+> Note that the graph shows the *90%* confidence interval bygiving the option `level = 90`.
 
 
 ```{r tym1b_gr_time, eval=TRUE}
@@ -412,11 +419,11 @@ tym1b_gr_sex$plot.b
 
 ### 'by' continuous: unemp
 
-When the 'by' variable is continuous (the **didnpplot** command will recognize if `by` is a continuous variable) the **didnpplot** offers three ways of plotting the heterogeneous treatment effects.
+When the 'by' variable is continuous (the `didnpplot` command will recognize if `by` is a continuous variable) the `didnpplot` offers three ways of plotting the heterogeneous treatment effects.
 
 #### Scale of the continuous 'by' is its range
 
-If `by.continuous.scale` is not specified, **didnpplot** will use each unique value in the 'by' variable to produce the plot, which can be pretty rugged.
+If `by.continuous.scale` is not specified, `didnpplot` will use each unique value in the `by` variable to produce the plot, which can be pretty rugged.
 
 ```{r tym1b_gr_unemp_each_value, eval=TRUE}
 tym1b_gr_unemp_each_value <- didnpplot(
@@ -447,7 +454,7 @@ tym1b_gr_unemp_each_value$plot.a +
 
 #### Scale of the continuous 'by' intervals
 
-Setting `by.continuous.scale` to a single number, instructs **didnpplot** to split the range of the continuous ‘by’ variable into the number of intervals specified by `by.continuous.scale` and plot ATET by intervals.
+Setting `by.continuous.scale` to a single number, instructs `didnpplot` to split the range of the continuous `by` variable into the number of intervals specified by `by.continuous.scale` and plot ATET by intervals.
 
 ```{r tym1b_gr_unemp_n_intervals, eval=TRUE}
 tym1b_gr_unemp_n_intervals <- didnpplot(
@@ -455,6 +462,7 @@ tym1b_gr_unemp_n_intervals <- didnpplot(
   level = 95,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = 10,
+  xaxis.label.angle = 90,
   xlab = "Unemployment",
   ylab = "ATET",
   by.labels.values = data.frame(c("1","2"), c("Male", "Female"))
@@ -470,7 +478,7 @@ tym1b_gr_unemp_n_intervals$plot.b
 
 #### Scale of the continuous 'by' a vector
 
-Setting `by.continuous.scale` to a single number, instructs **didnpplot** to split the range of the continuous ‘by’ variable into intervals defined by the specified vector and plot ATET by intervals.
+Setting `by.continuous.scale` to a single number, instructs `didnpplot` to split the range of the continuous `by` variable into intervals defined by the specified vector and plot ATET by intervals.
 
 ```{r tym1b_gr_unemp_vector_breaks, eval=TRUE}
 tym1b_gr_unemp_vector_breaks <- didnpplot(
@@ -493,7 +501,7 @@ tym1b_gr_unemp_vector_breaks$plot.b
 
 ### 'by': factor + 'over
 
-> The heterogeneous treatment effects can be plotted by **either** continuous or categorical variable over a **categorical** variable.
+> The heterogeneous treatment effects can be plotted by *either* continuous or categorical variable over a *categorical* variable.
 
 #### 'by': sex; 'over' is time
 
@@ -564,7 +572,7 @@ ggplot(d1, aes(x = by, y = atet, color = Sex, group = Sex)) +
 
 ### 'by' continuous: unemp + 'over'
 
-The following examples use continuous 'by' variable to plot the heterogeneous treatment facts over sex.
+The following examples use continuous `by` variable to plot the heterogeneous treatment facts over sex.
 
 #### Scale of the continuous 'by' is its range
 
@@ -599,6 +607,7 @@ tym1b_gr_unemp_intervals_sex <- didnpplot(
   level = 95,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = 15,
+  xaxis.label.angle = 90,
   over = d0$sex[tym1b$esample][tym1b$sample1],
   xlab = "Unemployment",
   ylab = "ATET",
@@ -615,7 +624,7 @@ tym1b_gr_unemp_intervals_sex$plot.b
 
 #### Scale of the continuous 'by' a vector
 
-`by.continuous.scale` is a vector. Note even if the user provides an interval wider than the range of the continuous 'by' variable **didnpplot** will take care of that and define the plausible range for plotting. In this example, `print.level = 2` option is used to show the working of the  **didnpplot** command.
+`by.continuous.scale` is a vector. Note even if the user provides an interval wider than the range of the continuous `by` variable `didnpplot` will take care of that and define the plausible range for plotting. In this example, `print.level = 2` option is used to show the working of the  `didnpplot` command.
 
 
 ```{r tym1b_gr_unemp_breaks_sex, eval=TRUE}

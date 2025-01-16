@@ -17,7 +17,7 @@
 #' @param over.ci.lab Label for the legend. The default is  "Conf.Int.".
 #' @param point.size of ATET. Default is 3.
 #' @param line.width of ATET for the numeric "by". Default is 2.
-#' @param xaxis.angle The angle of the axis. Default is 0.
+#' @param xaxis.label.angle The angle of the axis. Default is 0.
 #' @param add.zero.line add a solid horizontal line at 0. Default is TRUE.
 #' @param by.labels.values For the categorical 'by" variable, the dataframe should have two columns. The first column should contain unique values for the 'by' variable, while the second column should contain corresponding values that would be displayed on a graph. By default, 'by.labels.values' is set to NULL, which means that the unique values from the 'by' variable will be used.
 #' @param over.labels.values For the categorical 'over' variable, the dataframe should have two columns. The first column should contain unique values for the 'over' variable, while the second column should contain corresponding values that would be displayed on a graph. By default, 'over.labels.values' is set to NULL, which means that the unique values from the 'over' variable will be used.
@@ -107,7 +107,7 @@ didnpplot <- function(
     over.ci.lab = "Conf.Int.",
     point.size = 3,
     line.width = 2,
-    xaxis.angle = 0,
+    xaxis.label.angle = 0,
     add.zero.line = TRUE,
     by.labels.values = NULL,
     over.labels.values = NULL,
@@ -300,7 +300,7 @@ didnpplot <- function(
         myVjust = NULL
         myHjust = NULL
       }
-      myAngle = xaxis.angle
+      myAngle = xaxis.label.angle
 
       # cat.print(table(by2))
       # cat.print(by2.levels)
@@ -922,7 +922,7 @@ didnpplot <- function(
         myVjust = NULL
         myHjust = NULL
       }
-      myAngle = xaxis.angle
+      myAngle = xaxis.label.angle
 
       if (do.TTb) {
 
@@ -1072,7 +1072,7 @@ didnpplot <- function(
             myVjust = NULL
             myHjust = NULL
           }
-          myAngle = xaxis.angle
+          myAngle = xaxis.label.angle
 
           atet <- atet.sd <- myCount <- numeric(n.by.levels)
 
@@ -1316,7 +1316,7 @@ didnpplot <- function(
             myVjust = NULL
             myHjust = NULL
           }
-          myAngle = xaxis.angle
+          myAngle = xaxis.label.angle
 
           # by <- my.by0[obj$TTa.positions.in.TTb]
           # by -> my.by
