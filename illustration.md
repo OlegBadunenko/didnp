@@ -643,7 +643,7 @@ education, since the `education` is a categorical variable.
 ``` r
 tym1b_gr_educ <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$educ[tym1b$esample][tym1b$sample1],
   xlab = "Education",
   ylab = "ATET"
@@ -747,7 +747,7 @@ sex:
 ``` r
 tym1b_gr_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$sex[tym1b$esample][tym1b$sample1],
   xlab = "Sex",
   ylab = "ATET",
@@ -796,7 +796,7 @@ pretty rugged.
 ``` r
 tym1b_gr_unemp_each_value <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   xlab = "Unemployment",
   ylab = "ATET",
@@ -871,7 +871,7 @@ intervals specified by `by.continuous.scale` and plot ATET by intervals.
 ``` r
 tym1b_gr_unemp_n_intervals <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = 10,
   xaxis.label.angle = 90,
@@ -935,7 +935,7 @@ defined by the specified vector and plot ATET by intervals.
 ``` r
 tym1b_gr_unemp_vector_breaks <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = c(2, 3, 4, 5, 7, 9, 12),
   xlab = "Unemployment",
@@ -992,7 +992,7 @@ This is an example with treatment effects by sex over time.
 ``` r
 tym1b_gr_sex_time <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$sex[tym1b$esample][tym1b$sample1],
   over = as.factor( d0$t[tym1b$esample][tym1b$sample1]),
   # over = d0$educ[tym1b$esample][tym1b$sample1],
@@ -1045,7 +1045,7 @@ the order of the previous graph.
 ``` r
 tym1b_gr_time_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   over = d0$sex[tym1b$esample][tym1b$sample1],
   by = as.factor( d0$t[tym1b$esample][tym1b$sample1]),
   xlab = "Year",
@@ -1122,7 +1122,7 @@ heterogeneous treatment effects over sex.
 ``` r
 tym1b_gr_unemp_each_value_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   over = d0$sex[tym1b$esample][tym1b$sample1],
   xlab = "Unemployment",
@@ -1175,7 +1175,7 @@ tym1b_gr_unemp_each_value_sex$plot.b
 ``` r
 tym1b_gr_unemp_intervals_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = 15,
   xaxis.label.angle = 90,
@@ -1278,7 +1278,7 @@ working of the `didnpplot` command.
 ``` r
 tym1b_gr_unemp_breaks_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = seq(0, 15, 1), #c(2, 5, 7, 9, 12),
   over = d0$sex[tym1b$esample][tym1b$sample1],

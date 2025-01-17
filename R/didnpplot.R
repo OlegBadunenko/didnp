@@ -1216,8 +1216,8 @@ didnpplot <- function(
               geom_point(size = point.size, shape = 16, color = "black") +
               labs(x = xlab, y = ylab) +
               geom_hline(yintercept = 0) +
-              geom_ribbon(aes(ymin = atet - 2*atet.sd,
-                              ymax = atet + 2*atet.sd,
+              geom_ribbon(aes(ymin = atet - crit.value*atet.sd,
+                              ymax = atet + crit.value*atet.sd,
                               fill = over), alpha = 0.3) +
               guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
               theme_bw() +
@@ -1237,8 +1237,8 @@ didnpplot <- function(
               labs(x = xlab, y = ylab) +
               scale_x_discrete(label = d1b2$by) +
               geom_hline(yintercept = 0) +
-              geom_ribbon(aes(ymin = atet - 2*atet.sd,
-                              ymax = atet + 2*atet.sd,
+              geom_ribbon(aes(ymin = atet - crit.value*atet.sd,
+                              ymax = atet + crit.value*atet.sd,
                               fill = over), alpha = 0.3) +
               guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
               theme_bw() +
@@ -1422,8 +1422,8 @@ didnpplot <- function(
               geom_point(size = point.size, shape = 16, color = "black") +
               labs(x = xlab, y = ylab) +
               geom_hline(yintercept = 0) +
-              geom_ribbon(aes(ymin = atet - 2*atet.sd,
-                              ymax = atet + 2*atet.sd,
+              geom_ribbon(aes(ymin = atet - crit.value*atet.sd,
+                              ymax = atet + crit.value*atet.sd,
                               fill = over), alpha = 0.3) +
               guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
               theme_bw() +
@@ -1442,8 +1442,8 @@ didnpplot <- function(
               labs(x = xlab, y = ylab) +
               geom_hline(yintercept = 0) +
               scale_x_discrete(label = d1a2$by) +
-              geom_ribbon(aes(ymin = atet - 2*atet.sd,
-                              ymax = atet + 2*atet.sd,
+              geom_ribbon(aes(ymin = atet - crit.value*atet.sd,
+                              ymax = atet + crit.value*atet.sd,
                               fill = over), alpha = 0.3) +
               guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
               theme_bw() +
@@ -1568,8 +1568,8 @@ didnpplot <- function(
             geom_line(linewidth = line.width) +
             geom_point(size = point.size, shape = 16, color = "black") +
             labs(x = xlab, y = ylab) +
-            geom_ribbon(aes(ymin = atet - 2*atet.sd,
-                            ymax = atet + 2*atet.sd,
+            geom_ribbon(aes(ymin = atet - crit.value*atet.sd,
+                            ymax = atet + crit.value*atet.sd,
                             fill = over), alpha = 0.3) +
             guides(color = guide_legend(paste0(over.lab)), fill = guide_legend(paste0(over.ci.lab))) +
             theme_bw() +

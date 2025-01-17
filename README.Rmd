@@ -368,7 +368,7 @@ The heterogenous treatment effects are plotted for each level of education, sinc
 ```{r tym1b_gr_educ, eval=TRUE}
 tym1b_gr_educ <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$educ[tym1b$esample][tym1b$sample1],
   xlab = "Education",
   ylab = "ATET"
@@ -416,7 +416,7 @@ Another example is the graph with the heterogenous treatment effects by sex:
 ```{r tym1b_gr_sex, eval=TRUE}
 tym1b_gr_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$sex[tym1b$esample][tym1b$sample1],
   xlab = "Sex",
   ylab = "ATET",
@@ -442,7 +442,7 @@ If `by.continuous.scale` is not specified, `didnpplot` will use each unique valu
 ```{r tym1b_gr_unemp_each_value, eval=TRUE}
 tym1b_gr_unemp_each_value <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   xlab = "Unemployment",
   ylab = "ATET",
@@ -474,7 +474,7 @@ Setting `by.continuous.scale` to a single number, instructs `didnpplot` to split
 ```{r tym1b_gr_unemp_n_intervals, eval=TRUE}
 tym1b_gr_unemp_n_intervals <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = 10,
   xaxis.label.angle = 90,
@@ -498,7 +498,7 @@ Setting `by.continuous.scale` to a single number, instructs `didnpplot` to split
 ```{r tym1b_gr_unemp_vector_breaks, eval=TRUE}
 tym1b_gr_unemp_vector_breaks <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = c(2, 3, 4, 5, 7, 9, 12),
   xlab = "Unemployment",
@@ -526,7 +526,7 @@ This is an example with treatment effects by sex over time.
 ```{r tym1b_gr_sex_time, eval=TRUE}
 tym1b_gr_sex_time <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$sex[tym1b$esample][tym1b$sample1],
   over = as.factor( d0$t[tym1b$esample][tym1b$sample1]),
   # over = d0$educ[tym1b$esample][tym1b$sample1],
@@ -551,7 +551,7 @@ This is an example with treatment effects by time over sex, reversing the order 
 ```{r tym1b_gr_time_sex, eval=TRUE}
 tym1b_gr_time_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   over = d0$sex[tym1b$esample][tym1b$sample1],
   by = as.factor( d0$t[tym1b$esample][tym1b$sample1]),
   xlab = "Year",
@@ -597,7 +597,7 @@ The following examples use continuous `by` variable to plot the heterogeneous tr
 ```{r tym1b_gr_unemp_each_value_sex, eval=TRUE}
 tym1b_gr_unemp_each_value_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   over = d0$sex[tym1b$esample][tym1b$sample1],
   xlab = "Unemployment",
@@ -620,7 +620,7 @@ tym1b_gr_unemp_each_value_sex$plot.b
 ```{r tym1b_gr_unemp_intervals_sex, eval=TRUE}
 tym1b_gr_unemp_intervals_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = 15,
   xaxis.label.angle = 90,
@@ -646,7 +646,7 @@ tym1b_gr_unemp_intervals_sex$plot.b
 ```{r tym1b_gr_unemp_breaks_sex, eval=TRUE}
 tym1b_gr_unemp_breaks_sex <- didnpplot(
   obj = tym1b,
-  level = 95,
+  level = 90,
   by = d0$unemp[tym1b$esample][tym1b$sample1],
   by.continuous.scale = seq(0, 15, 1), #c(2, 5, 7, 9, 12),
   over = d0$sex[tym1b$esample][tym1b$sample1],
