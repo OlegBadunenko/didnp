@@ -58,6 +58,6 @@ This [article](https://olegbadunenko.github.io/didnp/illustration.html)
 guides through the code and illustrates the functionality of the package
 using
 
-> The subset of the data from [IPUMS](https://ipums.org) available in
-> the package.
+> The subset of the data from [Integrated Public Use Microdata Series
+> (IPUMS)](https://ipums.org) available in the package.
 

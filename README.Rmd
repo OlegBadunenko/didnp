@@ -70,13 +70,15 @@ devtools::install_github("OlegBadunenko/didnp")
 This [article](https://olegbadunenko.github.io/didnp/illustration.html) guides through the code and illustrates the functionality of the package using 
 
 
-> The subset of the data from [IPUMS](https://ipums.org)  available in the package.
+> The subset of the data from [Integrated
+Public Use Microdata Series (IPUMS)](https://ipums.org)  available in the package.
 
 # Illustration
 
 ## Data
 
-> The subset of the data from [IPUMS](https://ipums.org) is used to illustrate the functionality of the package. The data are available in the package and can be loaded by
+> The subset of the data from [Integrated
+Public Use Microdata Series (IPUMS)](https://ipums.org) is used to illustrate the functionality of the package. The data are available in the package and can be loaded by
 
 ```{r data, eval = TRUE}
   library(didnp)
@@ -92,13 +94,21 @@ The description of the dataset can be found by typing
   table(Unempl$age)
 ```
 
-The variable `ELIGIBLE` is actually treated. Only those who were eligible before 2012 can be treated. In 2013 and beyond, eligible individuals are treated. Conversely, in 2011 and earlier, they are eligible to be treated starting from 2013.
+The variable ELIGIBLE is equal to 1 if the observation is in the treated group and 0 if in the control group.
 
 ```{r treated, eval = TRUE}
 table(Unempl$YEAR, Unempl$ELIGIBLE)
 ```
 
-For convenience, a data said with a smaller number of variables is created
+Consider the treated by age
+
+```{r TEligibleAge, eval=TRUE}
+table(Unempl$ELIGIBLE, Unempl$AGE)
+```
+
+Both treated and control groups must have comparable individuals. So we need to restrict the sample where age of individuals is between 27 and 35.
+
+For convenience, a dataset with a smaller number of variables is created
 
 ```{r smallLetters, eval = TRUE}
 d2 <- data.frame(
@@ -120,7 +130,7 @@ There is a gap in the `year`
 table(d2$year)
 ```
 
-Year 2012 is missing. This is when the treatment occurred. A variable 't' is generated, where
+Year 2012 is missing from this dataset because while the treatment occurred in 2012 IPUMS does not record when the survey was filled out and we therefore do not know whether observations from 2012 are in the pre- or post-treatment time period. A variable `t` is generated, where
 
  | Year | t | 
  | :---  |  -: | 
@@ -146,16 +156,18 @@ An artificial variable `period` that does not have a gap is generated, where
  | 2015 | 7 | 
  | 2016 | 8 | 
 
-To make the same more homogeneous and smaller for illustrative purposes, the subsample of the data with the following conditions is created:
+To make the sample more homogeneous and smaller for illustrative purposes, the subsample of the data with the following conditions is created:
 
-1. `yrimmig >= 1982 & yrimmig <= 1994`
-2. `educ >= 6 & educ <= 11`
+1. `age >= 27 & age <= 35`
+2. `yrimmig >= 1982 & yrimmig <= 1994`
+3. `educ >= 6 & educ <= 11`
 
 
 ```{r period, eval=TRUE}
 year_min <- min(Unempl$YEAR)
 
 d0 <- d2 %>%
+  filter(age >= 27 & age <= 35) |>
   filter(yrimmig >= 1982 & yrimmig <= 1994) |>
   filter(educ >= 6 & educ <= 11) |>
   mutate(
@@ -237,11 +249,13 @@ tym1test <- didnpbsctest(
   cores = 10)
 ```
 
-*Interpretation*: We do find evidence against the null hypothesis that the bias stability condition holds. The desired *p*-value should be much larger than the 0.1 level.
+*Interpretation*: We do not find evidence against the null hypothesis that the bias stability condition holds. The desired *p*-value should be much larger than the 0.1 level.
 
 ## Estimation
 
 To estimate the average treatment effects, we use the `didnpreg` function.  The `didnpreg` function allows using matrices. The manual explains how to use matrix syntax (type `?didnpreg`). 
+
+> Just a remainder that TTa calculates the ATET in the post-treatment period, while TTb calculated the ATET in both prior and post-treatment periods.
 
 To speed up the estimation
 
@@ -337,10 +351,9 @@ d0 %>%
   group_by(year) %>%
   summarize(mean = mean(TTai, na.rm = TRUE))
 ```
+## Plotting Heterogenous Treatment Effects
 
 > Just a remainder that TTa calculates the ATET in the post-treatment period, while TTb calculated the ATET in both prior and post-treatment periods.
-
-## Plotting Heterogenous Treatment Effects
 
 To plot the heterogenous treatment effects, use the `didnpplot` command. 
 
@@ -383,7 +396,8 @@ tym1b_gr_time <- didnpplot(
   obj = tym1b,
   level = 90,
   by = factor(d0$t)[tym1b$esample][tym1b$sample1],
-  xlab = "Time",
+  by.labels.values = data.frame(c("-1","0","1","2"), c("2010", "2011", "2013", "2014")),
+  xlab = "Year",
   ylab = "ATET"
 )
 # A
@@ -443,7 +457,8 @@ tym1b_gr_unemp_each_value$plot.b
 # ggsave(paste0("atet_ci_unemp_numeric.pdf"), width = 15, height = 10, units = c("cm"))
 ```
 
-Ameding ggplot object is easy. For example adding a 0 horizontal line is
+Ameding a ggplot object is easy. For example adding a 0 horizontal line is
+
 
 ```{r gr_age2, eval=TRUE}
 tym1b_gr_unemp_each_value$plot.a +
@@ -501,7 +516,8 @@ tym1b_gr_unemp_vector_breaks$plot.b
 
 ### 'by': factor + 'over
 
-> The heterogeneous treatment effects can be plotted by *either* continuous or categorical variable over a *categorical* variable.
+> The heterogeneous treatment effects can be plotted by *either* a continuous or categorical variable over a *categorical* variable.
+
 
 #### 'by': sex; 'over' is time
 
@@ -516,7 +532,8 @@ tym1b_gr_sex_time <- didnpplot(
   # over = d0$educ[tym1b$esample][tym1b$sample1],
   xlab = "Sex",
   ylab = "ATET",
-  by.labels.values = data.frame(c("1","2"), c("Male", "Female"))
+  by.labels.values = data.frame(c("1","2"), c("Male", "Female")),
+  over.labels.values = data.frame(c("-1","0","1","2"), c("2010", "2011", "2013", "2014")),
 )
 # A
 tym1b_gr_sex_time$data.a
@@ -537,9 +554,9 @@ tym1b_gr_time_sex <- didnpplot(
   level = 95,
   over = d0$sex[tym1b$esample][tym1b$sample1],
   by = as.factor( d0$t[tym1b$esample][tym1b$sample1]),
-  # over = d0$educ[tym1b$esample][tym1b$sample1],
-  xlab = "Time",
+  xlab = "Year",
   ylab = "ATET",
+  by.labels.values = data.frame(c("-1","0","1","2"), c("2010", "2011", "2013", "2014")),
   over.labels.values = data.frame(c("1","2"), c("Male", "Female"))
 )
 # A
@@ -571,8 +588,7 @@ ggplot(d1, aes(x = by, y = atet, color = Sex, group = Sex)) +
 ```
 
 ### 'by' continuous: unemp + 'over'
-
-The following examples use continuous `by` variable to plot the heterogeneous treatment facts over sex.
+The following examples use continuous `by` variable to plot the heterogeneous treatment effects over sex.
 
 #### Scale of the continuous 'by' is its range
 
