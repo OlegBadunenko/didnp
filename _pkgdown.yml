@@ -19,6 +19,8 @@ navbar:
     href: reference/index.html
   - text: News/Changelog
     href: news/index.html
+  - text: Stata Codes
+    href: stata/index.html
 articles:
   - title: User Guide / Illustration
     desc: >
