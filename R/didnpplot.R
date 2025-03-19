@@ -114,7 +114,6 @@ didnpplot <- function(
     text_size = 17,
     print.level = 1){
 
-
   # print.level <- 1 # print structure
   # print.level <- 2 # print working
 
