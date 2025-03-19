@@ -19,14 +19,17 @@ navbar:
     href: reference/index.html
   - text: News/Changelog
     href: news/index.html
-  - text: Stata Codes
-    href: stata/index.html
+  - text: "Stata Codes"
+    href: stata.html
 articles:
-  - title: User Guide / Illustration
+  - title: "User Guide / Illustration"
     desc: >
       The article guides through the code and illustrates the functionality of the package.
     contents:
     - illustration
+  - title: "Stata Documentation"
+    contents:
+      - stata.md
 home:
   links:
   - text: Source Code
