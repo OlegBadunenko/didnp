@@ -283,6 +283,7 @@ didnpreg.formula <- function(
 
   ## handle TTx ----
 
+
   if ( !(TTx %in% c("TTa", "TTb")) ) stop("'TTx' other than TTa or TTb not implemented yet")
 
   # if (TTx == "TTa") {
