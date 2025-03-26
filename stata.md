@@ -1,5 +1,5 @@
 # Stata codes coming soon. 
 
-The Stata codes are not ready yet. Please visit this cite later.
+The Stata codes are not yet ready for download. Please check back later.
 
-If you are interested in the codes for R, you can find information and illustration at https://olegbadunenko.github.io/didnp.
+If you’re interested in the R codes, you can find information and illustrations at https://olegbadunenko.github.io/didnp.
